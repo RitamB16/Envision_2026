@@ -16,13 +16,14 @@ import asyncio
 from cache import init_cache
 from sweeper import cleanup_expired_registrations
 
-# Automatically create database tables in Supabase
-Base.metadata.create_all(bind=engine)
-
 app = FastAPI(title=settings.PROJECT_NAME)
 
 @app.on_event("startup")
 async def startup_event():
+    try:
+        Base.metadata.create_all(bind=engine)
+    except Exception as e:
+        print(f"[!] Warning: Could not initialize DB tables on startup: {e}")
     await init_cache()
     asyncio.create_task(cleanup_expired_registrations())
 
