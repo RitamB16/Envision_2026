@@ -44,6 +44,7 @@ class MagicLinkRequest(BaseModel):
 
 class MagicLinkResponse(BaseModel):
     message: str
+    magic_url: Optional[str] = None
 
 class EventResponse(BaseModel):
     id: str

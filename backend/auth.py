@@ -186,7 +186,8 @@ def send_magic_link(request: Request, request_data: MagicLinkRequest, db: Sessio
     frontend_url = get_frontend_url(request)
     magic_url = f"{frontend_url}/login?magic_token={magic_token}"
 
-    # Dispatch email via Resend API
+    resend_success = False
+    resend_error = None
     try:
         resend_headers = {
             "Authorization": f"Bearer {settings.RESEND_API_KEY}",
@@ -210,11 +211,30 @@ def send_magic_link(request: Request, request_data: MagicLinkRequest, db: Sessio
             </div>
             """
         }
-        requests.post("https://api.resend.com/emails", json=resend_payload, headers=resend_headers, timeout=5)
+        resp = requests.post("https://api.resend.com/emails", json=resend_payload, headers=resend_headers, timeout=5)
+        if resp.status_code in (200, 201):
+            resend_success = True
+        else:
+            try:
+                err_json = resp.json()
+                resend_error = err_json.get("message") or resp.text
+            except Exception:
+                resend_error = resp.text
+            print(f"[!] Resend Email Error ({resp.status_code}): {resend_error}")
     except Exception as e:
-        print(f"Resend Email Notice: {e}")
+        resend_error = str(e)
+        print(f"[!] Resend Email Notice: {e}")
 
-    return {"message": f"Magic invitation link sent to {email}! Please check your inbox."}
+    if resend_success:
+        return {
+            "message": f"Magic invitation link sent to {email}! Please check your inbox.",
+            "magic_url": magic_url
+        }
+    else:
+        return {
+            "message": f"Magic link generated for {email}. Click the direct button below to sign in instantly!",
+            "magic_url": magic_url
+        }
 
 
 class VerifyMagicLinkRequest(BaseModel):

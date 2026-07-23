@@ -15,6 +15,7 @@ export default function Register({ onBack, onRegisterSuccess }: Props) {
 
   const [magicEmail, setMagicEmail] = useState('');
   const [magicSentMsg, setMagicSentMsg] = useState<string | null>(null);
+  const [magicUrl, setMagicUrl] = useState<string | null>(null);
 
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -88,6 +89,7 @@ export default function Register({ onBack, onRegisterSuccess }: Props) {
     e.preventDefault();
     setErrorMsg(null);
     setMagicSentMsg(null);
+    setMagicUrl(null);
 
     if (!magicEmail.trim()) {
       setErrorMsg('Please enter a valid Gmail / Email address.');
@@ -112,6 +114,9 @@ export default function Register({ onBack, onRegisterSuccess }: Props) {
 
       const data = await response.json();
       setMagicSentMsg(data.message || `Magic invitation link sent to ${magicEmail}!`);
+      if (data.magic_url) {
+        setMagicUrl(data.magic_url);
+      }
     } catch (err: any) {
       console.error('Magic Link Error:', err);
       setErrorMsg(err.message || 'Failed to send magic invitation link.');
@@ -541,9 +546,19 @@ export default function Register({ onBack, onRegisterSuccess }: Props) {
             )}
 
             {magicSentMsg && (
-              <div className="mt-4 p-3.5 rounded-xl bg-cyan-950/70 border border-cyan-500/60 text-cyan-300 text-xs text-center font-mono font-bold shadow-[0_0_20px_rgba(0,243,255,0.4)] animate-in fade-in slide-in-from-bottom-2 duration-300 flex items-center justify-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse flex-shrink-0" />
-                <span>{magicSentMsg}</span>
+              <div className="mt-4 p-3.5 rounded-xl bg-cyan-950/70 border border-cyan-500/60 text-cyan-300 text-xs text-center font-mono font-bold shadow-[0_0_20px_rgba(0,243,255,0.4)] animate-in fade-in slide-in-from-bottom-2 duration-300 flex flex-col items-center justify-center gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse flex-shrink-0" />
+                  <span>{magicSentMsg}</span>
+                </div>
+                {magicUrl && (
+                  <a 
+                    href={magicUrl}
+                    className="mt-1 px-4 py-2 bg-gradient-to-r from-cyan-500 via-purple-600 to-pink-500 text-white rounded-lg font-black text-xs tracking-wider uppercase hover:scale-105 transition-all shadow-[0_0_18px_rgba(0,243,255,0.6)] inline-block"
+                  >
+                    ⚡ CLICK HERE TO SIGN IN INSTANTLY
+                  </a>
+                )}
               </div>
             )}
           </div>
