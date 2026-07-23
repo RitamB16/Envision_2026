@@ -7,7 +7,11 @@ const isMobile = typeof window !== 'undefined' && (
   window.innerWidth <= 768 ||
   (navigator.maxTouchPoints > 0 && /Macintosh|Intel/i.test(navigator.userAgent))
 );
-const MAX_SKIDS = isMobile ? 80 : 200;
+
+const deviceMemory = typeof navigator !== 'undefined' ? (navigator as any).deviceMemory || 4 : 4;
+const isLowMemoryMobile = isMobile && (deviceMemory <= 3 || (typeof window !== 'undefined' && window.innerWidth <= 640));
+
+const MAX_SKIDS = isMobile ? 60 : 200;
 
 // Pre-allocated static vectors to completely prevent GC pressure inside the useFrame loop
 const _leftRearLocal = new THREE.Vector3(-1.0, 0.1, 1.8);
@@ -16,6 +20,8 @@ const _leftRearWorld = new THREE.Vector3();
 const _rightRearWorld = new THREE.Vector3();
 
 export default function TireEffects() {
+  if (isLowMemoryMobile) return null;
+
   const skidMesh = useRef<THREE.InstancedMesh>(null);
   
   const skidData = useMemo(() => Array.from({ length: MAX_SKIDS }, () => ({

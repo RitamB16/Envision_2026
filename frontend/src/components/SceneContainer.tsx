@@ -72,7 +72,11 @@ const isMobile = typeof window !== 'undefined' && (
   (navigator.maxTouchPoints > 0 && /Macintosh|Intel/i.test(navigator.userAgent))
 );
 
-const getSkyFragmentShader = (mobileMode: boolean) => `
+// Detect budget / low-RAM mobile devices (<= 3 GB RAM or mobile viewport)
+const deviceMemory = typeof navigator !== 'undefined' ? (navigator as any).deviceMemory || 4 : 4;
+const isLowMemoryMobile = isMobile && (deviceMemory <= 3 || (typeof window !== 'undefined' && window.innerWidth <= 640));
+
+const getSkyFragmentShader = (mobileMode: boolean, lowMemMode: boolean) => `
   varying vec3 vWorldPosition;
   uniform vec3 topColor;
   uniform vec3 bottomColor;
@@ -96,7 +100,7 @@ const getSkyFragmentShader = (mobileMode: boolean) => `
     float a = 0.5;
     vec2 shift = vec2(100.0);
     mat2 rot = mat2(0.87758, 0.47942, -0.47942, 0.87758);
-    for (int i = 0; i < ${mobileMode ? 2 : 4}; ++i) {
+    for (int i = 0; i < ${lowMemMode ? 1 : (mobileMode ? 2 : 4)}; ++i) {
       v += a * noise(p);
       p = rot * p * 2.1 + shift;
       a *= 0.45;
@@ -199,7 +203,7 @@ const SkyGradientShader = {
       gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
     }
   `,
-  fragmentShader: getSkyFragmentShader(isMobile)
+  fragmentShader: getSkyFragmentShader(isMobile, isLowMemoryMobile)
 };
 
 const CustomSky: React.FC = () => {
@@ -214,14 +218,12 @@ const CustomSky: React.FC = () => {
   return (
     <group>
       <mesh scale={[-1, 1, 1]}>
-        <sphereGeometry args={[450, 32, 15]} />
+        <sphereGeometry args={[450, isLowMemoryMobile ? 16 : 32, isLowMemoryMobile ? 16 : 32]} />
         <shaderMaterial
           ref={materialRef}
-          vertexShader={SkyGradientShader.vertexShader}
-          fragmentShader={SkyGradientShader.fragmentShader}
-          uniforms={SkyGradientShader.uniforms}
-          depthWrite={false}
+          args={[SkyGradientShader]}
           side={THREE.BackSide}
+          depthWrite={false}
         />
       </mesh>
     </group>
@@ -229,9 +231,9 @@ const CustomSky: React.FC = () => {
 };
 
 const LabelsUpdater: React.FC<{ manager: LandmarkLabelManager | null }> = ({ manager }) => {
-  useFrame((_state, delta) => {
+  useFrame((state) => {
     if (manager) {
-      manager.update(delta);
+      manager.update(state.camera);
     }
   });
   return null;
@@ -246,7 +248,7 @@ const SceneContainer: React.FC<Props> = ({
   onSetCarState,
   isPageActive = false
 }) => {
-  const labelsRef = useRef<Array<{ name: string, object: THREE.Group }>>([]);
+  const labelsRef = useRef<{ name: string; object: THREE.Group }[]>([]);
   const [manager, setManager] = useState<LandmarkLabelManager | null>(null);
 
 
@@ -288,33 +290,38 @@ const SceneContainer: React.FC<Props> = ({
     }
   }, [cameraMode, carState, manager, isPageActive]);
 
-  // Dynamic canvas pixel density settings: optimized high-quality DPR for mobile to ensure 60FPS
-  const canvasDpr = isMobile 
-    ? Math.min(window.devicePixelRatio, 1.35) 
-    : 1.5;
+  // Dynamic canvas pixel density: locked 1.0 DPR for low-RAM mobile (<= 3GB RAM) to guarantee 60FPS
+  const canvasDpr = isLowMemoryMobile 
+    ? Math.min(window.devicePixelRatio, 1.0) 
+    : isMobile 
+      ? Math.min(window.devicePixelRatio, 1.25) 
+      : 1.5;
 
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'fixed', top: 0, left: 0 }}>
       <Canvas 
-        shadows={true} 
+        frameloop={isLowMemoryMobile && isPageActive ? "demand" : "always"}
+        shadows={!isLowMemoryMobile} 
         dpr={canvasDpr} 
         camera={{ position: [0, 10, 20], fov: 50 }}
         gl={{ 
-          antialias: true, 
+          antialias: !isLowMemoryMobile, 
           powerPreference: 'high-performance', 
-          precision: 'mediump'
+          precision: isLowMemoryMobile ? 'lowp' : 'mediump',
+          stencil: false,
+          depth: true
         }}
       >
         <color attach="background" args={['#120317']} />
         <fog attach="fog" args={['#120317', 45, 230]} />
         <ambientLight intensity={0.1} color="#223366" />
         <directionalLight 
-          castShadow={true} 
+          castShadow={!isLowMemoryMobile} 
           position={[120, 180, -250]} 
           intensity={0.35} 
           color="#d6e6ff" 
           shadow-bias={-0.001}
-          shadow-mapSize={isMobile ? [512, 512] : [1024, 1024]}
+          shadow-mapSize={isLowMemoryMobile ? [256, 256] : (isMobile ? [512, 512] : [1024, 1024])}
         />
         <Suspense fallback={null}>
           <CustomSky />
@@ -330,15 +337,17 @@ const SceneContainer: React.FC<Props> = ({
           />
           <TireEffects />
           
-          {isMobile ? (
-            <EffectComposer enableNormalPass={false} multisampling={0}>
-              <Bloom luminanceThreshold={0.5} luminanceSmoothing={0.9} intensity={2.5} mipmapBlur />
-            </EffectComposer>
-          ) : (
-            <EffectComposer enableNormalPass={false} multisampling={0}>
-              <Bloom luminanceThreshold={0.5} luminanceSmoothing={0.9} intensity={2.5} mipmapBlur />
-              <Noise opacity={0.02} />
-            </EffectComposer>
+          {!isLowMemoryMobile && (
+            isMobile ? (
+              <EffectComposer enableNormalPass={false} multisampling={0}>
+                <Bloom luminanceThreshold={0.5} luminanceSmoothing={0.9} intensity={2.5} mipmapBlur />
+              </EffectComposer>
+            ) : (
+              <EffectComposer enableNormalPass={false} multisampling={0}>
+                <Bloom luminanceThreshold={0.5} luminanceSmoothing={0.9} intensity={2.5} mipmapBlur />
+                <Noise opacity={0.02} />
+              </EffectComposer>
+            )
           )}
           
           <CameraRig 
@@ -365,7 +374,7 @@ const SceneContainer: React.FC<Props> = ({
               />
             );
           })}
-          <Environment preset="night" background={false} blur={0.8} />
+          {!isLowMemoryMobile && <Environment preset="night" background={false} blur={0.8} />}
         </Suspense>
       </Canvas>
     </div>
