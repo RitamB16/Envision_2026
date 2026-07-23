@@ -88,12 +88,12 @@ const Car = ({ activeTargetId, introFinished, carState, onCarArrived, onSetCarSt
           
           if (mat.name && (mat.name === 'CarpaintMetallicBlack' || matNameLower.includes('carpaint') || matNameLower.includes('paint'))) {
             const cloneMat = new THREE.MeshPhysicalMaterial({
-              color: new THREE.Color('#00e6c4'), // Electric teal-cyan paint
-              metalness: 0.85,
-              roughness: 0.18,
+              color: new THREE.Color('#ff007f'), // Beautiful vibrant metallic magenta
+              metalness: 0.88,
+              roughness: 0.15,
               clearcoat: 1.0,
-              clearcoatRoughness: 0.05,
-              envMapIntensity: 2.2, // Reflective wet-look showroom finish
+              clearcoatRoughness: 0.04,
+              envMapIntensity: 2.5, // Reflective wet-look showroom finish
               normalMap: mat.normalMap,
               normalScale: mat.normalScale
             });

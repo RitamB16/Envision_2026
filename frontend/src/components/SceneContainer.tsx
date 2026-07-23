@@ -186,8 +186,8 @@ const getSkyFragmentShader = (mobileMode: boolean) => `
 
 const SkyGradientShader = {
   uniforms: {
-    topColor: { value: new THREE.Color('#030114') },
-    bottomColor: { value: new THREE.Color('#0a0218') },
+    topColor: { value: new THREE.Color('#050118') },
+    bottomColor: { value: new THREE.Color('#14022a') },
     exponent: { value: 0.85 },
     uTime: { value: 0 }
   },
