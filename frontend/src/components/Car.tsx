@@ -377,36 +377,36 @@ const Car = ({ activeTargetId, introFinished, carState, onCarArrived, onSetCarSt
     <group ref={carRef}>
       <group rotation={[0, Math.PI, 0]}>
         <primitive object={scene} />
+
+        {/* Red LED Taillight Road Reflection Lights (Strictly attached to rear of car) */}
+        <pointLight
+          ref={leftTailLightRef}
+          position={[-0.65, 0.45, 2.25]}
+          color="#ff0022"
+          distance={4.5}
+          decay={1.8}
+          intensity={2.2}
+          castShadow={false}
+        />
+        <pointLight
+          ref={rightTailLightRef}
+          position={[0.65, 0.45, 2.25]}
+          color="#ff0022"
+          distance={4.5}
+          decay={1.8}
+          intensity={2.2}
+          castShadow={false}
+        />
+        {/* Central Red LED Road Reflection Glow directly behind rear bumper */}
+        <pointLight
+          position={[0, 0.3, 2.4]}
+          color="#ff0022"
+          distance={3.8}
+          decay={1.8}
+          intensity={2.0}
+          castShadow={false}
+        />
       </group>
- 
-      {/* Red LED Taillight Road Reflection Lights */}
-      <pointLight
-        ref={leftTailLightRef}
-        position={[-0.65, 0.45, -2.25]}
-        color="#ff0022"
-        distance={4.5}
-        decay={1.8}
-        intensity={2.2}
-        castShadow={false}
-      />
-      <pointLight
-        ref={rightTailLightRef}
-        position={[0.65, 0.45, -2.25]}
-        color="#ff0022"
-        distance={4.5}
-        decay={1.8}
-        intensity={2.2}
-        castShadow={false}
-      />
-      {/* Central Red LED Road Reflection Glow directly behind rear bumper */}
-      <pointLight
-        position={[0, 0.3, -2.4]}
-        color="#ff0022"
-        distance={3.8}
-        decay={1.8}
-        intensity={2.0}
-        castShadow={false}
-      />
     </group>
   );
 };
