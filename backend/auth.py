@@ -29,6 +29,30 @@ def generate_fest_id(db: Session) -> str:
     next_num = max_num + 1
     return f"ENV-2026-{next_num:03d}"
 
+def get_frontend_url(request: Request) -> str:
+    origin = request.headers.get("origin") or request.headers.get("referer")
+    if origin:
+        from urllib.parse import urlparse
+        parsed = urlparse(origin)
+        if parsed.scheme and parsed.netloc:
+            return f"{parsed.scheme}://{parsed.netloc}"
+    return getattr(settings, "FRONTEND_URL", "https://envision-2026-seven.vercel.app")
+
+def set_auth_cookie(response: Response, request: Request, access_token: str):
+    origin = request.headers.get("origin", "")
+    is_https = request.url.scheme == "https" or "vercel.app" in origin or "https" in origin
+    samesite_val = "none" if is_https else "lax"
+    secure_val = True if is_https else False
+
+    response.set_cookie(
+        key="access_token",
+        value=f"Bearer {access_token}",
+        httponly=True,
+        samesite=samesite_val,
+        secure=secure_val,
+        path="/"
+    )
+
 @router.post("/google", response_model=TokenResponse)
 @limiter.limit("3/minute")
 def google_login(request: Request, response: Response, token_data: GoogleToken, db: Session = Depends(get_db)):
@@ -104,13 +128,7 @@ def google_login(request: Request, response: Response, token_data: GoogleToken, 
     )
 
     # Set secure HttpOnly cookie
-    response.set_cookie(
-        key="access_token",
-        value=f"Bearer {access_token}",
-        httponly=True,
-        samesite="lax",
-        secure=False
-    )
+    set_auth_cookie(response, request, access_token)
 
     return {
         "access_token": access_token,
@@ -119,9 +137,19 @@ def google_login(request: Request, response: Response, token_data: GoogleToken, 
     }
 
 @router.post("/logout")
-def logout(response: Response):
+def logout(response: Response, request: Request):
     """Clears HttpOnly authentication cookie."""
-    response.delete_cookie(key="access_token", path="/")
+    origin = request.headers.get("origin", "")
+    is_https = request.url.scheme == "https" or "vercel.app" in origin or "https" in origin
+    samesite_val = "none" if is_https else "lax"
+    secure_val = True if is_https else False
+
+    response.delete_cookie(
+        key="access_token",
+        path="/",
+        samesite=samesite_val,
+        secure=secure_val
+    )
     return {"message": "Successfully logged out"}
 
 @router.post("/magic-link", response_model=MagicLinkResponse)
@@ -155,7 +183,8 @@ def send_magic_link(request: Request, request_data: MagicLinkRequest, db: Sessio
         expires_delta=timedelta(minutes=15)
     )
 
-    magic_url = f"http://localhost:5173/login?magic_token={magic_token}"
+    frontend_url = get_frontend_url(request)
+    magic_url = f"{frontend_url}/login?magic_token={magic_token}"
 
     # Dispatch email via Resend API
     try:
@@ -195,6 +224,7 @@ class VerifyMagicLinkRequest(BaseModel):
 @router.post("/verify-magic-link", response_model=TokenResponse)
 def verify_magic_link(
     payload: VerifyMagicLinkRequest,
+    request: Request,
     response: Response,
     db: Session = Depends(get_db)
 ):
@@ -220,13 +250,7 @@ def verify_magic_link(
         }
     )
 
-    response.set_cookie(
-        key="access_token",
-        value=f"Bearer {access_token}",
-        httponly=True,
-        samesite="lax",
-        secure=False
-    )
+    set_auth_cookie(response, request, access_token)
 
     return {
         "access_token": access_token,

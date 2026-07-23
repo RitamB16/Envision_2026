@@ -8,6 +8,7 @@ ENV_FILE_PATH = BASE_DIR / ".env"
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Tech Fest API"
     JWT_ALGORITHM: str = "HS256"
+    FRONTEND_URL: str = "https://envision-2026-seven.vercel.app"
     
     DATABASE_URL: str
     JWT_SECRET_KEY: str

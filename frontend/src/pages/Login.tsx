@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { setAuthSession } from '../utils/api';
+import { setAuthSession, API_BASE_URL } from '../utils/api';
 
 interface AuthBackendResponse {
   access_token: string;
@@ -33,8 +33,7 @@ export default function Login() {
     setIsLoading(true);
     setErrorMsg(null);
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
-      const response = await fetch(`${apiBaseUrl}/auth/verify-magic-link`, {
+      const response = await fetch(`${API_BASE_URL}/auth/verify-magic-link`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -65,9 +64,7 @@ export default function Login() {
         throw new Error('Google authentication credential missing.');
       }
 
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
-
-      const response = await fetch(`${apiBaseUrl}/auth/google`, {
+      const response = await fetch(`${API_BASE_URL}/auth/google`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

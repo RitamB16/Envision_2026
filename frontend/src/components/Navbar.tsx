@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
-import { setAuthSession } from '../utils/api';
+import { setAuthSession, API_BASE_URL } from '../utils/api';
 import ProfileDropdown from './ProfileDropdown';
 
 export default function Navbar() {
@@ -32,9 +32,7 @@ export default function Navbar() {
       const credential = credentialResponse.credential;
       if (!credential) return;
 
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
-
-      const response = await fetch(`${apiBaseUrl}/auth/google`, {
+      const response = await fetch(`${API_BASE_URL}/auth/google`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

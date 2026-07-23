@@ -1,4 +1,7 @@
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+export const API_BASE_URL = (
+  import.meta.env.VITE_API_BASE_URL ||
+  (import.meta.env.PROD ? 'https://envision-2026.onrender.com' : 'http://127.0.0.1:8000')
+).replace(/\/$/, '');
 export const RAZORPAY_ME_URL = "https://razorpay.me/@ritambera8705";
 export const RAZORPAY_UPI_ID = "ritambera8705@razorpay";
 

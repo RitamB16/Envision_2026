@@ -11,6 +11,7 @@ import models, schemas
 from database import get_db
 from security import get_current_user
 from config import settings
+from auth import get_frontend_url
 
 router = APIRouter(prefix="/events", tags=["events"])
 
@@ -415,6 +416,7 @@ def register_for_event(
 def create_team_invite(
     team_id: str,
     payload: schemas.TeamInviteCreate,
+    request: Request,
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -447,7 +449,7 @@ def create_team_invite(
     db.commit()
     db.refresh(db_invite)
 
-    frontend_url = "http://localhost:5173"
+    frontend_url = get_frontend_url(request)
     invite_url = f"{frontend_url}/register?invite_token={invite_token}"
 
     return schemas.TeamInviteResponse(

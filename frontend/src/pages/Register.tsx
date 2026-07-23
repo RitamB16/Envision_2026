@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useGoogleLogin } from '@react-oauth/google';
 import PageLayout from './PageLayout';
-import { api, setAuthSession } from '../utils/api';
+import { api, setAuthSession, API_BASE_URL } from '../utils/api';
 
 interface Props {
   onBack: () => void;
@@ -35,9 +35,7 @@ export default function Register({ onBack, onRegisterSuccess }: Props) {
     setIsLoading(true);
 
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
-
-      const response = await fetch(`${apiBaseUrl}/auth/google`, {
+      const response = await fetch(`${API_BASE_URL}/auth/google`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -99,9 +97,7 @@ export default function Register({ onBack, onRegisterSuccess }: Props) {
     setIsLoading(true);
 
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
-
-      const response = await fetch(`${apiBaseUrl}/auth/magic-link`, {
+      const response = await fetch(`${API_BASE_URL}/auth/magic-link`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
