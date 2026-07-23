@@ -1,0 +1,93 @@
+# ==============================================================================
+#                      STRICT GITIGNORE FOR ENVISION'26
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. Secrets & Environment Files (CRITICAL - DO NOT COMMIT)
+# ------------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.env
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+*.pfx
+
+# ------------------------------------------------------------------------------
+# 2. Node & Frontend Build Artifacts
+# ------------------------------------------------------------------------------
+node_modules/
+**/node_modules/
+dist/
+dist-ssr/
+build/
+.vite/
+out/
+*.tsbuildinfo
+.eslintcache
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ------------------------------------------------------------------------------
+# 3. Python Virtual Environments & Compiled Bytecode
+# ------------------------------------------------------------------------------
+venv/
+.venv/
+venv_win/
+env/
+ENV/
+env.bak/
+venv.bak/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# ------------------------------------------------------------------------------
+# 4. OS & System Junk Files (macOS, Windows, Linux)
+# ------------------------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ------------------------------------------------------------------------------
+# 5. IDE & Code Editor Configurations
+# ------------------------------------------------------------------------------
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+.project
+.settings/
+.classpath
+
+# ------------------------------------------------------------------------------
+# 6. Logs & Temporary Scratch Directories
+# ------------------------------------------------------------------------------
+*.log
+logs/
+tmp/
+temp/
+scratch/
