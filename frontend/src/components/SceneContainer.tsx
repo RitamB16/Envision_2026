@@ -196,33 +196,36 @@ const SceneContainer: React.FC<Props> = ({
     }
   }, [cameraMode, carState, manager, isPageActive]);
 
-  // Dynamic canvas pixel density settings: optimized high-quality DPR for mobile to ensure 60FPS
+  // Bounded canvas pixel density: 1.0 DPR on mobile, 1.25 on desktop to eliminate GPU fill-rate lag
   const canvasDpr = isMobile 
-    ? Math.min(window.devicePixelRatio, 1.35) 
-    : 1.5;
+    ? Math.min(window.devicePixelRatio, 1.0) 
+    : Math.min(window.devicePixelRatio, 1.25);
 
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'fixed', top: 0, left: 0 }}>
       <Canvas 
-        shadows={true} 
+        frameloop={isPageActive ? "demand" : "always"}
+        shadows={!isMobile} 
         dpr={canvasDpr} 
         camera={{ position: [0, 10, 20], fov: 50 }}
         gl={{ 
-          antialias: true, 
+          antialias: !isMobile, 
           powerPreference: 'high-performance', 
-          precision: 'mediump'
+          precision: isMobile ? 'lowp' : 'mediump',
+          stencil: false,
+          depth: true
         }}
       >
         <color attach="background" args={['#080210']} />
         <fog attach="fog" args={['#080210', 50, 240]} />
         <ambientLight intensity={0.18} color="#223366" />
         <directionalLight 
-          castShadow={true} 
+          castShadow={!isMobile} 
           position={[120, 180, -250]} 
           intensity={0.4} 
           color="#d6e6ff" 
           shadow-bias={-0.001}
-          shadow-mapSize={isMobile ? [512, 512] : [1024, 1024]}
+          shadow-mapSize={isMobile ? [256, 256] : [1024, 1024]}
         />
         <Suspense fallback={null}>
           <CustomSky />
@@ -238,11 +241,7 @@ const SceneContainer: React.FC<Props> = ({
           />
           <TireEffects />
           
-          {isMobile ? (
-            <EffectComposer enableNormalPass={false} multisampling={0}>
-              <Bloom luminanceThreshold={0.6} luminanceSmoothing={0.9} intensity={1.3} mipmapBlur />
-            </EffectComposer>
-          ) : (
+          {!isMobile && !isPageActive && (
             <EffectComposer enableNormalPass={false} multisampling={0}>
               <Bloom luminanceThreshold={0.6} luminanceSmoothing={0.9} intensity={1.3} mipmapBlur />
               <Noise opacity={0.02} />

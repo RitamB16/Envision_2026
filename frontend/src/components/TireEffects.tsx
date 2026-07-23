@@ -16,6 +16,8 @@ const _leftRearWorld = new THREE.Vector3();
 const _rightRearWorld = new THREE.Vector3();
 
 export default function TireEffects() {
+  if (isMobile) return null;
+
   const skidMesh = useRef<THREE.InstancedMesh>(null);
   
   const skidData = useMemo(() => Array.from({ length: MAX_SKIDS }, () => ({
