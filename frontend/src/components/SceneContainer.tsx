@@ -72,101 +72,69 @@ const isMobile = typeof window !== 'undefined' && (
   (navigator.maxTouchPoints > 0 && /Macintosh|Intel/i.test(navigator.userAgent))
 );
 
-const getSkyFragmentShader = (mobileMode: boolean) => `
+const getSkyFragmentShader = (_mobileMode: boolean) => `
   varying vec3 vWorldPosition;
   uniform vec3 topColor;
   uniform vec3 bottomColor;
   uniform float exponent;
   uniform float uTime;
 
+  // Extremely fast 1-pass pseudo-random hash
   float hash(vec2 p) {
     return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
   }
 
-  float noise(vec2 p) {
-    vec2 i = floor(p);
-    vec2 f = fract(p);
-    vec2 u = f * f * (3.0 - 2.0 * f);
-    return mix(mix(hash(i + vec2(0.0,0.0)), hash(i + vec2(1.0,0.0)), u.x),
-               mix(hash(i + vec2(0.0,1.0)), hash(i + vec2(1.0,1.0)), u.x), u.y);
-  }
-
-  float fbm(vec2 p) {
-    float v = 0.0;
-    float a = 0.5;
-    vec2 shift = vec2(100.0);
-    mat2 rot = mat2(0.87758, 0.47942, -0.47942, 0.87758);
-    for (int i = 0; i < ${mobileMode ? 2 : 4}; ++i) {
-      v += a * noise(p);
-      p = rot * p * 2.1 + shift;
-      a *= 0.45;
-    }
-    return v;
-  }
-
   void main() {
     vec3 dir = normalize(vWorldPosition);
-    float h = max(dir.y, 0.0);
+    float yFactor = clamp(dir.y, 0.0, 1.0);
     
-    // --- 1. Base Night Sky Gradient ---
-    vec3 baseSky = mix(bottomColor, topColor, pow(h, 0.75));
-    vec3 finalColor = baseSky;
-    
+    // --- 1. Sunset Twilight Horizon Gradient (Exact Match to Reference Image) ---
+    // Low horizon: Fiery golden sunburst -> Orange twilight -> Magenta/Pink -> Dusk Teal -> Deep Cosmic Navy
+    vec3 sunburstGold       = vec3(1.0, 0.62, 0.15); // Fiery golden sunburst
+    vec3 sunsetFieryOrange  = vec3(0.98, 0.22, 0.08); // Deep fiery orange
+    vec3 twilightPink       = vec3(0.85, 0.15, 0.55); // Rich twilight pink
+    vec3 duskCyanTeal       = vec3(0.02, 0.42, 0.72); // Glowing dusk cyan/teal
+    vec3 deepNightBlue      = vec3(0.01, 0.04, 0.22); // Deep cosmic night sky
+
+    vec3 skyGradientColor;
+    if (yFactor < 0.05) {
+      skyGradientColor = mix(sunburstGold, sunsetFieryOrange, yFactor / 0.05);
+    } else if (yFactor < 0.18) {
+      skyGradientColor = mix(sunsetFieryOrange, twilightPink, (yFactor - 0.05) / 0.13);
+    } else if (yFactor < 0.42) {
+      skyGradientColor = mix(twilightPink, duskCyanTeal, (yFactor - 0.18) / 0.24);
+    } else {
+      skyGradientColor = mix(duskCyanTeal, deepNightBlue, clamp((yFactor - 0.42) / 0.48, 0.0, 1.0));
+    }
+
+    vec3 finalColor = skyGradientColor;
+
     if (dir.y >= 0.0) {
-      float yFactor = clamp(dir.y, 0.0, 1.0);
+      // --- 2. Soft Horizontal Sunset Cloud Streaks along Horizon ---
+      float cloudPattern = sin(dir.x * 28.0 + dir.y * 90.0) * 0.5 + 0.5;
+      float horizonCloudMask = exp(-yFactor * 14.0) * smoothstep(0.005, 0.12, dir.y);
+      finalColor += vec3(1.0, 0.35, 0.45) * cloudPattern * horizonCloudMask * 0.45;
 
-      // --- 2. Warm Sunset Horizon Glow Band (Peach/Pink to Magenta to Blue) ---
-      vec3 horizonPeachPink = vec3(0.98, 0.40, 0.60); // Warm glowing sunset-pink
-      vec3 horizonMagenta   = vec3(0.90, 0.15, 0.82); // Vibrant electric magenta
-      vec3 skyVioletBlue   = vec3(0.22, 0.48, 0.98); // Bright cosmic cyan-blue
-      vec3 deepCosmicNavy  = vec3(0.04, 0.07, 0.28); // Deep night indigo
+      // --- 3. Milky Way Galactic Dust Band (Diagonal Cosmic Glow across Sky) ---
+      float milkyWayPos = abs(dir.x * 0.65 + dir.y * 0.75 - 0.42);
+      float milkyWayGlow = exp(-milkyWayPos * 5.5) * smoothstep(0.20, 0.85, dir.y);
+      finalColor += vec3(0.18, 0.45, 0.85) * milkyWayGlow * 0.40;
 
-      vec3 horizonGlowColor;
-      if (yFactor < 0.12) {
-        horizonGlowColor = mix(horizonPeachPink, horizonMagenta, yFactor / 0.12);
-      } else if (yFactor < 0.38) {
-        horizonGlowColor = mix(horizonMagenta, skyVioletBlue, (yFactor - 0.12) / 0.26);
-      } else {
-        horizonGlowColor = mix(skyVioletBlue, deepCosmicNavy, clamp((yFactor - 0.38) / 0.45, 0.0, 1.0));
-      }
-
-      // Horizontal horizon glow mask focused right on the lower sky area
-      float horizonMask = exp(-yFactor * 4.2);
-      finalColor += horizonGlowColor * horizonMask * 0.95;
-
-      // --- 3. Vertical Aurora Light Pillars (Shooting up from Horizon) ---
-      vec2 rayUv = vec2(atan(dir.z, dir.x) * 10.0 + uTime * 0.04, dir.y * 2.8);
-      float rayPattern = fbm(vec2(rayUv.x * 2.0, rayUv.y * 0.4 - uTime * 0.015));
+      // --- 4. High-Performance Zero-Lag Twinkling & Blinking Star Field ---
+      vec2 starUv = dir.xz / (dir.y + 0.002);
       
-      // Sharp vertical pillar streaks rising from horizontal band
-      float verticalStreaks = noise(vec2(rayUv.x * 16.0 + sin(rayUv.y * 1.8) * 0.7, uTime * 0.08));
-      verticalStreaks = pow(verticalStreaks, 2.0) * 1.6;
+      // Layer 1: Dense twinkling stars across the sky
+      float starVal1 = hash(floor(starUv * 320.0));
+      float starTwinkle1 = sin(uTime * 3.5 + starVal1 * 50.0) * 0.5 + 0.5;
+      float starMask1 = step(0.983, starVal1) * smoothstep(0.02, 0.32, dir.y);
+      vec3 starColor1 = mix(vec3(0.88, 0.95, 1.0), vec3(1.0, 0.85, 0.95), hash(floor(starUv * 320.0) + 1.0));
+      finalColor += starColor1 * starMask1 * starTwinkle1 * 1.25;
 
-      float pillarIntensity = smoothstep(0.34, 0.66, rayPattern) * verticalStreaks;
-      
-      // Vertical height fade: Rises from horizon through mid-sky
-      float pillarHeightFade = smoothstep(0.01, 0.15, yFactor) * (1.0 - smoothstep(0.55, 0.88, yFactor));
-      pillarIntensity *= pillarHeightFade;
-
-      // Color gradient along the vertical pillars (Pink/Magenta base -> Cyan-Blue top)
-      vec3 pillarColor = mix(horizonMagenta, skyVioletBlue, clamp((yFactor - 0.08) / 0.42, 0.0, 1.0));
-      finalColor += pillarColor * (pillarIntensity * 1.1 + pow(pillarIntensity, 2.5) * 0.85);
-
-      // --- 4. High-Density Twinkling & Blinking Star Field ---
-      vec2 starUv = dir.xz / (dir.y + 0.003);
-      
-      // Layer 1: Thousands of twinkling background stars across the sky
-      float starVal1 = hash(floor(starUv * 350.0));
-      float starTwinkle1 = sin(uTime * 3.8 + starVal1 * 60.0) * 0.5 + 0.5;
-      float starMask1 = step(0.982, starVal1) * smoothstep(0.02, 0.35, dir.y);
-      vec3 starColor1 = mix(vec3(0.85, 0.92, 1.0), vec3(1.0, 0.88, 0.98), hash(floor(starUv * 350.0) + 1.0));
-      finalColor += starColor1 * starMask1 * starTwinkle1 * 1.1;
-
-      // Layer 2: Bright prominent blinking focal stars
-      float starVal2 = hash(floor(starUv * 160.0) + vec2(45.0, 92.0));
-      float starTwinkle2 = cos(uTime * 5.2 + starVal2 * 40.0) * 0.5 + 0.5;
-      float starMask2 = step(0.988, starVal2) * smoothstep(0.04, 0.45, dir.y);
-      finalColor += vec3(1.0, 1.0, 1.0) * starMask2 * (starTwinkle2 * 1.4) * 1.25;
+      // Layer 2: Bright prominent blinking focal stars (Upper sky & Milky Way)
+      float starVal2 = hash(floor(starUv * 150.0) + vec2(37.0, 81.0));
+      float starTwinkle2 = cos(uTime * 4.8 + starVal2 * 35.0) * 0.5 + 0.5;
+      float starMask2 = step(0.988, starVal2) * smoothstep(0.05, 0.42, dir.y);
+      finalColor += vec3(1.0, 1.0, 1.0) * starMask2 * (starTwinkle2 * 1.5) * 1.35;
     }
     
     gl_FragColor = vec4(finalColor, 1.0);
