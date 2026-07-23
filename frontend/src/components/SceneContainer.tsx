@@ -74,67 +74,33 @@ const isMobile = typeof window !== 'undefined' && (
 
 const getSkyFragmentShader = (_mobileMode: boolean) => `
   varying vec3 vWorldPosition;
-  uniform vec3 topColor;
-  uniform vec3 bottomColor;
-  uniform float exponent;
-  uniform float uTime;
-
-  // Extremely fast 1-pass pseudo-random hash
-  float hash(vec2 p) {
-    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
-  }
 
   void main() {
     vec3 dir = normalize(vWorldPosition);
     float yFactor = clamp(dir.y, 0.0, 1.0);
     
-    // --- 1. Sunset Twilight Horizon Gradient (Exact Match to Reference Image) ---
-    // Low horizon: Fiery golden sunburst -> Orange twilight -> Magenta/Pink -> Dusk Teal -> Deep Cosmic Navy
+    // --- Ultra-Lightweight Sunset Twilight Horizon Gradient ---
     vec3 sunburstGold       = vec3(1.0, 0.62, 0.15); // Fiery golden sunburst
     vec3 sunsetFieryOrange  = vec3(0.98, 0.22, 0.08); // Deep fiery orange
     vec3 twilightPink       = vec3(0.85, 0.15, 0.55); // Rich twilight pink
     vec3 duskCyanTeal       = vec3(0.02, 0.42, 0.72); // Glowing dusk cyan/teal
     vec3 deepNightBlue      = vec3(0.01, 0.04, 0.22); // Deep cosmic night sky
 
-    vec3 skyGradientColor;
+    vec3 finalColor;
     if (yFactor < 0.05) {
-      skyGradientColor = mix(sunburstGold, sunsetFieryOrange, yFactor / 0.05);
+      finalColor = mix(sunburstGold, sunsetFieryOrange, yFactor / 0.05);
     } else if (yFactor < 0.18) {
-      skyGradientColor = mix(sunsetFieryOrange, twilightPink, (yFactor - 0.05) / 0.13);
+      finalColor = mix(sunsetFieryOrange, twilightPink, (yFactor - 0.05) / 0.13);
     } else if (yFactor < 0.42) {
-      skyGradientColor = mix(twilightPink, duskCyanTeal, (yFactor - 0.18) / 0.24);
+      finalColor = mix(twilightPink, duskCyanTeal, (yFactor - 0.18) / 0.24);
     } else {
-      skyGradientColor = mix(duskCyanTeal, deepNightBlue, clamp((yFactor - 0.42) / 0.48, 0.0, 1.0));
+      finalColor = mix(duskCyanTeal, deepNightBlue, clamp((yFactor - 0.42) / 0.48, 0.0, 1.0));
     }
 
-    vec3 finalColor = skyGradientColor;
-
     if (dir.y >= 0.0) {
-      // --- 2. Soft Horizontal Sunset Cloud Streaks along Horizon ---
-      float cloudPattern = sin(dir.x * 28.0 + dir.y * 90.0) * 0.5 + 0.5;
-      float horizonCloudMask = exp(-yFactor * 14.0) * smoothstep(0.005, 0.12, dir.y);
-      finalColor += vec3(1.0, 0.35, 0.45) * cloudPattern * horizonCloudMask * 0.45;
-
-      // --- 3. Milky Way Galactic Dust Band (Diagonal Cosmic Glow across Sky) ---
-      float milkyWayPos = abs(dir.x * 0.65 + dir.y * 0.75 - 0.42);
-      float milkyWayGlow = exp(-milkyWayPos * 5.5) * smoothstep(0.20, 0.85, dir.y);
-      finalColor += vec3(0.18, 0.45, 0.85) * milkyWayGlow * 0.40;
-
-      // --- 4. High-Performance Zero-Lag Twinkling & Blinking Star Field ---
-      vec2 starUv = dir.xz / (dir.y + 0.002);
-      
-      // Layer 1: Dense twinkling stars across the sky
-      float starVal1 = hash(floor(starUv * 320.0));
-      float starTwinkle1 = sin(uTime * 3.5 + starVal1 * 50.0) * 0.5 + 0.5;
-      float starMask1 = step(0.983, starVal1) * smoothstep(0.02, 0.32, dir.y);
-      vec3 starColor1 = mix(vec3(0.88, 0.95, 1.0), vec3(1.0, 0.85, 0.95), hash(floor(starUv * 320.0) + 1.0));
-      finalColor += starColor1 * starMask1 * starTwinkle1 * 1.25;
-
-      // Layer 2: Bright prominent blinking focal stars (Upper sky & Milky Way)
-      float starVal2 = hash(floor(starUv * 150.0) + vec2(37.0, 81.0));
-      float starTwinkle2 = cos(uTime * 4.8 + starVal2 * 35.0) * 0.5 + 0.5;
-      float starMask2 = step(0.988, starVal2) * smoothstep(0.05, 0.42, dir.y);
-      finalColor += vec3(1.0, 1.0, 1.0) * starMask2 * (starTwinkle2 * 1.5) * 1.35;
+      // Soft ultra-fast horizontal sunset cloud accent
+      float horizonCloud = exp(-yFactor * 12.0) * (sin(dir.x * 24.0) * 0.5 + 0.5);
+      finalColor += vec3(0.95, 0.30, 0.40) * horizonCloud * 0.30;
     }
     
     gl_FragColor = vec4(finalColor, 1.0);
@@ -142,12 +108,7 @@ const getSkyFragmentShader = (_mobileMode: boolean) => `
 `;
 
 const SkyGradientShader = {
-  uniforms: {
-    topColor: { value: new THREE.Color('#02010a') },
-    bottomColor: { value: new THREE.Color('#090314') },
-    exponent: { value: 0.85 },
-    uTime: { value: 0 }
-  },
+  uniforms: {},
   vertexShader: `
     varying vec3 vWorldPosition;
     void main() {
@@ -160,23 +121,13 @@ const SkyGradientShader = {
 };
 
 const CustomSky: React.FC = () => {
-  const materialRef = useRef<THREE.ShaderMaterial>(null);
-
-  useFrame((state) => {
-    if (materialRef.current) {
-      materialRef.current.uniforms.uTime.value = state.clock.getElapsedTime();
-    }
-  });
-
   return (
     <group>
       <mesh scale={[-1, 1, 1]}>
-        <sphereGeometry args={[450, 32, 15]} />
+        <sphereGeometry args={[450, isMobile ? 16 : 32, isMobile ? 10 : 15]} />
         <shaderMaterial
-          ref={materialRef}
           vertexShader={SkyGradientShader.vertexShader}
           fragmentShader={SkyGradientShader.fragmentShader}
-          uniforms={SkyGradientShader.uniforms}
           depthWrite={false}
           side={THREE.BackSide}
         />

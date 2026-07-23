@@ -88,12 +88,12 @@ const Car = ({ activeTargetId, introFinished, carState, onCarArrived, onSetCarSt
           
           if (mat.name && (mat.name === 'CarpaintMetallicBlack' || matNameLower === 'carpaint' || matNameLower.includes('carpaint'))) {
             const cloneMat = new THREE.MeshPhysicalMaterial({
-              color: new THREE.Color('#00f3ff'), // High-visual vibrant Neon Electric Blue / Cyan
-              metalness: 0.88,
-              roughness: 0.12,
+              color: new THREE.Color('#0555fa'), // Customized glowing Porsche Electric Cobalt Blue
+              metalness: 0.82,
+              roughness: 0.08,
               clearcoat: 1.0,
-              clearcoatRoughness: 0.03,
-              envMapIntensity: 2.0, // Pristine showroom finish
+              clearcoatRoughness: 0.02,
+              envMapIntensity: 2.5, // Pristine wet-look showroom finish
               normalMap: mat.normalMap,
               normalScale: mat.normalScale
             });
@@ -111,10 +111,14 @@ const Car = ({ activeTargetId, introFinished, carState, onCarArrived, onSetCarSt
             });
             child.material = glassMat;
           }
-          if (mat.name && (matNameLower.includes('taillight') || matNameLower.includes('redg') || matNameLower.includes('tail_light'))) {
-            const cloneMat = mat.clone();
-            cloneMat.emissiveIntensity = 2.0; 
-            if (cloneMat.emissive.getHex() === 0) cloneMat.emissive.setHex(0xff0000);
+          if (mat.name && (matNameLower.includes('taillight') || matNameLower.includes('redg') || matNameLower.includes('tail_light') || matNameLower.includes('brake'))) {
+            const cloneMat = new THREE.MeshPhysicalMaterial({
+              color: new THREE.Color('#ff0022'),
+              emissive: new THREE.Color('#ff0011'),
+              emissiveIntensity: 4.5,
+              clearcoat: 1.0,
+              roughness: 0.1
+            });
             child.material = cloneMat;
           }
           if (mat.name && (matNameLower.includes('headlight') || matNameLower.includes('head_light'))) {
@@ -375,23 +379,31 @@ const Car = ({ activeTargetId, introFinished, carState, onCarArrived, onSetCarSt
         <primitive object={scene} />
       </group>
  
-      {/* Red Taillight Point Lights (sync'd to brake intensity) */}
+      {/* Glowing Red LED Taillight Strip (Porsche 911 Style) */}
       <pointLight
         ref={leftTailLightRef}
-        position={[-0.75, 0.5, 2.2]}
-        color="#ff0000"
-        distance={6}
+        position={[-0.65, 0.6, -2.1]}
+        color="#ff0022"
+        distance={7}
         decay={2}
-        intensity={1.2}
+        intensity={2.5}
         castShadow={false}
       />
       <pointLight
         ref={rightTailLightRef}
-        position={[0.75, 0.5, 2.2]}
-        color="#ff0000"
+        position={[0.65, 0.6, -2.1]}
+        color="#ff0022"
+        distance={7}
+        decay={2}
+        intensity={2.5}
+        castShadow={false}
+      />
+      <pointLight
+        position={[0, 0.6, -2.1]}
+        color="#ff0022"
         distance={6}
         decay={2}
-        intensity={1.2}
+        intensity={3.0}
         castShadow={false}
       />
     </group>
