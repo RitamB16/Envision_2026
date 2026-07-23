@@ -21,9 +21,9 @@ const City: React.FC = () => {
 
         if (!isProcessed && mat) {
           // Identify materials with GLOW in the name and boost their emissive intensity
-          if (mat.name && mat.name.toUpperCase().includes('GLOW')) {
+          if (mat.name && (mat.name.toUpperCase().includes('GLOW') || mat.name.toLowerCase().includes('neon') || mat.name.toLowerCase().includes('light'))) {
             const cloneMat = mat.clone();
-            cloneMat.emissiveIntensity = 3.5;
+            cloneMat.emissiveIntensity = 5.0;
             // Also ensure it actually emits color
             if (cloneMat.emissive.getHex() === 0x000000 && cloneMat.color) {
               cloneMat.emissive.copy(cloneMat.color);

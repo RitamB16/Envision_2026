@@ -36,15 +36,15 @@ const Streetlights = ({ introFinished }: { introFinished: boolean }) => {
       const time = state.clock.getElapsedTime();
       lightsRef.current.forEach((light, i) => {
         if (time > i * 0.2) {
-          light.intensity = THREE.MathUtils.lerp(light.intensity, 3, 0.2);
+          light.intensity = THREE.MathUtils.lerp(light.intensity, 4, 0.2);
         } else {
           light.intensity = 0;
         }
       });
     } else {
       // Once intro is finished, only assign intensity if not already set to full (avoids dynamic updates)
-      if (lightsRef.current.length > 0 && lightsRef.current[0].intensity !== 3) {
-        lightsRef.current.forEach(light => light.intensity = 3);
+      if (lightsRef.current.length > 0 && lightsRef.current[0].intensity !== 4) {
+        lightsRef.current.forEach(light => light.intensity = 4);
       }
     }
   });
@@ -307,11 +307,11 @@ const SceneContainer: React.FC<Props> = ({
       >
         <color attach="background" args={['#120317']} />
         <fog attach="fog" args={['#120317', 45, 230]} />
-        <ambientLight intensity={0.1} color="#223366" />
+        <ambientLight intensity={0.25} color="#223366" />
         <directionalLight 
           castShadow={true} 
           position={[120, 180, -250]} 
-          intensity={0.35} 
+          intensity={0.55} 
           color="#d6e6ff" 
           shadow-bias={-0.001}
           shadow-mapSize={isMobile ? [512, 512] : [1024, 1024]}
@@ -332,11 +332,11 @@ const SceneContainer: React.FC<Props> = ({
           
           {isMobile ? (
             <EffectComposer enableNormalPass={false} multisampling={0}>
-              <Bloom luminanceThreshold={0.5} luminanceSmoothing={0.9} intensity={2.5} mipmapBlur />
+              <Bloom luminanceThreshold={0.4} luminanceSmoothing={0.9} intensity={3.2} mipmapBlur />
             </EffectComposer>
           ) : (
             <EffectComposer enableNormalPass={false} multisampling={0}>
-              <Bloom luminanceThreshold={0.5} luminanceSmoothing={0.9} intensity={2.5} mipmapBlur />
+              <Bloom luminanceThreshold={0.4} luminanceSmoothing={0.9} intensity={3.2} mipmapBlur />
               <Noise opacity={0.02} />
             </EffectComposer>
           )}
