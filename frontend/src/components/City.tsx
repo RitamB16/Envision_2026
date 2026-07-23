@@ -3,7 +3,7 @@ import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 
 const City: React.FC = () => {
-  const { scene } = useGLTF('/models/city.glb');
+  const { scene } = useGLTF('/models/city_optimized.glb');
 
   useEffect(() => {
     const isProcessed = (scene as any).__processed;
@@ -45,6 +45,6 @@ const City: React.FC = () => {
   return <primitive object={scene} scale={0.01} />;
 };
 
-useGLTF.preload('/models/city.glb');
+useGLTF.preload('/models/city_optimized.glb');
 
 export default City;

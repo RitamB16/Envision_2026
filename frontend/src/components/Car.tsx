@@ -31,7 +31,7 @@ const _qFinal = new THREE.Quaternion();
 const _qDefaultFallback = new THREE.Quaternion();
 
 const Car = ({ activeTargetId, introFinished, carState, onCarArrived, onSetCarState }: Props) => {
-  const { scene } = useGLTF('/models/car.glb');
+  const { scene } = useGLTF('/models/car_optimized.glb');
   const carRef = useRef<THREE.Group>(null);
   const wheelsRef = useRef<THREE.Object3D[]>([]);
   const steeringWheelsRef = useRef<THREE.Object3D[]>([]);
@@ -71,18 +71,22 @@ const Car = ({ activeTargetId, introFinished, carState, onCarArrived, onSetCarSt
         child.castShadow = true;
         child.receiveShadow = true;
         
-        if (child.name.includes('Wheel.Ft') || child.name.includes('Wheel.Bk')) {
+        const childNameLower = child.name.toLowerCase();
+        if (child.name.includes('Wheel.Ft') || child.name.includes('Wheel.Bk') || childNameLower.includes('wheel')) {
           wheelsRef.current.push(child);
           if (!defaultWheelQuatsRef.current.has(child)) {
             defaultWheelQuatsRef.current.set(child, child.quaternion.clone());
           }
-          if (child.name.includes('Wheel.Ft')) steeringWheelsRef.current.push(child);
+          if (child.name.includes('Wheel.Ft') || childNameLower.includes('ft') || childNameLower.includes('front')) {
+            steeringWheelsRef.current.push(child);
+          }
         }
         
         if (!isProcessed && child.material) {
           const mat = child.material as THREE.MeshStandardMaterial;
+          const matNameLower = (mat.name || '').toLowerCase();
           
-          if (mat.name && mat.name === 'CarpaintMetallicBlack') {
+          if (mat.name && (mat.name === 'CarpaintMetallicBlack' || matNameLower.includes('carpaint') || matNameLower.includes('paint'))) {
             const cloneMat = new THREE.MeshPhysicalMaterial({
               color: new THREE.Color('#00e6c4'), // Electric teal-cyan paint
               metalness: 0.85,
@@ -95,13 +99,13 @@ const Car = ({ activeTargetId, introFinished, carState, onCarArrived, onSetCarSt
             });
             child.material = cloneMat;
           }
-          if (mat.name && (mat.name.toLowerCase().includes('taillight') || mat.name.toLowerCase().includes('redg'))) {
+          if (mat.name && (matNameLower.includes('taillight') || matNameLower.includes('redg') || matNameLower.includes('tail_light'))) {
             const cloneMat = mat.clone();
             cloneMat.emissiveIntensity = 2.0; 
             if (cloneMat.emissive.getHex() === 0) cloneMat.emissive.setHex(0xff0000);
             child.material = cloneMat;
           }
-          if (mat.name && mat.name.toLowerCase().includes('headlight')) {
+          if (mat.name && (matNameLower.includes('headlight') || matNameLower.includes('head_light'))) {
             const cloneMat = mat.clone();
             cloneMat.emissiveIntensity = 0; 
             if (cloneMat.emissive.getHex() === 0) cloneMat.emissive.setHex(0xffffff);
@@ -381,5 +385,7 @@ const Car = ({ activeTargetId, introFinished, carState, onCarArrived, onSetCarSt
     </group>
   );
 };
+
+useGLTF.preload('/models/car_optimized.glb');
 
 export default Car;
