@@ -551,3 +551,32 @@ h1, h2, h3, h4, .brand-font {
     margin-top: 1.5rem !important;
   }
 }
+
+/* Mobile Touch & Responsiveness Enhancements */
+@media (max-width: 768px) {
+  input, select, textarea, button {
+    font-size: 16px !important; /* Prevents auto-zoom on iOS Safari */
+    touch-action: manipulation;
+  }
+  
+  .reg-input {
+    padding: 0.75rem 0.85rem !important;
+    border-radius: 10px !important;
+  }
+
+  .nav-dock {
+    padding: 12px 8px !important;
+    gap: 6px !important;
+  }
+
+  .nav-dock-btn {
+    padding: 8px 10px !important;
+    font-size: 0.75rem !important;
+    letter-spacing: 0.5px !important;
+  }
+
+  /* Touch active feel */
+  button:active, .glass-pill-btn:active, .cyber-instant-btn:active {
+    transform: scale(0.97) !important;
+  }
+}

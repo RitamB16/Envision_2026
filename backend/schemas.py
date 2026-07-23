@@ -68,10 +68,17 @@ class EventResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+class TeammateDetail(BaseModel):
+    name: str
+    email: EmailStr
+    phone: Optional[str] = None
+    college: Optional[str] = None
+
 class EventRegistrationCreate(BaseModel):
     event_id: str
     phone: Optional[str] = None
     team_name: Optional[str] = None
+    teammate_details: Optional[List[TeammateDetail]] = None
     teammate_fest_ids: Optional[List[str]] = None
     teammate_emails: Optional[List[str]] = None
     food_preference: Optional[str] = "Veg" # Veg or Non-Veg

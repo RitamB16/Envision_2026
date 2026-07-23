@@ -65,7 +65,7 @@ export default function Navbar() {
 
   return (
     // 2. Fixed Top Container with High Z-Index Layout Overlay
-    <nav className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-6 py-4 bg-[#0a0518]/80 backdrop-blur-md border-b border-white/10">
+    <nav className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-3 sm:px-6 py-3 sm:py-4 bg-[#0a0518]/85 backdrop-blur-md border-b border-white/10">
       <div 
         className="flex items-center gap-2 cursor-pointer" 
         onClick={() => navigate('/')}

@@ -121,6 +121,13 @@ const EVENTS_DATA: EventData[] = [
   }
 ];
 
+interface TeammateInput {
+  name: string;
+  email: string;
+  phone: string;
+  college: string;
+}
+
 interface Props {
   onBack: () => void;
 }
@@ -212,8 +219,12 @@ export default function Events({ onBack: _onBack }: Props) {
   const [gender, setGender] = useState<string>('Male');
   const [foodPreference, setFoodPreference] = useState<string>('Veg');
   const [teamName, setTeamName] = useState<string>('');
-  const [teammateFestIds, setTeammateFestIds] = useState<string[]>(['', '']);
-  const [inviteEmail, setInviteEmail] = useState<string>('');
+  const [teammates, setTeammates] = useState<TeammateInput[]>([
+    { name: '', email: '', phone: '', college: '' },
+    { name: '', email: '', phone: '', college: '' },
+    { name: '', email: '', phone: '', college: '' },
+    { name: '', email: '', phone: '', college: '' }
+  ]);
 
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [regErrorMsg, setRegErrorMsg] = useState<string | null>(null);
@@ -277,10 +288,13 @@ export default function Events({ onBack: _onBack }: Props) {
     setSearchParams({ view: 'register', id: event.id, from });
   };
 
-  const handleTeammateChange = (index: number, value: string) => {
-    const updated = [...teammateFestIds];
-    updated[index] = value;
-    setTeammateFestIds(updated);
+  const handleTeammateDetailChange = (index: number, field: keyof TeammateInput, value: string) => {
+    const updated = [...teammates];
+    if (!updated[index]) {
+      updated[index] = { name: '', email: '', phone: '', college: '' };
+    }
+    updated[index] = { ...updated[index], [field]: value };
+    setTeammates(updated);
   };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
@@ -305,22 +319,24 @@ export default function Events({ onBack: _onBack }: Props) {
 
       if (selectedEvent.requires_team) {
         payload.team_name = teamName;
-        // Collect active teammate Fest IDs
-        const activeIds = teammateFestIds
+        const activeTeammates = teammates
           .slice(0, selectedEvent.max_team_size - 1)
-          .filter(id => id.trim().length > 0);
-        payload.teammate_fest_ids = activeIds;
+          .filter(tm => tm.email.trim().length > 0 || tm.name.trim().length > 0)
+          .map(tm => ({
+            name: tm.name.trim(),
+            email: tm.email.trim(),
+            phone: tm.phone.trim() || undefined,
+            college: tm.college.trim() || undefined
+          }));
+        payload.teammate_details = activeTeammates;
       }
 
       const res = await api.post<any>(`/events/${selectedEvent.id}/register`, payload);
 
-      if (selectedEvent.requires_team && res.team_id && inviteEmail.trim()) {
-        try {
-          const inviteRes = await api.post<any>(`/events/teams/${res.team_id}/invite`, { email: inviteEmail.trim() });
-          setMagicInviteUrl(inviteRes.invite_url);
-        } catch (inviteErr: any) {
-          console.error("Invite Link error:", inviteErr);
-        }
+      if (selectedEvent.requires_team && res.team_members) {
+        setRegSuccessMsg(`🎉 TEAM REGISTRATION CONFIRMED!\nTeam Name: ${res.team_name || teamName}\nRegistered Members & Fest IDs: ${res.team_members}`);
+      } else {
+        setRegSuccessMsg(`🎉 REGISTRATION CONFIRMED FOR ${selectedEvent.name.toUpperCase()}!`);
       }
 
       if (res.is_free || res.amount === 0) {
@@ -1580,49 +1596,88 @@ export default function Events({ onBack: _onBack }: Props) {
 
               {/* Conditional Team Registration Fields (Only rendered if selectedEvent.requires_team is true) */}
               {selectedEvent.requires_team && (
-                <>
-                  <div className="p-3.5 rounded-xl bg-purple-950/40 border border-purple-500/30 flex flex-col gap-3 text-left">
+                <div className="p-3.5 rounded-xl bg-purple-950/40 border border-purple-500/30 flex flex-col gap-3 text-left">
+                  <div className="flex items-center justify-between">
                     <span className="text-[11px] font-mono font-bold text-cyan-300 uppercase tracking-wider">
                       👥 TEAM CONFIGURATION ({selectedEvent.name})
                     </span>
-
-                    {/* Team Name */}
-                    <div className="reg-input-group">
-                      <input
-                        type="text"
-                        className="reg-input"
-                        placeholder="Team Name (e.g. CyberKnights)"
-                        value={teamName}
-                        onChange={e => setTeamName(e.target.value)}
-                        required
-                      />
-                    </div>
-
-                    {/* Dynamic Teammate Fest ID Inputs (Max Team Size - 1 fields) */}
-                    {Array.from({ length: selectedEvent.max_team_size - 1 }).map((_, idx) => (
-                      <div key={idx} className="reg-input-group">
-                        <input
-                          type="text"
-                          className="reg-input"
-                          placeholder={`Teammate ${idx + 1} Fest ID (e.g. ENV-2026-001)`}
-                          value={teammateFestIds[idx] || ''}
-                          onChange={e => handleTeammateChange(idx, e.target.value)}
-                        />
-                      </div>
-                    ))}
-
-                    {/* Team Leader Magic Link Teammate Invite */}
-                    <div className="reg-input-group">
-                      <input
-                        type="email"
-                        className="reg-input"
-                        placeholder="Or Enter Teammate Email to Send Magic Link Invite"
-                        value={inviteEmail}
-                        onChange={e => setInviteEmail(e.target.value)}
-                      />
-                    </div>
+                    <span className="text-[10px] text-gray-400 font-mono">
+                      MAX SIZE: {selectedEvent.max_team_size} MEMBERS
+                    </span>
                   </div>
-                </>
+
+                  {/* Team Name Input */}
+                  <div className="reg-input-group">
+                    <label className="text-[10px] font-mono text-cyan-400 font-bold uppercase mb-1 block">Team Name *</label>
+                    <input
+                      type="text"
+                      className="reg-input"
+                      placeholder="e.g. CyberKnights"
+                      value={teamName}
+                      onChange={e => setTeamName(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  {/* Dynamic Teammate Member Cards (Max Team Size - 1 fields) */}
+                  {Array.from({ length: selectedEvent.max_team_size - 1 }).map((_, idx) => (
+                    <div key={idx} className="p-3 rounded-xl bg-black/50 border border-cyan-500/30 flex flex-col gap-2">
+                      <div className="flex items-center justify-between border-b border-white/10 pb-1.5 mb-1">
+                        <span className="text-[10.5px] font-mono font-bold text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
+                          <span>👤</span> TEAMMATE {idx + 1} DETAILS
+                        </span>
+                        <span className="text-[9px] font-mono text-purple-300 bg-purple-900/60 px-2 py-0.5 rounded-full border border-purple-500/40">
+                          AUTO-GENERATES FEST ID
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-[9.5px] font-mono text-gray-300 mb-0.5 block">Full Name *</label>
+                          <input
+                            type="text"
+                            className="reg-input text-xs"
+                            placeholder="e.g. Alex Hunter"
+                            value={teammates[idx]?.name || ''}
+                            onChange={e => handleTeammateDetailChange(idx, 'name', e.target.value)}
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[9.5px] font-mono text-gray-300 mb-0.5 block">Email Address *</label>
+                          <input
+                            type="email"
+                            className="reg-input text-xs"
+                            placeholder="alex@gmail.com"
+                            value={teammates[idx]?.email || ''}
+                            onChange={e => handleTeammateDetailChange(idx, 'email', e.target.value)}
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[9.5px] font-mono text-gray-300 mb-0.5 block">Mobile No</label>
+                          <input
+                            type="tel"
+                            className="reg-input text-xs"
+                            placeholder="10-digit Phone No"
+                            value={teammates[idx]?.phone || ''}
+                            onChange={e => handleTeammateDetailChange(idx, 'phone', e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[9.5px] font-mono text-gray-300 mb-0.5 block">College Name</label>
+                          <input
+                            type="text"
+                            className="reg-input text-xs"
+                            placeholder="e.g. RKMRC Belur Math"
+                            value={teammates[idx]?.college || ''}
+                            onChange={e => handleTeammateDetailChange(idx, 'college', e.target.value)}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
 
               {/* Terms & Conditions Agreement Checkbox */}

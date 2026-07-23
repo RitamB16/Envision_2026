@@ -11,7 +11,7 @@ import models, schemas
 from database import get_db
 from security import get_current_user
 from config import settings
-from auth import get_frontend_url
+from auth import get_frontend_url, generate_fest_id
 
 router = APIRouter(prefix="/events", tags=["events"])
 
@@ -314,35 +314,70 @@ def register_for_event(
             )
 
         teammates_to_register = []
-        provided_ids = [fid.strip() for fid in (payload.teammate_fest_ids or []) if fid.strip()]
 
-        if len(provided_ids) > (event.max_team_size - 1):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Maximum teammate limit for '{event.name}' is {event.max_team_size - 1} members."
-            )
-
-        for fest_id in provided_ids:
-            teammate_user = db.query(models.User).filter(
-                (models.User.fest_id == fest_id) | (models.User.fest_id == fest_id.upper())
-            ).first()
-            if not teammate_user and "ENV-2026-" in fest_id.upper():
-                suffix = fest_id.upper().split("ENV-2026-")[-1]
-                if suffix.isdigit():
-                    padded_id = f"ENV-2026-{int(suffix):03d}"
-                    teammate_user = db.query(models.User).filter(models.User.fest_id == padded_id).first()
-
-            if not teammate_user:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Teammate Fest ID '{fest_id}' is invalid or not registered."
-                )
-            if teammate_user.id == current_user.id:
+        # 1. Process full teammate details submitted directly by Team Leader
+        if payload.teammate_details:
+            if len(payload.teammate_details) > (event.max_team_size - 1):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="You cannot add your own Fest ID as a teammate."
+                    detail=f"Maximum teammate limit for '{event.name}' is {event.max_team_size - 1} members."
                 )
-            teammates_to_register.append(teammate_user)
+
+            for tm_detail in payload.teammate_details:
+                tm_email = tm_detail.email.strip().lower() if tm_detail.email else ""
+                if not tm_email or tm_email == current_user.email.lower():
+                    continue
+
+                tm_name = tm_detail.name.strip() if tm_detail.name else tm_email.split('@')[0].capitalize()
+                tm_phone = tm_detail.phone.strip() if tm_detail.phone else None
+                tm_college = tm_detail.college.strip() if tm_detail.college else None
+
+                # Find or auto-create teammate user
+                tm_user = db.query(models.User).filter(models.User.email == tm_email).first()
+                if not tm_user:
+                    fest_id = generate_fest_id(db)
+                    tm_user = models.User(
+                        email=tm_email,
+                        name=tm_name,
+                        full_name=tm_name,
+                        phone=tm_phone,
+                        college=tm_college or payload.college,
+                        fest_id=fest_id,
+                        role="USER",
+                        is_approved=True
+                    )
+                    db.add(tm_user)
+                    db.commit()
+                    db.refresh(tm_user)
+                else:
+                    if not tm_user.fest_id or not tm_user.fest_id.startswith("ENV-2026-"):
+                        tm_user.fest_id = generate_fest_id(db)
+                    if tm_name and not tm_user.name:
+                        tm_user.name = tm_name
+                    if tm_phone and not tm_user.phone:
+                        tm_user.phone = tm_phone
+                    if tm_college and not tm_user.college:
+                        tm_user.college = tm_college
+                    db.commit()
+                    db.refresh(tm_user)
+
+                teammates_to_register.append(tm_user)
+
+        # 2. Fallback to teammate Fest IDs if passed
+        provided_ids = [fid.strip() for fid in (payload.teammate_fest_ids or []) if fid.strip()]
+        if provided_ids:
+            for fest_id in provided_ids:
+                teammate_user = db.query(models.User).filter(
+                    (models.User.fest_id == fest_id) | (models.User.fest_id == fest_id.upper())
+                ).first()
+                if not teammate_user and "ENV-2026-" in fest_id.upper():
+                    suffix = fest_id.upper().split("ENV-2026-")[-1]
+                    if suffix.isdigit():
+                        padded_id = f"ENV-2026-{int(suffix):03d}"
+                        teammate_user = db.query(models.User).filter(models.User.fest_id == padded_id).first()
+
+                if teammate_user and teammate_user.id != current_user.id and teammate_user not in teammates_to_register:
+                    teammates_to_register.append(teammate_user)
 
         new_team = models.Team(
             name=payload.team_name.strip(),
@@ -369,7 +404,7 @@ def register_for_event(
                     food_preference=food_pref,
                     user_email=tm.email,
                     user_name=tm.full_name or tm.name,
-                    user_phone=payload.phone,
+                    user_phone=tm.phone or payload.phone,
                     team_name=payload.team_name.strip(),
                     college=tm.college or payload.college,
                     payment_status=initial_payment_status,
@@ -396,6 +431,12 @@ def register_for_event(
     db.commit()
     db.refresh(leader_reg)
 
+    # Format member summary with generated Fest IDs for Team Leader
+    registered_members = [f"{current_user.name} ({current_user.fest_id or 'Leader'})"]
+    for tm in teammates_to_register:
+        registered_members.append(f"{tm.name} ({tm.fest_id or 'Member'})")
+    team_members_str = ", ".join(registered_members)
+
     return {
         "status": "success",
         "registration_id": leader_reg.id,
@@ -405,6 +446,8 @@ def register_for_event(
         "user_id": current_user.id,
         "event_id": event_id,
         "team_id": new_team_id,
+        "team_name": created_team_name,
+        "team_members": team_members_str,
         "food_preference": food_pref,
         "user_email": current_user.email,
         "user_name": current_user.full_name or current_user.name,
