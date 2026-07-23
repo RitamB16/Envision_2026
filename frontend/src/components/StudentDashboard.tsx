@@ -131,7 +131,7 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
           zIndex: 999999,
           boxSizing: 'border-box',
         }}
-        className="w-full max-w-4xl max-h-[90vh] overflow-y-auto custom-scrollbar bg-[#0c0721]/95 backdrop-blur-3xl border-2 border-[#00f3ff]/40 rounded-3xl shadow-[0_0_60px_rgba(0,243,255,0.3)] overflow-hidden flex flex-col md:flex-row relative text-white font-sans transition-all duration-300"
+        className="w-full max-w-4xl max-h-[92vh] overflow-y-auto custom-scrollbar bg-[#0c0721]/95 backdrop-blur-3xl border-2 border-[#00f3ff]/40 rounded-3xl shadow-[0_0_60px_rgba(0,243,255,0.3)] flex flex-col md:flex-row relative text-white font-sans transition-all duration-300"
         onClick={(e: ReactMouseEvent) => e.stopPropagation()}
         onPointerDown={(e: ReactMouseEvent) => e.stopPropagation()}
       >
@@ -287,10 +287,10 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
         </div>
 
         {/* 3. Right Column (Dynamic Views & Form - 2/3 width) */}
-        <div style={{ flex: 1, padding: '28px', backgroundColor: 'rgba(8, 4, 21, 0.7)', textAlign: 'left', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxSizing: 'border-box' }}>
+        <div style={{ flex: 1, padding: '28px', paddingBottom: '44px', backgroundColor: 'rgba(8, 4, 21, 0.7)', textAlign: 'left', display: 'flex', flexDirection: 'column', overflowY: 'auto', boxSizing: 'border-box' }}>
           {activeTab === 'overview' ? (
             /* State 1: Overview */
-            <div style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%', justifyContent: 'space-between', gap: '20px' }}>
               <div>
                 <div style={{ color: '#00f3ff', fontSize: '11px', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '4px' }}>
                   STUDENT PORTAL NODE
@@ -365,7 +365,7 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
             </div>
           ) : (
             /* State 2: Complete Profile (The Form) */
-            <form onSubmit={handleSubmitProfile} style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
+            <form onSubmit={handleSubmitProfile} style={{ display: 'flex', flexDirection: 'column', minHeight: '100%', justifyContent: 'space-between', gap: '24px', paddingBottom: '24px' }}>
               <div>
                 <div style={{ color: '#00f3ff', fontSize: '11px', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '4px' }}>
                   ACADEMIC REGISTRATION

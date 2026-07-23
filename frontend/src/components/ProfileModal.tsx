@@ -125,22 +125,23 @@ export default function ProfileModal({ isOpen = true, user: initialUser, onClose
       <div
         style={{
           width: '100%',
-          maxWidth: '400px',
-          maxHeight: '85vh',
+          maxWidth: '420px',
+          maxHeight: '90vh',
           overflowY: 'auto',
-          backgroundColor: 'rgba(10, 8, 22, 0.92)',
+          backgroundColor: 'rgba(10, 8, 22, 0.94)',
           backdropFilter: 'blur(30px)',
           WebkitBackdropFilter: 'blur(30px)',
           border: '1px solid rgba(255, 255, 255, 0.18)',
           borderRadius: '28px',
           padding: '24px',
+          paddingBottom: '36px',
           boxShadow: '0 25px 60px rgba(0, 0, 0, 0.9), 0 0 40px rgba(0, 243, 255, 0.2)',
           position: 'relative',
           color: '#ffffff',
           zIndex: 999999,
           boxSizing: 'border-box',
         }}
-        className="w-full max-w-sm bg-[#0a0816]/95 backdrop-blur-3xl border border-white/20 rounded-[28px] p-6 shadow-[0_0_50px_rgba(0,243,255,0.2)] relative max-h-[85vh] overflow-y-auto custom-scrollbar text-white transition-all duration-300"
+        className="w-full max-w-md bg-[#0a0816]/95 backdrop-blur-3xl border border-white/20 rounded-[28px] p-6 pb-9 shadow-[0_0_50px_rgba(0,243,255,0.2)] relative max-h-[90vh] overflow-y-auto custom-scrollbar text-white transition-all duration-300"
         onClick={(e) => e.stopPropagation()}
         onPointerDown={(e) => e.stopPropagation()}
       >
