@@ -152,6 +152,36 @@ def logout(response: Response, request: Request):
     )
     return {"message": "Successfully logged out"}
 
+def send_smtp_email(to_email: str, subject: str, html_content: str) -> bool:
+    import smtplib
+    from email.mime.text import MIMEText
+    from email.mime.multipart import MIMEMultipart
+
+    smtp_user = getattr(settings, "SMTP_USER", None)
+    smtp_password = getattr(settings, "SMTP_PASSWORD", None)
+
+    if not smtp_user or not smtp_password:
+        return False
+
+    try:
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = subject
+        msg["From"] = f"Envision TechFest <{smtp_user}>"
+        msg["To"] = to_email
+        msg.attach(MIMEText(html_content, "html"))
+
+        clean_pwd = smtp_password.replace(" ", "").strip()
+
+        with smtplib.SMTP("smtp.gmail.com", 587, timeout=8) as server:
+            server.starttls()
+            server.login(smtp_user, clean_pwd)
+            server.sendmail(smtp_user, [to_email], msg.as_string())
+        print(f"[+] Successfully dispatched magic email to {to_email} via Gmail SMTP")
+        return True
+    except Exception as e:
+        print(f"[!] Gmail SMTP Delivery Error: {e}")
+        return False
+
 @router.post("/magic-link", response_model=MagicLinkResponse)
 @limiter.limit("3/minute")
 def send_magic_link(request: Request, request_data: MagicLinkRequest, db: Session = Depends(get_db)):
@@ -186,6 +216,28 @@ def send_magic_link(request: Request, request_data: MagicLinkRequest, db: Sessio
     frontend_url = get_frontend_url(request)
     magic_url = f"{frontend_url}/login?magic_token={magic_token}"
 
+    html_content = f"""
+    <div style="font-family: Arial, sans-serif; background-color: #060212; color: #ffffff; padding: 30px; border-radius: 10px;">
+        <h2 style="color: #00f3ff; text-transform: uppercase;">Welcome to Envision TechFest</h2>
+        <p>Hello <strong>{user.name}</strong>,</p>
+        <p>Click the button below to complete your sign-in to Envision TechFest:</p>
+        <p style="margin: 25px 0;">
+            <a href="{magic_url}" style="background: #a855f7; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                SIGN IN TO TECHFEST
+            </a>
+        </p>
+        <p style="color: #888; font-size: 12px;">Your Fest ID: <strong>{user.fest_id}</strong></p>
+    </div>
+    """
+
+    # 1. Try Gmail SMTP first if configured (Works for ANY email without custom domain!)
+    if send_smtp_email(email, "⚡ Your Magic Invitation Link for Envision TechFest", html_content):
+        return {
+            "message": f"Magic invitation link sent to {email}! Please check your inbox.",
+            "magic_url": magic_url
+        }
+
+    # 2. Fallback to Resend API
     resend_success = False
     resend_error = None
     try:
@@ -197,19 +249,7 @@ def send_magic_link(request: Request, request_data: MagicLinkRequest, db: Sessio
             "from": "Envision TechFest <onboarding@resend.dev>",
             "to": [email],
             "subject": "⚡ Your Magic Invitation Link for Envision TechFest",
-            "html": f"""
-            <div style="font-family: Arial, sans-serif; background-color: #060212; color: #ffffff; padding: 30px; border-radius: 10px;">
-                <h2 style="color: #00f3ff; text-transform: uppercase;">Welcome to Envision TechFest</h2>
-                <p>Hello <strong>{user.name}</strong>,</p>
-                <p>Click the button below to complete your sign-in to Envision TechFest:</p>
-                <p style="margin: 25px 0;">
-                    <a href="{magic_url}" style="background: #a855f7; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-                        SIGN IN TO TECHFEST
-                    </a>
-                </p>
-                <p style="color: #888; font-size: 12px;">Your Fest ID: <strong>{user.fest_id}</strong></p>
-            </div>
-            """
+            "html": html_content
         }
         resp = requests.post("https://api.resend.com/emails", json=resend_payload, headers=resend_headers, timeout=5)
         if resp.status_code in (200, 201):
