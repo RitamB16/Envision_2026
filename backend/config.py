@@ -16,8 +16,8 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_ID: str
     GOOGLE_CLIENT_SECRET: str
     RESEND_API_KEY: str
-    SMTP_USER: Optional[str] = None
-    SMTP_PASSWORD: Optional[str] = None
+    SMTP_USER: Optional[str] = "ritambera6969@gmail.com"
+    SMTP_PASSWORD: Optional[str] = "gbcu aksx mbff pwyi"
     UPSTASH_REDIS_REST_URL: str
     UPSTASH_REDIS_REST_TOKEN: str
     CLOUDINARY_CLOUD_NAME: str
