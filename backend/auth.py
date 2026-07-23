@@ -8,7 +8,7 @@ from google.auth.transport import requests as google_requests
 
 from database import get_db
 from models import User
-from schemas import GoogleToken, TokenResponse, MagicLinkRequest, MagicLinkResponse
+from schemas import GoogleToken, TokenResponse, MagicLinkRequest, MagicLinkResponse, InstantLoginRequest
 from security import create_access_token
 from config import settings
 
@@ -152,6 +152,36 @@ def logout(response: Response, request: Request):
     )
     return {"message": "Successfully logged out"}
 
+def send_brevo_email(to_email: str, subject: str, html_content: str) -> bool:
+    import requests
+    brevo_api_key = getattr(settings, "BREVO_API_KEY", None)
+    if not brevo_api_key:
+        return False
+
+    try:
+        sender_email = getattr(settings, "SMTP_USER", "ritambera6969@gmail.com")
+        headers = {
+            "api-key": brevo_api_key,
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        }
+        payload = {
+            "sender": {"name": "Envision TechFest", "email": sender_email},
+            "to": [{"email": to_email}],
+            "subject": subject,
+            "htmlContent": html_content
+        }
+        resp = requests.post("https://api.brevo.com/v3/smtp/email", json=payload, headers=headers, timeout=5)
+        if resp.status_code in (200, 201):
+            print(f"[+] Brevo HTTP Email successfully sent to {to_email}")
+            return True
+        else:
+            print(f"[!] Brevo HTTP Error ({resp.status_code}): {resp.text}")
+            return False
+    except Exception as e:
+        print(f"[!] Brevo HTTP Notice: {e}")
+        return False
+
 def send_smtp_email(to_email: str, subject: str, html_content: str) -> bool:
     import smtplib
     from email.mime.text import MIMEText
@@ -181,6 +211,52 @@ def send_smtp_email(to_email: str, subject: str, html_content: str) -> bool:
     except Exception as e:
         print(f"[!] Gmail SMTP Delivery Error: {e}")
         return False
+
+@router.post("/instant-login", response_model=TokenResponse)
+@limiter.limit("10/minute")
+def instant_login(
+    request: Request,
+    response: Response,
+    payload: InstantLoginRequest,
+    db: Session = Depends(get_db)
+):
+    """Direct instant on-screen sign-in and sign-up without email dependency."""
+    email = payload.email.strip().lower()
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raw_name = payload.name.strip() if payload.name and payload.name.strip() else email.split('@')[0].capitalize()
+        fest_id = generate_fest_id(db)
+        user = User(
+            email=email,
+            name=raw_name,
+            fest_id=fest_id
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+    else:
+        if not user.fest_id or not user.fest_id.startswith("ENV-2026-") or not user.fest_id.replace("ENV-2026-", "").isdigit():
+            user.fest_id = generate_fest_id(db)
+        if payload.name and payload.name.strip() and user.name != payload.name.strip():
+            user.name = payload.name.strip()
+        db.commit()
+        db.refresh(user)
+
+    access_token = create_access_token(
+        data={
+            "sub": user.id,
+            "role": user.role,
+            "fest_id": user.fest_id
+        }
+    )
+
+    set_auth_cookie(response, request, access_token)
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": user
+    }
 
 @router.post("/magic-link", response_model=MagicLinkResponse)
 @limiter.limit("3/minute")
@@ -230,7 +306,14 @@ def send_magic_link(request: Request, request_data: MagicLinkRequest, db: Sessio
     </div>
     """
 
-    # 1. Try Gmail SMTP first if configured (Works for ANY email without custom domain!)
+    # 1. Try Brevo HTTP API (Port 443 HTTPS - Never blocked by Render cloud!)
+    if send_brevo_email(email, "⚡ Your Magic Invitation Link for Envision TechFest", html_content):
+        return {
+            "message": f"Magic invitation link sent to {email}! Please check your inbox.",
+            "magic_url": magic_url
+        }
+
+    # 2. Try Gmail SMTP (Port 587 - Works on localhost)
     if send_smtp_email(email, "⚡ Your Magic Invitation Link for Envision TechFest", html_content):
         return {
             "message": f"Magic invitation link sent to {email}! Please check your inbox.",

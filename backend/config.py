@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     RESEND_API_KEY: str
     SMTP_USER: Optional[str] = "ritambera6969@gmail.com"
     SMTP_PASSWORD: Optional[str] = "gbcu aksx mbff pwyi"
+    BREVO_API_KEY: Optional[str] = None
     UPSTASH_REDIS_REST_URL: str
     UPSTASH_REDIS_REST_TOKEN: str
     CLOUDINARY_CLOUD_NAME: str

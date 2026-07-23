@@ -42,6 +42,10 @@ class TokenResponse(BaseModel):
 class MagicLinkRequest(BaseModel):
     email: EmailStr
 
+class InstantLoginRequest(BaseModel):
+    email: EmailStr
+    name: Optional[str] = None
+
 class MagicLinkResponse(BaseModel):
     message: str
     magic_url: Optional[str] = None
