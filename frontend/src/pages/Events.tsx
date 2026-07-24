@@ -1749,29 +1749,37 @@ export default function Events({ onBack: _onBack }: Props) {
                     />
                   </div>
 
-                  {/* Dynamic Teammate Member Cards (Allows adding 1 or 2 extra members up to max_team_size - 1) */}
-                  <div className="flex items-center justify-between mt-1 mb-1">
-                    <span className="text-[10px] font-mono text-cyan-400 font-bold uppercase">
-                      Teammate Details ({teammatesCount} of max {selectedEvent.max_team_size - 1} extra member{selectedEvent.max_team_size > 2 ? 's' : ''})
-                    </span>
-                    {selectedEvent.max_team_size > 2 && (
-                      <div className="flex items-center gap-2">
+                  {/* Dynamic Teammate Member Cards (Allows adding 0 to max_team_size - 1 extra members) */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mt-2 mb-2 pt-2.5 border-t border-white/10">
+                    <div>
+                      <span className="text-xs font-mono text-cyan-300 font-extrabold uppercase block tracking-wider">
+                        ADDITIONAL TEAMMATES ({teammatesCount} of max {selectedEvent.max_team_size - 1})
+                      </span>
+                      <span className="text-[10.5px] text-gray-300 font-sans block mt-0.5">
+                        Fill teammate details below or click remove to register solo
+                      </span>
+                    </div>
+
+                    {selectedEvent.max_team_size > 1 && (
+                      <div className="flex items-center gap-2 self-stretch sm:self-auto">
                         {teammatesCount < selectedEvent.max_team_size - 1 && (
                           <button
                             type="button"
                             onClick={() => setTeammatesCount(prev => Math.min(prev + 1, selectedEvent.max_team_size - 1))}
-                            className="px-2 py-0.5 text-[9px] font-mono font-bold bg-cyan-500/20 border border-cyan-400/60 text-cyan-300 rounded hover:bg-cyan-500/40 cursor-pointer"
+                            className="flex-1 sm:flex-none px-3.5 py-2 text-xs font-mono font-extrabold bg-cyan-500/20 hover:bg-cyan-500/35 border border-cyan-400/60 text-cyan-200 rounded-xl transition-all whitespace-nowrap cursor-pointer flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(0,243,255,0.15)]"
                           >
-                            + ADD TEAMMATE {teammatesCount + 1}
+                            <span className="text-sm">+</span>
+                            <span>ADD TEAMMATE {teammatesCount + 1}</span>
                           </button>
                         )}
                         {teammatesCount > 0 && (
                           <button
                             type="button"
                             onClick={() => setTeammatesCount(prev => Math.max(prev - 1, 0))}
-                            className="px-2 py-0.5 text-[9px] font-mono font-bold bg-red-500/20 border border-red-400/60 text-red-300 rounded hover:bg-red-500/40 cursor-pointer"
+                            className="flex-1 sm:flex-none px-3.5 py-2 text-xs font-mono font-extrabold bg-red-500/20 hover:bg-red-500/35 border border-red-400/60 text-red-300 rounded-xl transition-all whitespace-nowrap cursor-pointer flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(239,68,68,0.15)]"
                           >
-                            - REMOVE TEAMMATE
+                            <span className="text-sm">-</span>
+                            <span>REMOVE TEAMMATE</span>
                           </button>
                         )}
                       </div>
@@ -1779,22 +1787,22 @@ export default function Events({ onBack: _onBack }: Props) {
                   </div>
 
                   {Array.from({ length: teammatesCount }).map((_, idx) => (
-                    <div key={idx} className="p-3 rounded-xl bg-black/50 border border-cyan-500/30 flex flex-col gap-2">
-                      <div className="flex items-center justify-between border-b border-white/10 pb-1.5 mb-1">
-                        <span className="text-[10.5px] font-mono font-bold text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
+                    <div key={idx} className="p-3.5 rounded-xl bg-black/60 border border-cyan-500/40 flex flex-col gap-2.5 shadow-md">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/10 pb-2 mb-1 gap-1">
+                        <span className="text-[11.5px] font-mono font-bold text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
                           <span>👤</span> MEMBER {idx + 2} (TEAMMATE {idx + 1}) DETAILS
                         </span>
-                        <span className="text-[9px] font-mono text-purple-300 bg-purple-900/60 px-2 py-0.5 rounded-full border border-purple-500/40">
+                        <span className="text-[10px] font-mono text-purple-300 bg-purple-900/60 px-2.5 py-0.5 rounded-full border border-purple-500/40 self-start sm:self-auto">
                           AUTO-GENERATES FEST ID
                         </span>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
                         <div>
-                          <label className="text-[9.5px] font-mono text-gray-300 mb-0.5 block">Full Name *</label>
+                          <label className="text-[10.5px] font-mono text-cyan-400 font-bold mb-1 block">Full Name *</label>
                           <input
                             type="text"
-                            className="reg-input text-xs"
+                            className="reg-input text-xs min-h-[42px]"
                             placeholder="e.g. Alex Hunter"
                             value={teammates[idx]?.name || ''}
                             onChange={e => handleTeammateDetailChange(idx, 'name', e.target.value)}
@@ -1802,10 +1810,10 @@ export default function Events({ onBack: _onBack }: Props) {
                           />
                         </div>
                         <div>
-                          <label className="text-[9.5px] font-mono text-gray-300 mb-0.5 block">Email Address *</label>
+                          <label className="text-[10.5px] font-mono text-cyan-400 font-bold mb-1 block">Email Address *</label>
                           <input
                             type="email"
-                            className="reg-input text-xs"
+                            className="reg-input text-xs min-h-[42px]"
                             placeholder="alex@gmail.com"
                             value={teammates[idx]?.email || ''}
                             onChange={e => handleTeammateDetailChange(idx, 'email', e.target.value)}
@@ -1813,20 +1821,20 @@ export default function Events({ onBack: _onBack }: Props) {
                           />
                         </div>
                         <div>
-                          <label className="text-[9.5px] font-mono text-gray-300 mb-0.5 block">Mobile No</label>
+                          <label className="text-[10.5px] font-mono text-gray-300 mb-1 block">Mobile No</label>
                           <input
                             type="tel"
-                            className="reg-input text-xs"
+                            className="reg-input text-xs min-h-[42px]"
                             placeholder="10-digit Phone No"
                             value={teammates[idx]?.phone || ''}
                             onChange={e => handleTeammateDetailChange(idx, 'phone', e.target.value)}
                           />
                         </div>
                         <div>
-                          <label className="text-[9.5px] font-mono text-gray-300 mb-0.5 block">College Name</label>
+                          <label className="text-[10.5px] font-mono text-gray-300 mb-1 block">College Name</label>
                           <input
                             type="text"
-                            className="reg-input text-xs"
+                            className="reg-input text-xs min-h-[42px]"
                             placeholder="e.g. RKMRC Belur Math"
                             value={teammates[idx]?.college || ''}
                             onChange={e => handleTeammateDetailChange(idx, 'college', e.target.value)}
