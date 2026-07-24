@@ -1,7 +1,7 @@
-import React, { Suspense, useRef, useCallback, useEffect } from 'react';
+import React, { Suspense, useRef, useCallback, useEffect, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { EffectComposer, Bloom, Noise } from '@react-three/postprocessing';
-import { Environment } from '@react-three/drei';
+import { Environment, PerformanceMonitor } from '@react-three/drei';
 import * as THREE from 'three';
 import City from './City';
 import Car from './Car';
@@ -189,17 +189,15 @@ const SceneContainer: React.FC<SceneContainerProps> = ({
     }
   }, [cameraMode, carState, manager, isPageActive]);
 
-  // Dynamic crisp pixel density: 1.25 DPR on mobile, 1.35 on desktop for ultra-sharp visuals without frame drops
-  const canvasDpr = isMobile 
-    ? Math.min(window.devicePixelRatio, 1.25) 
-    : Math.min(window.devicePixelRatio, 1.35);
+  // Dynamic pixel density with automatic GPU performance monitoring
+  const [dpr, setDpr] = useState<number>(isMobile ? 1.0 : 1.25);
 
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'fixed', top: 0, left: 0 }}>
       <Canvas 
         frameloop="always"
         shadows={!isMobile} 
-        dpr={canvasDpr} 
+        dpr={dpr} 
         camera={{ position: [0, 10, 20], fov: 50 }}
         gl={{ 
           antialias: true, 
@@ -211,6 +209,10 @@ const SceneContainer: React.FC<SceneContainerProps> = ({
           depth: true
         }}
       >
+        <PerformanceMonitor 
+          onIncline={() => setDpr(isMobile ? 1.25 : 1.5)} 
+          onDecline={() => setDpr(0.75)} 
+        />
         <color attach="background" args={['#030108']} />
         <fog attach="fog" args={['#030108', 35, 210]} />
         <ambientLight intensity={0.08} color="#18244a" />
