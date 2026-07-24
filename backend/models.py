@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime, timezone
 from sqlalchemy import Column, String, Boolean, DateTime, Integer, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import synonym
 from database import Base
 
 class User(Base):
@@ -16,17 +17,10 @@ class User(Base):
     college = Column(String, nullable=True)
     food_pref = Column(String, nullable=True)
 
-    @property
-    def phone(self):
-        return self.mobile
-
-    @phone.setter
-    def phone(self, value):
-        self.mobile = value
-
-    @property
-    def fest_id(self):
-        return self.env_id or "ENV-2026-000"
+    # Synonyms for SQL expressions and attribute access
+    phone = synonym("mobile")
+    fest_id = synonym("env_id")
+    full_name = synonym("name")
 
     @property
     def role(self):
@@ -62,9 +56,7 @@ class Team(Base):
     event_name = Column(String, nullable=False)
     leader_id = Column(UUID(as_uuid=True), ForeignKey("participants.id", ondelete="CASCADE"), nullable=False)
 
-    @property
-    def id(self):
-        return str(self.team_id)
+    id = synonym("team_id")
 
 
 class Registration(Base):
@@ -78,33 +70,12 @@ class Registration(Base):
     payment_status = Column(String, nullable=False, default="PENDING")
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
 
-    @property
-    def id(self):
-        return str(self.reg_id)
-
-    @property
-    def user_id(self):
-        return str(self.participant_id)
-
-    @property
-    def event_id(self):
-        return self.event_name
-
-    @property
-    def transaction_id(self):
-        return self.payment_order_id
-
-    @transaction_id.setter
-    def transaction_id(self, val):
-        self.payment_order_id = val
-
-    @property
-    def status(self):
-        return self.payment_status
-
-    @status.setter
-    def status(self, val):
-        self.payment_status = val
+    # Synonyms for SQL expressions and attribute access
+    id = synonym("reg_id")
+    user_id = synonym("participant_id")
+    event_id = synonym("event_name")
+    transaction_id = synonym("payment_order_id")
+    status = synonym("payment_status")
 
 
 # Compatibility alias for legacy handlers

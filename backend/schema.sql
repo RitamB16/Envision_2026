@@ -1,13 +1,17 @@
 -- =================================================================
 -- ENVISION'26 SUPABASE DATABASE SETUP SCHEMA
+-- Drops all tables EXCEPT 'events' (preserves event catalog data)
+-- Recreates clean participants, teams, and registrations tables.
 -- =================================================================
 
--- 1. DROP existing tables and objects to start clean
+-- 1. DROP existing triggers, functions, and non-events tables
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 DROP FUNCTION IF EXISTS public.handle_new_user() CASCADE;
 DROP TABLE IF EXISTS public.registrations CASCADE;
+DROP TABLE IF EXISTS public.event_registrations CASCADE;
 DROP TABLE IF EXISTS public.teams CASCADE;
 DROP TABLE IF EXISTS public.participants CASCADE;
+DROP TABLE IF EXISTS public.users CASCADE;
 DROP SEQUENCE IF EXISTS participants_env_id_seq CASCADE;
 
 -- Create sequence for ENV ID generation

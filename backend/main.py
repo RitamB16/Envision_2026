@@ -21,10 +21,36 @@ app = FastAPI(title=settings.PROJECT_NAME)
 
 @app.on_event("startup")
 async def startup_event():
+    # Auto-Migration Check: Detect legacy tables and drop all tables EXCEPT 'events' to recreate clean schema
+    try:
+        from sqlalchemy import text
+        with engine.connect() as conn:
+            teams_table_exists = conn.execute(text(
+                "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'teams');"
+            )).scalar()
+            
+            if teams_table_exists:
+                team_id_col_exists = conn.execute(text(
+                    "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'teams' AND column_name = 'team_id');"
+                )).scalar()
+                
+                if not team_id_col_exists:
+                    print("[!] Auto-Cleanup: Dropping all legacy tables except 'events'...")
+                    conn.execute(text("DROP TABLE IF EXISTS registrations CASCADE;"))
+                    conn.execute(text("DROP TABLE IF EXISTS event_registrations CASCADE;"))
+                    conn.execute(text("DROP TABLE IF EXISTS teams CASCADE;"))
+                    conn.execute(text("DROP TABLE IF EXISTS participants CASCADE;"))
+                    conn.execute(text("DROP TABLE IF EXISTS users CASCADE;"))
+                    conn.commit()
+    except Exception as migration_err:
+        print(f"[!] Migration Check Notice: {migration_err}")
+
     try:
         Base.metadata.create_all(bind=engine)
+        print("✅ Database tables (participants, teams, registrations) created/verified successfully!")
     except Exception as e:
         print(f"[!] Warning: Could not initialize DB tables on startup: {e}")
+
     await init_cache()
     asyncio.create_task(cleanup_expired_registrations())
 
