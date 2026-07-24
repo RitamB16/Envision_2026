@@ -107,6 +107,19 @@ class EventRegistrationResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+class TeamInviteCreate(BaseModel):
+    email: EmailStr
+
+class TeamInviteResponse(BaseModel):
+    id: str
+    team_id: str
+    event_id: str
+    invited_email: str
+    invite_token: str
+    invite_url: str
+    status: str
+    message: str
+
 class SoloRegistrationCreate(BaseModel):
     event_name: str
     name: str
