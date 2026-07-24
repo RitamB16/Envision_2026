@@ -94,8 +94,8 @@ const Car = ({ activeTargetId, introFinished, carState, onCarArrived, onSetCarSt
               clearcoat: 1.0,
               clearcoatRoughness: 0.02,
               envMapIntensity: 2.5, // Pristine wet-look showroom finish
-              normalMap: mat.normalMap,
-              normalScale: mat.normalScale
+              ...(mat.normalMap ? { normalMap: mat.normalMap } : {}),
+              ...(mat.normalScale ? { normalScale: mat.normalScale } : {})
             });
             child.material = cloneMat;
           }
