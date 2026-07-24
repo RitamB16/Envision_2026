@@ -2,6 +2,12 @@ import React, { useEffect } from 'react';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 
+const isMobile = typeof window !== 'undefined' && (
+  /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+  window.innerWidth <= 768 ||
+  (navigator.maxTouchPoints > 0 && /Macintosh|Intel/i.test(navigator.userAgent))
+);
+
 const City: React.FC = () => {
   const { scene } = useGLTF('/models/city_optimized.glb');
 
@@ -20,10 +26,10 @@ const City: React.FC = () => {
         child.receiveShadow = isRoadOrGround;
 
         if (!isProcessed && mat) {
-          // Identify materials with GLOW in the name and boost their emissive intensity
+          // Identify materials with GLOW in the name and balance their emissive intensity
           if (mat.name && (mat.name.toUpperCase().includes('GLOW') || mat.name.toLowerCase().includes('neon') || mat.name.toLowerCase().includes('light'))) {
             const cloneMat = mat.clone();
-            cloneMat.emissiveIntensity = 2.2;
+            cloneMat.emissiveIntensity = isMobile ? 0.95 : 1.35;
             // Also ensure it actually emits color
             if (cloneMat.emissive.getHex() === 0x000000 && cloneMat.color) {
               cloneMat.emissive.copy(cloneMat.color);

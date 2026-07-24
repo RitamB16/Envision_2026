@@ -26,38 +26,40 @@ interface Props {
 const Streetlights = ({ introFinished }: { introFinished: boolean }) => {
   const groupRef = useRef<THREE.Group>(null);
   const lightsRef = useRef<THREE.PointLight[]>([]);
-  const lightPositions = [
+  const basePositions = [
     [-300, 10, -75], [-250, 10, -75], [-200, 10, -75], [-150, 10, -75],
     [-100, 10, -75], [-50, 10, -75], [0, 10, -75], [50, 10, -75]
   ];
+  const activePositions = isMobile ? basePositions.filter((_, i) => i % 2 === 0) : basePositions;
+  const targetIntensity = isMobile ? 0.75 : 1.05;
 
   useFrame((state) => {
     if (!introFinished) {
       const time = state.clock.getElapsedTime();
       lightsRef.current.forEach((light, i) => {
         if (time > i * 0.2) {
-          light.intensity = THREE.MathUtils.lerp(light.intensity, 1.8, 0.2);
+          light.intensity = THREE.MathUtils.lerp(light.intensity, targetIntensity, 0.2);
         } else {
           light.intensity = 0;
         }
       });
     } else {
-      // Once intro is finished, only assign intensity if not already set to full (avoids dynamic updates)
-      if (lightsRef.current.length > 0 && lightsRef.current[0].intensity !== 1.8) {
-        lightsRef.current.forEach(light => light.intensity = 1.8);
+      // Once intro is finished, assign steady target intensity once
+      if (lightsRef.current.length > 0 && lightsRef.current[0].intensity !== targetIntensity) {
+        lightsRef.current.forEach(light => light.intensity = targetIntensity);
       }
     }
   });
 
   return (
     <group ref={groupRef}>
-      {lightPositions.map((pos, i) => (
+      {activePositions.map((pos, i) => (
         <pointLight 
           key={i}
           ref={(el) => el && (lightsRef.current[i] = el)}
           position={[pos[0], pos[1], pos[2]]} 
           color="#ffddaa" 
-          distance={100} 
+          distance={65} 
           decay={2}
           intensity={0} 
         />
