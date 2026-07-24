@@ -126,6 +126,7 @@ interface TeammateInput {
   email: string;
   phone: string;
   college: string;
+  food_preference: string;
 }
 
 interface Props {
@@ -220,10 +221,10 @@ export default function Events({ onBack: _onBack }: Props) {
   const [foodPreference, setFoodPreference] = useState<string>('Veg');
   const [teamName, setTeamName] = useState<string>('');
   const [teammates, setTeammates] = useState<TeammateInput[]>([
-    { name: '', email: '', phone: '', college: '' },
-    { name: '', email: '', phone: '', college: '' },
-    { name: '', email: '', phone: '', college: '' },
-    { name: '', email: '', phone: '', college: '' }
+    { name: '', email: '', phone: '', college: '', food_preference: 'Veg' },
+    { name: '', email: '', phone: '', college: '', food_preference: 'Veg' },
+    { name: '', email: '', phone: '', college: '', food_preference: 'Veg' },
+    { name: '', email: '', phone: '', college: '', food_preference: 'Veg' }
   ]);
 
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -287,7 +288,7 @@ export default function Events({ onBack: _onBack }: Props) {
   const handleTeammateDetailChange = (index: number, field: keyof TeammateInput, value: string) => {
     const updated = [...teammates];
     if (!updated[index]) {
-      updated[index] = { name: '', email: '', phone: '', college: '' };
+      updated[index] = { name: '', email: '', phone: '', college: '', food_preference: 'Veg' };
     }
     updated[index] = { ...updated[index], [field]: value };
     setTeammates(updated);
@@ -322,7 +323,8 @@ export default function Events({ onBack: _onBack }: Props) {
             name: tm.name.trim(),
             email: tm.email.trim(),
             phone: tm.phone.trim() || undefined,
-            college: tm.college.trim() || undefined
+            college: tm.college.trim() || undefined,
+            food_preference: selectedEvent.has_food ? (tm.food_preference || 'Veg') : undefined
           }));
         payload.teammate_details = activeTeammates;
       }
@@ -1572,19 +1574,24 @@ export default function Events({ onBack: _onBack }: Props) {
 
               {/* Conditional Food Preference Dropdown (Only rendered if selectedEvent.has_food is true) */}
               {selectedEvent.has_food && (
-                <div className="reg-input-group reg-select-wrapper">
-                  <select
-                    className="reg-input reg-select"
-                    value={foodPreference}
-                    onChange={e => setFoodPreference(e.target.value)}
-                    required
-                  >
-                    <option value="Veg">Veg (Vegetarian Meal)</option>
-                    <option value="Non-Veg">Non-Veg (Non-Vegetarian Meal)</option>
-                  </select>
-                  <svg className="reg-select-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
+                <div className="reg-input-group">
+                  <label className="text-[10px] font-mono text-cyan-400 font-bold uppercase mb-1 block">
+                    🍱 Member 1 (Team Leader - You) Food Preference *
+                  </label>
+                  <div className="reg-select-wrapper">
+                    <select
+                      className="reg-input reg-select"
+                      value={foodPreference}
+                      onChange={e => setFoodPreference(e.target.value)}
+                      required
+                    >
+                      <option value="Veg">Veg (Vegetarian Meal Pass)</option>
+                      <option value="Non-Veg">Non-Veg (Non-Vegetarian Meal Pass)</option>
+                    </select>
+                    <svg className="reg-select-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                  </div>
                 </div>
               )}
 
@@ -1618,7 +1625,7 @@ export default function Events({ onBack: _onBack }: Props) {
                     <div key={idx} className="p-3 rounded-xl bg-black/50 border border-cyan-500/30 flex flex-col gap-2">
                       <div className="flex items-center justify-between border-b border-white/10 pb-1.5 mb-1">
                         <span className="text-[10.5px] font-mono font-bold text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
-                          <span>👤</span> TEAMMATE {idx + 1} DETAILS
+                          <span>👤</span> MEMBER {idx + 2} (TEAMMATE {idx + 1}) DETAILS
                         </span>
                         <span className="text-[9px] font-mono text-purple-300 bg-purple-900/60 px-2 py-0.5 rounded-full border border-purple-500/40">
                           AUTO-GENERATES FEST ID
@@ -1668,6 +1675,28 @@ export default function Events({ onBack: _onBack }: Props) {
                             onChange={e => handleTeammateDetailChange(idx, 'college', e.target.value)}
                           />
                         </div>
+
+                        {selectedEvent.has_food && (
+                          <div className="md:col-span-2 mt-1">
+                            <label className="text-[10px] font-mono text-cyan-300 font-bold uppercase mb-1 block">
+                              🍱 Member {idx + 2} (Teammate {idx + 1}) Food Preference *
+                            </label>
+                            <div className="reg-select-wrapper">
+                              <select
+                                className="reg-input reg-select text-xs"
+                                value={teammates[idx]?.food_preference || 'Veg'}
+                                onChange={e => handleTeammateDetailChange(idx, 'food_preference', e.target.value)}
+                                required
+                              >
+                                <option value="Veg">Veg (Vegetarian Meal Pass)</option>
+                                <option value="Non-Veg">Non-Veg (Non-Vegetarian Meal Pass)</option>
+                              </select>
+                              <svg className="reg-select-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="6 9 12 15 18 9" />
+                              </svg>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}

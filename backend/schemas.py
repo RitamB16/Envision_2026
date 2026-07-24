@@ -73,6 +73,7 @@ class TeammateDetail(BaseModel):
     email: EmailStr
     phone: Optional[str] = None
     college: Optional[str] = None
+    food_preference: Optional[str] = "Veg"
 
 class EventRegistrationCreate(BaseModel):
     event_id: str

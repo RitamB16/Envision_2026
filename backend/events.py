@@ -316,6 +316,7 @@ def register_for_event(
         teammates_to_register = []
 
         # 1. Process full teammate details submitted directly by Team Leader
+        tm_food_map = {}
         if payload.teammate_details:
             if len(payload.teammate_details) > (event.max_team_size - 1):
                 raise HTTPException(
@@ -327,6 +328,9 @@ def register_for_event(
                 tm_email = tm_detail.email.strip().lower() if tm_detail.email else ""
                 if not tm_email or tm_email == current_user.email.lower():
                     continue
+
+                if tm_detail.food_preference and event.has_food:
+                    tm_food_map[tm_email] = tm_detail.food_preference
 
                 tm_name = tm_detail.name.strip() if tm_detail.name else tm_email.split('@')[0].capitalize()
                 tm_phone = tm_detail.phone.strip() if tm_detail.phone else None
@@ -397,11 +401,12 @@ def register_for_event(
             ).first()
 
             if not tm_existing:
+                tm_food_pref = tm_food_map.get(tm.email.lower(), food_pref) if event.has_food else None
                 tm_reg = models.EventRegistration(
                     user_id=tm.id,
                     event_id=event_id,
                     team_id=new_team_id,
-                    food_preference=food_pref,
+                    food_preference=tm_food_pref,
                     user_email=tm.email,
                     user_name=tm.full_name or tm.name,
                     user_phone=tm.phone or payload.phone,
