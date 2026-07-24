@@ -80,9 +80,9 @@ const getSkyFragmentShader = (mobileMode: boolean) => `
     float yFactor = clamp(dir.y, 0.0, 1.0);
     
     // --- Balanced Sunset Twilight Horizon Gradient ---
-    vec3 sunburstGold       = vec3(0.96, 0.55, 0.12);
-    vec3 sunsetFieryOrange  = vec3(0.92, 0.18, 0.06);
-    vec3 twilightPink       = vec3(0.78, 0.12, 0.50);
+    vec3 sunburstGold       = ${mobileMode ? 'vec3(0.76, 0.42, 0.22)' : 'vec3(0.96, 0.55, 0.12)'};
+    vec3 sunsetFieryOrange  = ${mobileMode ? 'vec3(0.70, 0.18, 0.22)' : 'vec3(0.92, 0.18, 0.06)'};
+    vec3 twilightPink       = vec3(0.72, 0.12, 0.50);
     vec3 duskCyanTeal       = vec3(0.02, 0.38, 0.68);
     vec3 deepNightBlue      = vec3(0.01, 0.04, 0.22);
 

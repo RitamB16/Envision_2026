@@ -136,17 +136,31 @@ const CameraRig = ({ activeTargetId, introFinished, cameraMode }: Props) => {
         if (elapsedSinceIntro < 3.0) {
           const alpha = elapsedSinceIntro / 3.0; // 0 to 1
 
-          // Slowly pan and descend showing the neon skyline and scale of the city
-          _targetCamPos.set(
-            THREE.MathUtils.lerp(-150, -250, alpha),
-            THREE.MathUtils.lerp(110, 55, alpha),
-            THREE.MathUtils.lerp(-50, -95, alpha)
-          );
-          _targetLookAtVal.set(
-            THREE.MathUtils.lerp(-180, -287.15, alpha),
-            THREE.MathUtils.lerp(5, 0.2, alpha),
-            THREE.MathUtils.lerp(-110, -143.65, alpha)
-          );
+          if (isMobile) {
+            // Dynamic mobile low-angle cinematic establishing shot panning across GT-R & city
+            _targetCamPos.set(
+              THREE.MathUtils.lerp(-220, -280, alpha),
+              THREE.MathUtils.lerp(32, 14, alpha),
+              THREE.MathUtils.lerp(-100, -135, alpha)
+            );
+            _targetLookAtVal.set(
+              THREE.MathUtils.lerp(-250, -287.15, alpha),
+              THREE.MathUtils.lerp(2, 0.5, alpha),
+              THREE.MathUtils.lerp(-120, -143.65, alpha)
+            );
+          } else {
+            // Desktop wide-angle aerial establishing shot
+            _targetCamPos.set(
+              THREE.MathUtils.lerp(-150, -250, alpha),
+              THREE.MathUtils.lerp(110, 55, alpha),
+              THREE.MathUtils.lerp(-50, -95, alpha)
+            );
+            _targetLookAtVal.set(
+              THREE.MathUtils.lerp(-180, -287.15, alpha),
+              THREE.MathUtils.lerp(5, 0.2, alpha),
+              THREE.MathUtils.lerp(-110, -143.65, alpha)
+            );
+          }
 
           if (!smoothedCamPos.current || !smoothedLookAt.current) {
             smoothedCamPos.current = _targetCamPos.clone();
