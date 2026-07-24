@@ -273,15 +273,11 @@ export default function Events({ onBack: _onBack }: Props) {
   }, [view, navigate, isNavigating]);
 
   const handleExplore = (event: EventData) => {
-    if (isNavigating) return;
-    setIsNavigating(true);
     setActiveTab('details');
     setSearchParams({ view: 'detail', id: event.id });
   };
 
   const handleRegister = (event: EventData, from: 'grid' | 'detail') => {
-    if (isNavigating) return;
-    setIsNavigating(true);
     setRegErrorMsg(null);
     setRegSuccessMsg(null);
     setMagicInviteUrl(null);
@@ -1260,14 +1256,12 @@ export default function Events({ onBack: _onBack }: Props) {
                     <button
                       className="btn-cyber-primary"
                       onClick={() => handleRegister(event, 'grid')}
-                      disabled={isNavigating}
                     >
                       REGISTER NOW
                     </button>
                     <button
                       className="btn-cyber-secondary"
                       onClick={() => handleExplore(event)}
-                      disabled={isNavigating}
                     >
                       DETAILS
                     </button>

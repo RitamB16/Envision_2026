@@ -398,6 +398,7 @@ h1, h2, h3, h4, .brand-font {
 .page-container.visible {
   opacity: 1;
   pointer-events: auto;
+  z-index: 500;
 }
 
 /* Custom Scrollbars inside tech card panels */

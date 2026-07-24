@@ -239,7 +239,7 @@ const NavDock: React.FC<Props> = ({ onNavigate, activeTargetId, carState, isPage
           position: absolute;
           inset: 0;
           pointer-events: none;
-          z-index: 80;
+          z-index: 9999;
           font-family: 'Outfit', sans-serif;
         }
 
@@ -327,7 +327,7 @@ const NavDock: React.FC<Props> = ({ onNavigate, activeTargetId, carState, isPage
           border: 1px solid rgba(255, 255, 255, 0.08);
           box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.03);
           align-items: center;
-          z-index: 10;
+          z-index: 99999;
           pointer-events: auto;
         }
 
@@ -436,7 +436,7 @@ const NavDock: React.FC<Props> = ({ onNavigate, activeTargetId, carState, isPage
           box-shadow: -5px 10px 40px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.02);
           clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%);
           align-items: center;
-          z-index: 10;
+          z-index: 99999;
           pointer-events: auto;
         }
 
@@ -990,7 +990,6 @@ const NavDock: React.FC<Props> = ({ onNavigate, activeTargetId, carState, isPage
             <button
               className={`sidebar-btn ${activeTargetId === null ? 'active' : ''}`}
               onClick={() => onNavigate('home')}
-              disabled={isNavDisabled}
             >
               <HomeIcon />
               <span className="sidebar-btn-label">Home</span>
@@ -1002,7 +1001,6 @@ const NavDock: React.FC<Props> = ({ onNavigate, activeTargetId, carState, isPage
                 key={dest.id}
                 className={`sidebar-btn ${activeTargetId === dest.id ? 'active' : ''}`}
                 onClick={() => onNavigate(dest.id)}
-                disabled={isNavDisabled}
               >
                 {getIcon(dest.id)}
                 <span className="sidebar-btn-label">{dest.displayName}</span>
@@ -1031,7 +1029,6 @@ const NavDock: React.FC<Props> = ({ onNavigate, activeTargetId, carState, isPage
             <button 
               className={`mobile-bottom-btn ${activeTargetId === null ? 'active' : ''}`}
               onClick={() => onNavigate('home')}
-              disabled={isNavDisabled}
             >
               <HomeIcon />
               <span>Home</span>
@@ -1039,7 +1036,6 @@ const NavDock: React.FC<Props> = ({ onNavigate, activeTargetId, carState, isPage
             <button 
               className={`mobile-bottom-btn ${activeTargetId === 'events' ? 'active' : ''}`}
               onClick={() => onNavigate('events')}
-              disabled={isNavDisabled}
             >
               <EventsIcon />
               <span>Events</span>
@@ -1047,7 +1043,6 @@ const NavDock: React.FC<Props> = ({ onNavigate, activeTargetId, carState, isPage
             <button 
               className={`mobile-bottom-btn ${activeTargetId === 'gallery' ? 'active' : ''}`}
               onClick={() => onNavigate('gallery')}
-              disabled={isNavDisabled}
             >
               <GalleryIcon />
               <span>Gallery</span>
@@ -1055,7 +1050,6 @@ const NavDock: React.FC<Props> = ({ onNavigate, activeTargetId, carState, isPage
             <button 
               className={`mobile-bottom-btn ${activeTargetId === 'coordinators' ? 'active' : ''}`}
               onClick={() => onNavigate('coordinators')}
-              disabled={isNavDisabled}
             >
               <AboutUsIcon />
               <span>About Us</span>
@@ -1080,7 +1074,6 @@ const NavDock: React.FC<Props> = ({ onNavigate, activeTargetId, carState, isPage
               <button 
                 className={`drawer-link ${activeTargetId === null ? 'active' : ''}`}
                 onClick={() => { onNavigate('home'); setIsDrawerOpen(false); }}
-                disabled={isNavDisabled}
               >
                 <HomeIcon />
                 <span>Home</span>
@@ -1088,7 +1081,6 @@ const NavDock: React.FC<Props> = ({ onNavigate, activeTargetId, carState, isPage
               <button 
                 className={`drawer-link ${activeTargetId === 'events' ? 'active' : ''}`}
                 onClick={() => { onNavigate('events'); setIsDrawerOpen(false); }}
-                disabled={isNavDisabled}
               >
                 <EventsIcon />
                 <span>Events</span>
@@ -1096,7 +1088,6 @@ const NavDock: React.FC<Props> = ({ onNavigate, activeTargetId, carState, isPage
               <button 
                 className={`drawer-link ${activeTargetId === 'gallery' ? 'active' : ''}`}
                 onClick={() => { onNavigate('gallery'); setIsDrawerOpen(false); }}
-                disabled={isNavDisabled}
               >
                 <GalleryIcon />
                 <span>Gallery</span>
@@ -1104,7 +1095,6 @@ const NavDock: React.FC<Props> = ({ onNavigate, activeTargetId, carState, isPage
               <button 
                 className={`drawer-link ${activeTargetId === 'coordinators' ? 'active' : ''}`}
                 onClick={() => { onNavigate('coordinators'); setIsDrawerOpen(false); }}
-                disabled={isNavDisabled}
               >
                 <AboutUsIcon />
                 <span>About Us</span>
@@ -1114,7 +1104,6 @@ const NavDock: React.FC<Props> = ({ onNavigate, activeTargetId, carState, isPage
               <button 
                 className={`drawer-link ${activeTargetId === 'alumni' ? 'active' : ''}`}
                 onClick={() => { onNavigate('alumni'); setIsDrawerOpen(false); }}
-                disabled={isNavDisabled}
               >
                 <AlumniIcon />
                 <span>Alumni</span>
@@ -1122,7 +1111,6 @@ const NavDock: React.FC<Props> = ({ onNavigate, activeTargetId, carState, isPage
               <button 
                 className={`drawer-link ${activeTargetId === 'sponsors' ? 'active' : ''}`}
                 onClick={() => { onNavigate('sponsors'); setIsDrawerOpen(false); }}
-                disabled={isNavDisabled}
               >
                 <PartnersIcon />
                 <span>Partners</span>

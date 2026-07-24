@@ -25,12 +25,12 @@ export type CameraMode = 'FOLLOW' | 'CINEMATIC' | 'PAGE' | 'RETURN';
 function AppContent() {
   const [loaded, setLoaded] = useState(false);
   const [introFinished, setIntroFinished] = useState(false);
-  
+
   // Strict States
   const [carState, setCarState] = useState<CarState>('PATROLLING');
   const [cameraMode, setCameraMode] = useState<CameraMode>('FOLLOW');
   const [activeTargetId, setActiveTargetId] = useState<string | null>(null);
-  
+
   const [isWiping, setIsWiping] = useState(false);
   const [isSignedUp, setIsSignedUp] = useState(() => {
     return !!localStorage.getItem('access_token') || localStorage.getItem('envision_user_signedup') === 'true';
@@ -51,17 +51,17 @@ function AppContent() {
 
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   // Mobile hamburger menu drawer active state
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  
+
   // Navigation lock ref to block duplicate asynchronous state clicks
   const navLockRef = useRef<{ id: string | null; time: number }>({ id: null, time: 0 });
 
   // Sync 3D scene state with pathname updates (handles native back/forward gestures)
   useEffect(() => {
     if (!introFinished) return;
-    
+
     if (location.pathname === '/') {
       setActiveTargetId(null);
       setCarState('PATROLLING');
@@ -95,7 +95,7 @@ function AppContent() {
 
   const handleSignUpNavigate = () => {
     if (isWiping || location.pathname === '/register') return;
-    
+
     const now = Date.now();
     navLockRef.current = { id: 'register', time: now };
 
@@ -112,54 +112,56 @@ function AppContent() {
   };
 
   const handleNavigate = (id: string) => {
-    const now = Date.now();
-    
     // Close mobile menu drawer on active navigate
     setIsDrawerOpen(false);
-    
-    // Ignore double clicks or immediate clicks within 1.2s to prevent loop re-queues
-    if (navLockRef.current.id !== null && (now - navLockRef.current.time < 1200 || navLockRef.current.id === id)) {
-      return;
-    }
-    
+
     if (id === 'home') {
-      if (location.pathname !== '/' || carState !== 'PATROLLING') {
-        navLockRef.current = { id: 'home', time: now };
+      if (location.pathname !== '/') {
         handleBackToCity();
       }
       return;
     }
+
     if (id === 'register') {
-      navLockRef.current = { id: 'register', time: now };
       handleSignUpNavigate();
       return;
     }
-    if (activeTargetId === id || isWiping || carState !== 'PATROLLING') return;
+
     const dest = destinations.find(d => d.id === id);
     if (!dest) return;
 
-    navLockRef.current = { id, time: now };
+    // If already on this exact page, do nothing
+    if (location.pathname === dest.path) return;
 
+    // Smoothly transition and open destination page instantly
     setActiveTargetId(id);
-    setCarState('TRAVELING');
+    setIsWiping(true);
+    setTimeout(() => {
+      navigate(dest.path);
+      setCameraMode('FOLLOW');
+      setCarState('PATROLLING');
+      setTimeout(() => {
+        setIsWiping(false);
+      }, 100);
+    }, 300);
   };
 
   const handleCarArrived = () => {
     if (carState !== 'TRAVELING') return;
-    
+
     setCarState('ARRIVED');
     setCameraMode('CINEMATIC');
-    
+
     // Play cinematic beat for 1.7s (held for a clear beat of ~1.5-2s), then wipe and route
     setTimeout(() => {
       setIsWiping(true);
       setTimeout(() => {
         const dest = destinations.find(d => d.id === activeTargetId);
         if (dest) navigate(dest.path);
-        
+
         setCameraMode('FOLLOW');
         setCarState('PATROLLING'); // GTR keeps driving in the background!
-        
+
         // Reset ref lock once page is rendered
         navLockRef.current = { id: activeTargetId, time: Date.now() };
 
@@ -179,7 +181,7 @@ function AppContent() {
       setCarState('RETURNING');
       setActiveTargetId(null);
       setCameraMode('FOLLOW');
-      
+
       // Brief delay before sliding back out to ensure first frame renders in snapped position
       setTimeout(() => {
         setIsWiping(false);
@@ -193,9 +195,9 @@ function AppContent() {
     <div style={{ width: '100vw', height: '100vh', position: 'relative', overflow: 'hidden', background: '#030114' }}>
       {/* 3D Scene - always mounted to pre-warm assets and compile shaders in the background */}
       <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', opacity: loaded ? 1 : 0, transition: 'opacity 0.5s ease', pointerEvents: loaded ? 'auto' : 'none', zIndex: 1 }}>
-        <SceneContainer 
-          activeTargetId={activeTargetId} 
-          introFinished={introFinished} 
+        <SceneContainer
+          activeTargetId={activeTargetId}
+          introFinished={introFinished}
           carState={carState}
           cameraMode={cameraMode}
           onCarArrived={handleCarArrived}
@@ -205,16 +207,16 @@ function AppContent() {
       </div>
 
       {!loaded && <LoadingScreen onStart={handleStartIntro} />}
-      
+
       {loaded && (
         <>
           {!introFinished && <IgnitionIntro onComplete={handleIntroComplete} />}
-          
+
           {introFinished && (
-            <NavDock 
-              onNavigate={handleNavigate} 
-              activeTargetId={activeTargetId} 
-              carState={carState} 
+            <NavDock
+              onNavigate={handleNavigate}
+              activeTargetId={activeTargetId}
+              carState={carState}
               isPageActive={isPageActive}
               isSignedUp={isSignedUp}
               isDrawerOpen={isDrawerOpen}
@@ -240,27 +242,27 @@ function AppContent() {
           </div>
 
           {/* Router Pages - hidden when mobile side drawer menu is active to avoid visual overlapping */}
-          <div 
+          <div
             className={`page-container ${isPageActive && !isWiping ? 'visible' : ''}`}
             style={isDrawerOpen ? { display: 'none' } : undefined}
           >
-             <Suspense fallback={null}>
-               <Routes>
-                 <Route path="/" element={null} />
-                 <Route path="/profile" element={<Profile />} />
-                 <Route path="/dashboard" element={<Dashboard />} />
-                 <Route path="/login" element={<Login />} />
-                 <Route path="/register" element={<Register onBack={handleBackToCity} onRegisterSuccess={handleRegisterSuccess} />} />
-                 <Route path="/events" element={<Events onBack={handleBackToCity} />} />
-                 <Route path="/gallery" element={<Gallery onBack={handleBackToCity} />} />
-                 <Route path="/coordinators" element={<Coordinators onBack={handleBackToCity} />} />
-                 <Route path="/alumni" element={<Alumni onBack={handleBackToCity} />} />
-                 <Route path="/sponsors" element={<Sponsors onBack={handleBackToCity} />} />
-                 <Route path="/checkout" element={<PaymentCheckout />} />
-                 <Route path="/checkout/:registrationId" element={<PaymentCheckout />} />
-                 <Route path="/tickets/:registrationId" element={<Profile />} />
-               </Routes>
-             </Suspense>
+            <Suspense fallback={null}>
+              <Routes>
+                <Route path="/" element={null} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register onBack={handleBackToCity} onRegisterSuccess={handleRegisterSuccess} />} />
+                <Route path="/events" element={<Events onBack={handleBackToCity} />} />
+                <Route path="/gallery" element={<Gallery onBack={handleBackToCity} />} />
+                <Route path="/coordinators" element={<Coordinators onBack={handleBackToCity} />} />
+                <Route path="/alumni" element={<Alumni onBack={handleBackToCity} />} />
+                <Route path="/sponsors" element={<Sponsors onBack={handleBackToCity} />} />
+                <Route path="/checkout" element={<PaymentCheckout />} />
+                <Route path="/checkout/:registrationId" element={<PaymentCheckout />} />
+                <Route path="/tickets/:registrationId" element={<Profile />} />
+              </Routes>
+            </Suspense>
           </div>
         </>
       )}
