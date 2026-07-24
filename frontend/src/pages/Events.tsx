@@ -350,21 +350,34 @@ export default function Events({ onBack: _onBack }: Props) {
           return;
         }
 
-        const activeTeammates = teammates
-          .slice(0, teammatesCount)
-          .filter(tm => tm.email && tm.email.trim().length > 0 && tm.name && tm.name.trim().length > 0)
-          .map(tm => ({
-            name: tm.name.trim(),
-            email: tm.email.trim().toLowerCase(),
-            mobile: tm.phone ? tm.phone.trim() : undefined,
-            college: tm.college ? tm.college.trim() : (college.trim() || undefined),
-            food_pref: selectedEvent.has_food ? (tm.food_preference || 'Veg') : undefined
-          }));
+        const validTeammates: any[] = [];
 
-        if (activeTeammates.length < teammatesCount) {
-          setRegErrorMsg(`Please enter Full Name and Email for all ${teammatesCount} teammate(s).`);
-          setIsSubmitting(false);
-          return;
+        for (let i = 0; i < teammatesCount; i++) {
+          const tm = teammates[i] || { name: '', email: '', phone: '', college: '', food_preference: 'Veg' };
+          const hasName = tm.name && tm.name.trim().length > 0;
+          const hasEmail = tm.email && tm.email.trim().length > 0;
+
+          if (hasName && !hasEmail) {
+            setRegErrorMsg(`Teammate #${i + 1} has a name but is missing an Email Address. Please enter a valid email or remove the teammate.`);
+            setIsSubmitting(false);
+            return;
+          }
+
+          if (!hasName && hasEmail) {
+            setRegErrorMsg(`Teammate #${i + 1} has an email but is missing a Full Name. Please enter a full name or remove the teammate.`);
+            setIsSubmitting(false);
+            return;
+          }
+
+          if (hasName && hasEmail) {
+            validTeammates.push({
+              name: tm.name.trim(),
+              email: tm.email.trim().toLowerCase(),
+              mobile: tm.phone ? tm.phone.trim() : undefined,
+              college: tm.college ? tm.college.trim() : (college.trim() || undefined),
+              food_pref: selectedEvent.has_food ? (tm.food_preference || 'Veg') : undefined
+            });
+          }
         }
 
         const teamPayload = {
@@ -375,7 +388,7 @@ export default function Events({ onBack: _onBack }: Props) {
           leader_mobile: phone ? phone.trim() : undefined,
           leader_college: college ? college.trim() : undefined,
           leader_food_pref: selectedEvent.has_food ? foodPreference : undefined,
-          members: activeTeammates
+          members: validTeammates
         };
 
         res = await api.post<any>('/register/team', teamPayload);
@@ -1752,10 +1765,10 @@ export default function Events({ onBack: _onBack }: Props) {
                             + ADD TEAMMATE {teammatesCount + 1}
                           </button>
                         )}
-                        {teammatesCount > 1 && (
+                        {teammatesCount > 0 && (
                           <button
                             type="button"
-                            onClick={() => setTeammatesCount(prev => Math.max(prev - 1, 1))}
+                            onClick={() => setTeammatesCount(prev => Math.max(prev - 1, 0))}
                             className="px-2 py-0.5 text-[9px] font-mono font-bold bg-red-500/20 border border-red-400/60 text-red-300 rounded hover:bg-red-500/40 cursor-pointer"
                           >
                             - REMOVE TEAMMATE
