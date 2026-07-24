@@ -410,108 +410,123 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
                 </div>
               )}
 
-              {/* Instant Automated Razorpay SDK Button */}
-              <div className="bg-[#0e0726]/90 border border-cyan-500/30 rounded-2xl p-5 sm:p-6 shadow-xl">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xs font-mono tracking-widest text-cyan-400 uppercase font-semibold">
-                    METHOD 1: AUTOMATED SDK POPUP
-                  </h3>
-                  <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-mono border border-emerald-500/30">
-                    INSTANT VERIFICATION
+              {/* Primary Method 1: Instant One-Click Razorpay Payment */}
+              <div className="bg-gradient-to-br from-[#120836] to-[#0a041f] border border-cyan-500/40 rounded-2xl p-6 shadow-[0_0_35px_rgba(0,243,255,0.15)] relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-bl-full pointer-events-none" />
+                
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                    <h3 className="text-xs font-mono tracking-widest text-cyan-300 uppercase font-bold">
+                      RECOMMENDED // FASTEST CHECKOUT
+                    </h3>
+                  </div>
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-mono border border-emerald-500/40 font-bold">
+                    INSTANT 1-CLICK VERIFICATION
                   </span>
                 </div>
 
-                <p className="text-xs text-gray-300 mb-5 leading-relaxed">
-                  Opens the official embedded Razorpay payment gateway popup with auto UPI selection (GPay, PhonePe, Paytm, BHIM, Cards & NetBanking).
+                <p className="text-xs text-gray-300 mb-5 leading-relaxed font-sans">
+                  Click below to open Razorpay's secure checkout. Supports Google Pay, PhonePe, Paytm, BHIM UPI, Cards, and NetBanking with instant automated verification.
                 </p>
 
-                {/* Primary Automated Pay Button */}
+                {/* Main Hero One-Click Pay Button */}
                 <button
                   onClick={handlePayNow}
                   disabled={paymentStatus === 'PROCESSING'}
-                  className="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 hover:from-cyan-300 hover:via-blue-400 hover:to-purple-500 text-black font-extrabold text-base uppercase font-mono tracking-wider shadow-[0_0_30px_rgba(0,243,255,0.4)] transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3 relative overflow-hidden"
+                  className="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 hover:from-cyan-300 hover:via-blue-400 hover:to-purple-500 text-black font-extrabold text-base uppercase font-mono tracking-wider shadow-[0_0_35px_rgba(0,243,255,0.45)] transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3 relative overflow-hidden group cursor-pointer"
                 >
                   {paymentStatus === 'PROCESSING' ? (
                     <>
                       <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                      <span>LAUNCHING CHECKOUT...</span>
+                      <span>LAUNCHING SECURE CHECKOUT...</span>
                     </>
                   ) : (
                     <>
-                      <span>PAY ₹{totalAmount} VIA RAZORPAY UPI</span>
-                      <svg className="w-5 h-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <span>⚡ ONE-CLICK PAY ₹{totalAmount} NOW</span>
+                      <svg className="w-5 h-5 text-black transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
                     </>
                   )}
                 </button>
+
+                {/* Supported Payment Logos / Badges */}
+                <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-[11px] font-mono text-gray-400">
+                  <span>ACCEPTED METHODS:</span>
+                  <span className="text-cyan-300 font-bold">GPay &bull; PhonePe &bull; Paytm &bull; BHIM &bull; Cards</span>
+                </div>
               </div>
 
-              {/* Scan & Pay QR Code Card */}
-              <div className="bg-[#0e0726]/90 border border-white/10 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-center gap-5 shadow-xl">
-                {/* QR Display */}
-                <div className="relative p-2.5 bg-[#0a051d] border border-cyan-500/30 rounded-xl shadow-inner group flex-shrink-0">
-                  <img
-                    src={qrCodeUrl}
-                    alt="Razorpay UPI QR Code"
-                    className="w-36 h-36 rounded-lg object-contain"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-500/10 to-transparent animate-pulse pointer-events-none rounded-xl" />
+              {/* Secondary Methods: QR Code Scan & Manual UTR Verification */}
+              <div className="bg-[#0e0726]/80 border border-white/10 rounded-2xl p-5 space-y-4">
+                <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                  <h4 className="text-xs font-mono tracking-wider text-purple-300 uppercase font-bold flex items-center gap-2">
+                    <span>📲</span> ALTERNATE UPI PAYMENT & UTR VERIFICATION
+                  </h4>
+                  <span className="text-[10px] text-gray-400 font-mono">FOR EXTERNAL UPI APPS</span>
                 </div>
 
-                {/* QR Instructions & VPA Copy */}
-                <div className="flex-1 space-y-3 text-center sm:text-left">
-                  <div>
-                    <h4 className="text-xs font-mono tracking-wider text-cyan-300 uppercase font-bold">
-                      METHOD 2: SCAN & PAY VIA ANY UPI APP
-                    </h4>
-                    <p className="text-[11px] text-gray-400 mt-1 leading-relaxed">
-                      Scan the QR code with Google Pay, PhonePe, Paytm, or BHIM UPI app to pay directly.
-                    </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+                  {/* QR Display */}
+                  <div className="flex items-center gap-3 bg-[#050212] p-3 rounded-xl border border-cyan-500/20">
+                    <img
+                      src={qrCodeUrl}
+                      alt="Razorpay UPI QR Code"
+                      className="w-24 h-24 rounded-lg object-contain bg-white/5 p-1 flex-shrink-0"
+                    />
+                    <div className="space-y-1.5 text-left min-w-0">
+                      <span className="text-[10px] font-mono text-cyan-400 font-bold uppercase block">SCAN QR CODE</span>
+                      <p className="text-[10.5px] text-gray-300 leading-tight">
+                        Scan with GPay or PhonePe to pay ₹{totalAmount}.
+                      </p>
+                      <button
+                        onClick={handleCopyUPI}
+                        className="px-2.5 py-1 rounded bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 font-mono text-[10px] font-bold transition-colors"
+                      >
+                        {copied ? 'LINK COPIED! ✅' : 'COPY UPI LINK 📋'}
+                      </button>
+                    </div>
                   </div>
 
-                  {/* Copy UPI VPA */}
-                  <div className="flex items-center justify-between bg-[#04010d] border border-white/15 rounded-lg p-2 text-xs">
-                    <span className="font-mono text-cyan-400 font-bold px-1 truncate">{RAZORPAY_UPI_ID}</span>
-                    <button
-                      onClick={handleCopyUPI}
-                      className="px-3 py-1.5 rounded bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 font-mono text-[11px] font-semibold transition-colors flex-shrink-0"
+                  {/* Direct Razorpay.me Page Button */}
+                  <div className="flex flex-col justify-center gap-2 bg-[#050212] p-3 rounded-xl border border-purple-500/20">
+                    <span className="text-[10px] font-mono text-purple-300 font-bold uppercase block">DIRECT HOSTED PAGE</span>
+                    <p className="text-[10.5px] text-gray-300 leading-tight">
+                      Prefer paying on Razorpay's standalone webpage?
+                    </p>
+                    <a
+                      href={RAZORPAY_ME_URL}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="w-full py-2 px-3 rounded-lg bg-purple-900/40 hover:bg-purple-900/60 border border-purple-500/40 text-purple-200 text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all text-center"
                     >
-                      {copied ? 'COPIED! ✅' : 'COPY LINK'}
+                      <span>OPEN RAZORPAY.ME ↗</span>
+                    </a>
+                  </div>
+                </div>
+
+                {/* 12-Digit UTR Manual Verification Input */}
+                <div className="pt-2">
+                  <label className="text-[11px] font-mono text-cyan-300 font-bold uppercase mb-1.5 block">
+                    Paid via QR or External App? Enter 12-Digit UPI UTR / Ref No *
+                  </label>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input
+                      type="text"
+                      className="flex-1 bg-[#04010d] border border-white/20 focus:border-cyan-400 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono outline-none transition-all placeholder:text-gray-600"
+                      placeholder="e.g. 420185938210"
+                      value={utrInput}
+                      onChange={(e) => setUtrInput(e.target.value)}
+                    />
+                    <button
+                      onClick={handleVerifyUTR}
+                      disabled={isSubmittingUtr || !utrInput.trim()}
+                      className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white text-xs font-mono font-bold tracking-wider uppercase transition-all shadow-md flex items-center justify-center gap-2 flex-shrink-0 cursor-pointer"
+                    >
+                      {isSubmittingUtr ? 'VERIFYING...' : 'SUBMIT & VERIFY UTR'}
                     </button>
                   </div>
-                </div>
-              </div>
-
-              {/* Method 3: Submit 12-Digit UTR Number for UPI App Payments */}
-              <div className="bg-[#0e0726]/90 border border-purple-500/30 rounded-2xl p-5 sm:p-6 shadow-xl space-y-3">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-mono tracking-wider text-purple-300 uppercase font-bold">
-                    METHOD 3: VERIFY 12-DIGIT UPI UTR / REF NO
-                  </h4>
-                  <span className="text-[10px] text-cyan-300 font-mono">
-                    FOR UPI APP PAYMENTS
-                  </span>
-                </div>
-                <p className="text-[11px] text-gray-400 leading-relaxed">
-                  Paid via Google Pay, PhonePe, Paytm, or BHIM? Enter your 12-digit UPI UTR / Ref No from your payment app receipt below to verify and unlock your ticket pass.
-                </p>
-
-                <div className="flex flex-col sm:flex-row gap-2.5">
-                  <input
-                    type="text"
-                    className="flex-1 bg-[#04010d] border border-white/20 focus:border-cyan-400 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono outline-none transition-all placeholder:text-gray-600"
-                    placeholder="Enter 12-digit UTR (e.g. 420185938210)"
-                    value={utrInput}
-                    onChange={(e) => setUtrInput(e.target.value)}
-                  />
-                  <button
-                    onClick={handleVerifyUTR}
-                    disabled={isSubmittingUtr || !utrInput.trim()}
-                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 disabled:opacity-50 text-white text-xs font-mono font-bold tracking-wider uppercase transition-all shadow-md flex items-center justify-center gap-2 flex-shrink-0"
-                  >
-                    {isSubmittingUtr ? 'VERIFYING...' : 'VERIFY & COMPLETE REGISTRATION'}
-                  </button>
                 </div>
               </div>
 
@@ -520,7 +535,7 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
                 <svg className="w-3.5 h-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
-                <span>Encrypted 256-Bit SSL Gateway &bull; Envision'26 Payments</span>
+                <span>Encrypted 256-Bit SSL Gateway &bull; Official Envision'26 Payments</span>
               </div>
 
             </div>

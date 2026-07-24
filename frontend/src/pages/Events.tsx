@@ -304,6 +304,28 @@ export default function Events({ onBack: _onBack }: Props) {
     setMagicInviteUrl(null);
 
     try {
+      // 1. Auto-login fallback if user session token is missing
+      if (!localStorage.getItem('access_token') && email) {
+        try {
+          const authRes = await api.post<any>('/auth/instant-login', {
+            email: email.trim().toLowerCase(),
+            name: fullName.trim()
+          });
+          if (authRes && authRes.access_token) {
+            localStorage.setItem('access_token', authRes.access_token);
+            if (authRes.user) {
+              localStorage.setItem('user_role', authRes.user.role);
+              localStorage.setItem('fest_id', authRes.user.fest_id);
+              localStorage.setItem('user_name', authRes.user.name);
+              localStorage.setItem('user_email', authRes.user.email);
+            }
+            localStorage.setItem('envision_user_signedup', 'true');
+          }
+        } catch (authErr) {
+          console.warn("Instant login fallback notice:", authErr);
+        }
+      }
+
       const payload: any = {
         event_id: selectedEvent.id,
         phone,
@@ -318,12 +340,12 @@ export default function Events({ onBack: _onBack }: Props) {
         payload.team_name = teamName;
         const activeTeammates = teammates
           .slice(0, selectedEvent.max_team_size - 1)
-          .filter(tm => tm.email.trim().length > 0 || tm.name.trim().length > 0)
+          .filter(tm => (tm.email && tm.email.trim().length > 0) || (tm.name && tm.name.trim().length > 0))
           .map(tm => ({
             name: tm.name.trim(),
             email: tm.email.trim(),
-            phone: tm.phone.trim() || undefined,
-            college: tm.college.trim() || undefined,
+            phone: tm.phone ? tm.phone.trim() : undefined,
+            college: tm.college ? tm.college.trim() : undefined,
             food_preference: selectedEvent.has_food ? (tm.food_preference || 'Veg') : undefined
           }));
         payload.teammate_details = activeTeammates;
@@ -363,7 +385,11 @@ export default function Events({ onBack: _onBack }: Props) {
       }
     } catch (err: any) {
       console.error("Registration error:", err);
-      setRegErrorMsg(err.message || "Registration failed. Please check your details and try again.");
+      if (err.message && err.message.includes("Failed to fetch")) {
+        setRegErrorMsg("Unable to connect to registration server. Please ensure backend is running.");
+      } else {
+        setRegErrorMsg(err.message || "Registration failed. Please check your details and try again.");
+      }
     } finally {
       setIsSubmitting(false);
     }

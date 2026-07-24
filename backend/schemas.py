@@ -69,8 +69,8 @@ class EventResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 class TeammateDetail(BaseModel):
-    name: str
-    email: EmailStr
+    name: Optional[str] = None
+    email: Optional[str] = None
     phone: Optional[str] = None
     college: Optional[str] = None
     food_preference: Optional[str] = "Veg"
@@ -92,8 +92,8 @@ class EventRegistrationResponse(BaseModel):
     event_id: str
     team_id: Optional[str] = None
     food_preference: Optional[str] = None
-    user_email: str
-    user_name: str
+    user_email: Optional[str] = None
+    user_name: Optional[str] = None
     user_phone: Optional[str] = None
     team_name: Optional[str] = None
     team_members: Optional[str] = None
