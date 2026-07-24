@@ -59,6 +59,7 @@ const Car = ({ activeTargetId, introFinished, carState, onCarArrived, onSetCarSt
   const introFinishedTime = useRef<number | null>(null);
 
   useEffect(() => {
+    if (!scene) return;
     wheelsRef.current = [];
     steeringWheelsRef.current = [];
     tailLightsRef.current = [];
@@ -67,7 +68,7 @@ const Car = ({ activeTargetId, introFinished, carState, onCarArrived, onSetCarSt
     const isProcessed = (scene as any).__processed;
     
     scene.traverse((child) => {
-      if (child instanceof THREE.Mesh) {
+      if (child && child instanceof THREE.Mesh) {
         child.castShadow = true;
         child.receiveShadow = true;
         

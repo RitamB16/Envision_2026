@@ -30,30 +30,33 @@ const Streetlights = ({ introFinished }: { introFinished: boolean }) => {
     [-300, 10, -75], [-250, 10, -75], [-200, 10, -75], [-150, 10, -75],
     [-100, 10, -75], [-50, 10, -75], [0, 10, -75], [50, 10, -75]
   ];
-  const activePositions = isMobile ? basePositions.filter((_, i) => i % 2 === 0) : basePositions;
+  const activePositions = isMobile ? (basePositions || []).filter((_, i) => i % 2 === 0) : (basePositions || []);
   const targetIntensity = isMobile ? 0.45 : 0.65;
 
   useFrame((state) => {
     if (!introFinished) {
       const time = state.clock.getElapsedTime();
-      lightsRef.current.forEach((light, i) => {
-        if (time > i * 0.2) {
-          light.intensity = THREE.MathUtils.lerp(light.intensity, targetIntensity, 0.2);
-        } else {
-          light.intensity = 0;
+      (lightsRef.current || []).forEach((light, i) => {
+        if (light) {
+          if (time > i * 0.2) {
+            light.intensity = THREE.MathUtils.lerp(light.intensity, targetIntensity, 0.2);
+          } else {
+            light.intensity = 0;
+          }
         }
       });
     } else {
-      // Once intro is finished, assign steady target intensity once
-      if (lightsRef.current.length > 0 && lightsRef.current[0].intensity !== targetIntensity) {
-        lightsRef.current.forEach(light => light.intensity = targetIntensity);
+      if (lightsRef.current?.length > 0 && lightsRef.current[0]?.intensity !== targetIntensity) {
+        (lightsRef.current || []).forEach(light => {
+          if (light) light.intensity = targetIntensity;
+        });
       }
     }
   });
 
   return (
     <group ref={groupRef}>
-      {activePositions.map((pos, i) => (
+      {(activePositions || []).map((pos, i) => (
         <pointLight 
           key={i}
           ref={(el) => el && (lightsRef.current[i] = el)}

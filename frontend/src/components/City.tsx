@@ -12,11 +12,13 @@ const City: React.FC = () => {
   const { scene } = useGLTF('/models/city_optimized.glb');
 
   useEffect(() => {
+    if (!scene) return;
     const isProcessed = (scene as any).__processed;
 
     scene.traverse((child) => {
-      if (child instanceof THREE.Mesh) {
+      if (child && child instanceof THREE.Mesh) {
         const mat = child.material as THREE.MeshStandardMaterial;
+        if (!mat) return;
         const isRoadOrGround = !!((mat && mat.name && mat.name.toLowerCase().includes('road')) || 
                              (child.name && (child.name.toLowerCase().includes('ground') || child.name.toLowerCase().includes('floor'))));
 
@@ -47,9 +49,10 @@ const City: React.FC = () => {
         }
       }
     });
-    (scene as any).__processed = true;
+    if (scene) (scene as any).__processed = true;
   }, [scene]);
 
+  if (!scene) return null;
   return <primitive object={scene} scale={0.01} />;
 };
 
