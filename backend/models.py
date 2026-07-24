@@ -1,24 +1,36 @@
 import uuid
 from datetime import datetime, timezone
 from sqlalchemy import Column, String, Boolean, DateTime, Integer, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID
 from database import Base
 
 class User(Base):
-    __tablename__ = "users"
+    __tablename__ = "participants"
 
-    id = Column(String, primary_key=True, index=True, default=lambda: str(uuid.uuid4()))
-    email = Column(String, unique=True, index=True, nullable=False)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    auth_id = Column(UUID(as_uuid=True), unique=True, nullable=True)
+    env_id = Column(String, unique=True, index=True, nullable=True)
     name = Column(String, nullable=False)
-    fest_id = Column(String, unique=True, index=True, nullable=True)
+    email = Column(String, unique=True, index=True, nullable=False)
+    mobile = Column(String, nullable=True)
     college = Column(String, nullable=True)
-    department = Column(String, nullable=True, default="Computer Science")
-    gender = Column(String, nullable=True)
-    phone = Column(String, nullable=True)
-    role = Column(String, default="PARTICIPANT", nullable=False)
-    is_approved = Column(Boolean, default=True, nullable=False)
-    profile_picture = Column(String, nullable=True)
-    full_name = Column(String, nullable=True)
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    food_pref = Column(String, nullable=True)
+
+    @property
+    def phone(self):
+        return self.mobile
+
+    @phone.setter
+    def phone(self, value):
+        self.mobile = value
+
+    @property
+    def fest_id(self):
+        return self.env_id or "ENV-2026-000"
+
+    @property
+    def role(self):
+        return "PARTICIPANT"
 
 
 class Event(Base):
@@ -44,42 +56,19 @@ class Event(Base):
 class Team(Base):
     __tablename__ = "teams"
 
-    id = Column(String, primary_key=True, index=True, default=lambda: f"TEAM-{str(uuid.uuid4())[:8].upper()}")
-    name = Column(String, nullable=False)
-    event_id = Column(String, ForeignKey("events.id"), nullable=False, index=True)
-    leader_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    team_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    team_name = Column(String, nullable=False)
+    event_name = Column(String, nullable=False)
+    leader_id = Column(UUID(as_uuid=True), ForeignKey("participants.id", ondelete="CASCADE"), nullable=False)
 
 
-class EventRegistration(Base):
-    __tablename__ = "event_registrations"
+class Registration(Base):
+    __tablename__ = "registrations"
 
-    id = Column(String, primary_key=True, index=True, default=lambda: f"REG-{str(uuid.uuid4())[:8].upper()}")
-    user_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
-    event_id = Column(String, ForeignKey("events.id"), nullable=False, index=True)
-    team_id = Column(String, ForeignKey("teams.id"), nullable=True, index=True)
-    food_preference = Column(String, nullable=True, default="Veg")
-    payment_status = Column(String, default="PENDING", nullable=False)
-    user_email = Column(String, nullable=True)
-    user_name = Column(String, nullable=True)
-    user_phone = Column(String, nullable=True)
-    team_name = Column(String, nullable=True)
-    team_members = Column(String, nullable=True)
-    college = Column(String, nullable=True)
-    transaction_id = Column(String, nullable=True)
-    razorpay_order_id = Column(String, nullable=True, index=True)
-    status = Column(String, default="CONFIRMED", nullable=False)
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
-
-
-class TeamInvite(Base):
-    __tablename__ = "team_invites"
-
-    id = Column(String, primary_key=True, index=True, default=lambda: f"INV-{str(uuid.uuid4())[:8].upper()}")
-    team_id = Column(String, nullable=False, index=True)
-    event_id = Column(String, nullable=False)
-    invited_by_user_id = Column(String, nullable=False)
-    invited_email = Column(String, nullable=False, index=True)
-    invite_token = Column(String, unique=True, index=True, nullable=False)
-    status = Column(String, default="PENDING", nullable=False)
+    reg_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    participant_id = Column(UUID(as_uuid=True), ForeignKey("participants.id", ondelete="CASCADE"), nullable=False)
+    event_name = Column(String, nullable=False)
+    team_id = Column(UUID(as_uuid=True), ForeignKey("teams.team_id", ondelete="SET NULL"), nullable=True)
+    payment_order_id = Column(String, nullable=False)
+    payment_status = Column(String, nullable=False, default="PENDING")
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)

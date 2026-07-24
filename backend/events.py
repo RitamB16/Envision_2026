@@ -393,6 +393,12 @@ def register_for_event(
         db.refresh(new_team)
         new_team_id = new_team.id
 
+        # Format member summary with generated Fest IDs
+        registered_members = [f"{current_user.name} ({current_user.fest_id or 'Leader'})"]
+        for tm in teammates_to_register:
+            registered_members.append(f"{tm.name} ({tm.fest_id or 'Member'})")
+        team_members_str = ", ".join(registered_members)
+
         for tm in teammates_to_register:
             tm_existing = db.query(models.EventRegistration).filter(
                 models.EventRegistration.user_id == tm.id,
@@ -411,11 +417,14 @@ def register_for_event(
                     user_name=tm.full_name or tm.name,
                     user_phone=tm.phone or payload.phone,
                     team_name=payload.team_name.strip(),
+                    team_members=team_members_str,
                     college=tm.college or payload.college,
                     payment_status=initial_payment_status,
                     status="CONFIRMED"
                 )
                 db.add(tm_reg)
+    else:
+        team_members_str = f"{current_user.name} ({current_user.fest_id or 'Participant'})"
 
     leader_reg = models.EventRegistration(
         user_id=current_user.id,
@@ -426,21 +435,22 @@ def register_for_event(
         user_name=current_user.full_name or current_user.name,
         user_phone=payload.phone,
         team_name=created_team_name,
+        team_members=team_members_str,
         college=payload.college or current_user.college,
         transaction_id=payload.transaction_id,
         payment_status=initial_payment_status,
         status="CONFIRMED"
     )
 
+    # Sync college and phone to current user profile if missing
+    if payload.college and not current_user.college:
+        current_user.college = payload.college
+    if payload.phone and not current_user.phone:
+        current_user.phone = payload.phone
+
     db.add(leader_reg)
     db.commit()
     db.refresh(leader_reg)
-
-    # Format member summary with generated Fest IDs for Team Leader
-    registered_members = [f"{current_user.name} ({current_user.fest_id or 'Leader'})"]
-    for tm in teammates_to_register:
-        registered_members.append(f"{tm.name} ({tm.fest_id or 'Member'})")
-    team_members_str = ", ".join(registered_members)
 
     return {
         "status": "success",
@@ -581,3 +591,126 @@ def cancel_registration(
     reg.status = "CANCELLED"
     db.commit()
     return {"message": f"Registration '{registration_id}' cancelled successfully."}
+
+
+@router.get("/{event_id}/participants")
+def get_event_participants(
+    event_id: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Event-Wise Data Retrieval Endpoint:
+    Retrieves complete participant records for a specific event after registration closes
+    (Name, Fest ID, Email, Phone/Mobile, College, Food Preference, Team Name, Member List, Payment Status, Txn ID).
+    """
+    seed_events_if_empty(db)
+    event = db.query(models.Event).filter(models.Event.id == event_id).first()
+    if not event:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Event '{event_id}' not found."
+        )
+
+    registrations = db.query(models.EventRegistration).filter(
+        models.EventRegistration.event_id == event_id,
+        models.EventRegistration.status != "CANCELLED"
+    ).all()
+
+    user_ids = [r.user_id for r in registrations]
+    users_by_id = {u.id: u for u in db.query(models.User).filter(models.User.id.in_(user_ids)).all()} if user_ids else {}
+
+    result = []
+    for reg in registrations:
+        u = users_by_id.get(reg.user_id)
+        fest_id = u.fest_id if u else "ENV-2026-000"
+        name = reg.user_name or (u.full_name or u.name if u else "Participant")
+        email = reg.user_email or (u.email if u else "")
+        phone = reg.user_phone or (u.phone if u else "N/A")
+        college = reg.college or (u.college if u else "N/A")
+
+        result.append({
+            "registration_id": reg.id,
+            "event_id": reg.event_id,
+            "event_name": event.name,
+            "fest_id": fest_id,
+            "name": name,
+            "email": email,
+            "phone": phone,
+            "college": college,
+            "food_preference": reg.food_preference if event.has_food else "No Food",
+            "team_name": reg.team_name or "Individual",
+            "team_members": reg.team_members or name,
+            "payment_status": reg.payment_status,
+            "transaction_id": reg.transaction_id or reg.razorpay_order_id or "N/A",
+            "created_at": reg.created_at.isoformat() if reg.created_at else None
+        })
+
+    return {
+        "status": "success",
+        "event_id": event.id,
+        "event_name": event.name,
+        "total_registrations": len(result),
+        "participants": result
+    }
+
+
+@router.get("/export/all-events")
+def export_all_event_data(
+    db: Session = Depends(get_db)
+):
+    """
+    Master Event-Wise Export Endpoint:
+    Groups all registered participant data by event for administrative reporting & data retrieval after registration closes.
+    """
+    seed_events_if_empty(db)
+    all_events = db.query(models.Event).all()
+    all_registrations = db.query(models.EventRegistration).filter(
+        models.EventRegistration.status != "CANCELLED"
+    ).all()
+
+    user_ids = [r.user_id for r in all_registrations]
+    users_by_id = {u.id: u for u in db.query(models.User).filter(models.User.id.in_(user_ids)).all()} if user_ids else {}
+
+    grouped_data = {}
+    for ev in all_events:
+        grouped_data[ev.id] = {
+            "event_id": ev.id,
+            "event_name": ev.name,
+            "category": ev.category,
+            "price": ev.price,
+            "has_food": ev.has_food,
+            "total_participants": 0,
+            "participants": []
+        }
+
+    for reg in all_registrations:
+        if reg.event_id in grouped_data:
+            u = users_by_id.get(reg.user_id)
+            name = reg.user_name or (u.full_name or u.name if u else "Participant")
+            email = reg.user_email or (u.email if u else "")
+            phone = reg.user_phone or (u.phone if u else "N/A")
+            college = reg.college or (u.college if u else "N/A")
+            fest_id = u.fest_id if u else "ENV-2026-000"
+
+            participant_entry = {
+                "registration_id": reg.id,
+                "fest_id": fest_id,
+                "name": name,
+                "email": email,
+                "phone": phone,
+                "college": college,
+                "food_preference": reg.food_preference if grouped_data[reg.event_id]["has_food"] else "No Food",
+                "team_name": reg.team_name or "Individual",
+                "team_members": reg.team_members or name,
+                "payment_status": reg.payment_status,
+                "transaction_id": reg.transaction_id or reg.razorpay_order_id or "N/A",
+                "created_at": reg.created_at.isoformat() if reg.created_at else None
+            }
+
+            grouped_data[reg.event_id]["participants"].append(participant_entry)
+            grouped_data[reg.event_id]["total_participants"] += 1
+
+    return {
+        "status": "success",
+        "events_summary": grouped_data
+    }

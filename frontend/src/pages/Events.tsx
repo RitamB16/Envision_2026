@@ -227,6 +227,7 @@ export default function Events({ onBack: _onBack }: Props) {
     { name: '', email: '', phone: '', college: '', food_preference: 'Veg' }
   ]);
 
+  const [teammatesCount, setTeammatesCount] = useState<number>(1);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [regErrorMsg, setRegErrorMsg] = useState<string | null>(null);
   const [regSuccessMsg, setRegSuccessMsg] = useState<string | null>(null);
@@ -236,6 +237,16 @@ export default function Events({ onBack: _onBack }: Props) {
   useEffect(() => {
     setIsNavigating(false);
   }, [searchParams]);
+
+  useEffect(() => {
+    if (!document.getElementById('razorpay-sdk')) {
+      const script = document.createElement('script');
+      script.id = 'razorpay-sdk';
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
+      document.body.appendChild(script);
+    }
+  }, []);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>, cardId: string) => {
     if (typeof window !== 'undefined' && window.innerWidth < 768) return;
@@ -282,6 +293,7 @@ export default function Events({ onBack: _onBack }: Props) {
     setRegErrorMsg(null);
     setRegSuccessMsg(null);
     setMagicInviteUrl(null);
+    setTeammatesCount(1);
     setSearchParams({ view: 'register', id: event.id, from });
   };
 
@@ -326,59 +338,85 @@ export default function Events({ onBack: _onBack }: Props) {
         }
       }
 
-      const payload: any = {
-        event_id: selectedEvent.id,
-        phone,
-        college,
-      };
-
-      if (selectedEvent.has_food) {
-        payload.food_preference = foodPreference;
-      }
+      let res: any;
 
       if (selectedEvent.requires_team) {
-        payload.team_name = teamName;
+        // Team Event Registration -> /register/team
+        if (!teamName.trim()) {
+          setRegErrorMsg("Please enter a valid Team Name.");
+          setIsSubmitting(false);
+          return;
+        }
+
         const activeTeammates = teammates
-          .slice(0, selectedEvent.max_team_size - 1)
-          .filter(tm => (tm.email && tm.email.trim().length > 0) || (tm.name && tm.name.trim().length > 0))
+          .slice(0, teammatesCount)
+          .filter(tm => tm.email && tm.email.trim().length > 0 && tm.name && tm.name.trim().length > 0)
           .map(tm => ({
             name: tm.name.trim(),
-            email: tm.email.trim(),
-            phone: tm.phone ? tm.phone.trim() : undefined,
-            college: tm.college ? tm.college.trim() : undefined,
-            food_preference: selectedEvent.has_food ? (tm.food_preference || 'Veg') : undefined
+            email: tm.email.trim().toLowerCase(),
+            mobile: tm.phone ? tm.phone.trim() : undefined,
+            college: tm.college ? tm.college.trim() : (college.trim() || undefined),
+            food_pref: selectedEvent.has_food ? (tm.food_preference || 'Veg') : undefined
           }));
-        payload.teammate_details = activeTeammates;
+
+        if (activeTeammates.length < teammatesCount) {
+          setRegErrorMsg(`Please enter Full Name and Email for all ${teammatesCount} teammate(s).`);
+          setIsSubmitting(false);
+          return;
+        }
+
+        const teamPayload = {
+          team_name: teamName.trim(),
+          event_name: selectedEvent.name,
+          leader_name: fullName.trim(),
+          leader_email: email.trim().toLowerCase(),
+          leader_mobile: phone ? phone.trim() : undefined,
+          leader_college: college ? college.trim() : undefined,
+          leader_food_pref: selectedEvent.has_food ? foodPreference : undefined,
+          members: activeTeammates
+        };
+
+        res = await api.post<any>('/register/team', teamPayload);
+      } else {
+        // Individual Event Registration -> /register/solo
+        const soloPayload = {
+          event_name: selectedEvent.name,
+          name: fullName.trim(),
+          email: email.trim().toLowerCase(),
+          mobile: phone ? phone.trim() : undefined,
+          college: college ? college.trim() : undefined,
+          food_pref: selectedEvent.has_food ? foodPreference : undefined
+        };
+
+        res = await api.post<any>('/register/solo', soloPayload);
       }
 
-      const res = await api.post<any>(`/events/${selectedEvent.id}/register`, payload);
-
-      if (selectedEvent.requires_team && res.team_members) {
-        setRegSuccessMsg(`🎉 TEAM REGISTRATION CONFIRMED!\nTeam Name: ${res.team_name || teamName}\nRegistered Members & Fest IDs: ${res.team_members}`);
-      } else {
-        setRegSuccessMsg(`🎉 REGISTRATION CONFIRMED FOR ${selectedEvent.name.toUpperCase()}!`);
+      if (phone && phone.trim()) {
+        localStorage.setItem('user_phone', phone.trim());
       }
 
       if (res.is_free || res.amount === 0) {
-        setRegSuccessMsg(`🎉 Free registration successful for ${selectedEvent.name}! Unlocking pass...`);
+        setRegSuccessMsg(`🎉 REGISTRATION CONFIRMED FOR ${selectedEvent.name.toUpperCase()}!`);
         setTimeout(() => {
           navigate('/profile');
         }, 1500);
       } else {
-        const regId = res.registration_id || res.id;
-        if (phone && phone.trim()) {
-          localStorage.setItem('user_phone', phone.trim());
-        }
-        setRegSuccessMsg(`🎉 Registration created! Redirecting to checkout...`);
+        const regId = res.registration_id || res.team_id || 'REG-PENDING';
+        const orderId = res.razorpay_order_id;
+        
+        setRegSuccessMsg(`🎉 Registration created! Redirecting to secure checkout...`);
         setTimeout(() => {
           navigate(`/checkout/${regId}`, {
             state: {
               registrationId: regId,
+              razorpayOrderId: orderId,
+              razorpay_order_id: orderId,
               eventName: selectedEvent.name,
               baseFee: res.amount || selectedEvent.price,
               registrationType: selectedEvent.requires_team ? 'Team' : 'Individual',
               phone: phone,
               userName: fullName,
+              userEmail: email
             }
           });
         }, 1000);
@@ -1669,8 +1707,36 @@ export default function Events({ onBack: _onBack }: Props) {
                     />
                   </div>
 
-                  {/* Dynamic Teammate Member Cards (Max Team Size - 1 fields) */}
-                  {Array.from({ length: selectedEvent.max_team_size - 1 }).map((_, idx) => (
+                  {/* Dynamic Teammate Member Cards (Allows adding 1 or 2 extra members up to max_team_size - 1) */}
+                  <div className="flex items-center justify-between mt-1 mb-1">
+                    <span className="text-[10px] font-mono text-cyan-400 font-bold uppercase">
+                      Teammate Details ({teammatesCount} of max {selectedEvent.max_team_size - 1} extra member{selectedEvent.max_team_size > 2 ? 's' : ''})
+                    </span>
+                    {selectedEvent.max_team_size > 2 && (
+                      <div className="flex items-center gap-2">
+                        {teammatesCount < selectedEvent.max_team_size - 1 && (
+                          <button
+                            type="button"
+                            onClick={() => setTeammatesCount(prev => Math.min(prev + 1, selectedEvent.max_team_size - 1))}
+                            className="px-2 py-0.5 text-[9px] font-mono font-bold bg-cyan-500/20 border border-cyan-400/60 text-cyan-300 rounded hover:bg-cyan-500/40 cursor-pointer"
+                          >
+                            + ADD TEAMMATE {teammatesCount + 1}
+                          </button>
+                        )}
+                        {teammatesCount > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => setTeammatesCount(prev => Math.max(prev - 1, 1))}
+                            className="px-2 py-0.5 text-[9px] font-mono font-bold bg-red-500/20 border border-red-400/60 text-red-300 rounded hover:bg-red-500/40 cursor-pointer"
+                          >
+                            - REMOVE TEAMMATE
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {Array.from({ length: teammatesCount }).map((_, idx) => (
                     <div key={idx} className="p-3 rounded-xl bg-black/50 border border-cyan-500/30 flex flex-col gap-2">
                       <div className="flex items-center justify-between border-b border-white/10 pb-1.5 mb-1">
                         <span className="text-[10.5px] font-mono font-bold text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">

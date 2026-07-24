@@ -11,8 +11,8 @@ class UserResponse(BaseModel):
     email: str
     name: str
     fest_id: Optional[str] = None
-    role: str
-    is_approved: bool
+    role: str = "PARTICIPANT"
+    is_approved: bool = True
     profile_picture: Optional[str] = None
     department: Optional[str] = "Computer Science"
     full_name: Optional[str] = None
@@ -107,17 +107,27 @@ class EventRegistrationResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-class TeamInviteCreate(BaseModel):
+class SoloRegistrationCreate(BaseModel):
+    event_name: str
+    name: str
     email: EmailStr
+    mobile: Optional[str] = None
+    college: Optional[str] = None
+    food_pref: Optional[str] = None
 
-class TeamInviteResponse(BaseModel):
-    id: str
-    team_id: str
-    event_id: str
-    invited_email: str
-    invite_token: str
-    invite_url: str
-    status: str
-    message: str
+class ParticipantTeammateDetail(BaseModel):
+    name: str
+    email: EmailStr
+    mobile: Optional[str] = None
+    college: Optional[str] = None
+    food_pref: Optional[str] = "Veg"
 
-
+class TeamRegistrationCreate(BaseModel):
+    team_name: str
+    event_name: str
+    leader_name: str
+    leader_email: EmailStr
+    leader_mobile: Optional[str] = None
+    leader_college: Optional[str] = None
+    leader_food_pref: Optional[str] = None
+    members: List[ParticipantTeammateDetail] = []

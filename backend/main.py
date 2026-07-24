@@ -7,6 +7,7 @@ from users import router as users_router
 from events import router as events_router
 from payments import router as payments_router
 from webhooks import router as webhooks_router
+from registration import router as registration_router
 
 from slowapi.middleware import SlowAPIMiddleware
 from slowapi.errors import RateLimitExceeded
@@ -55,6 +56,7 @@ app.include_router(users_router)
 app.include_router(events_router)
 app.include_router(payments_router)
 app.include_router(webhooks_router)
+app.include_router(registration_router)
 
 @app.get("/")
 def root():

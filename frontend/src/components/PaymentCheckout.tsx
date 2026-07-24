@@ -141,20 +141,31 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
     setErrorMessage(null);
 
     try {
-      // 1. Create order on backend (fetches true price from DB)
-      const orderRes = await api.post<any>('/payments/create-order', {
-        registration_id: registrationId
-      }).catch(err => {
-        console.warn("Order creation fallback notice:", err);
-        return {
-          razorpay_order_id: `order_test_${registrationId.slice(-8)}`,
-          amount: totalAmount * 100,
-          currency: "INR",
-          key_id: "rzp_test_TGuT8hs5QZ9uy9"
-        };
-      });
+      let razorpay_order_id = stateData.razorpayOrderId || stateData.razorpay_order_id;
+      let amount = totalAmount * 100;
+      let currency = "INR";
+      let key_id = (import.meta.env as any).VITE_RAZORPAY_KEY_ID || 'rzp_test_TGuT8hs5QZ9uy9';
 
-      const { razorpay_order_id, amount, currency, key_id } = orderRes;
+      if (!razorpay_order_id) {
+        // Create order on backend if order ID is not already passed
+        const orderRes = await api.post<any>('/payments/create-order', {
+          registration_id: registrationId
+        }).catch(err => {
+          console.warn("Order creation fallback notice:", err);
+          return {
+            razorpay_order_id: `order_test_${registrationId.slice(-8)}`,
+            amount: totalAmount * 100,
+            currency: "INR",
+            key_id: "rzp_test_TGuT8hs5QZ9uy9"
+          };
+        });
+
+        razorpay_order_id = orderRes.razorpay_order_id;
+        if (orderRes.amount) amount = orderRes.amount;
+        if (orderRes.currency) currency = orderRes.currency;
+        if (orderRes.key_id) key_id = orderRes.key_id;
+      }
+
       const razorpayApiKey = (import.meta.env as any).VITE_RAZORPAY_KEY_ID || key_id || 'rzp_test_TGuT8hs5QZ9uy9';
 
       // 2. Configure Razorpay SDK Options with UPI focus
