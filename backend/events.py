@@ -24,10 +24,10 @@ DEFAULT_EVENTS = [
         "price_amount": 0,
         "requires_team": False,
         "max_team_size": 1,
-        "has_food": True,
-        "notes": "100% FREE & Open to All! Direct Registration with complimentary food included.",
+        "has_food": False,
+        "notes": "100% FREE & Open to All! Direct Registration.",
         "image": "/images/events/techtalk.jpg",
-        "benefits": "Free Keynote Entry Pass to RKMRC Tech Talk, Technical Seminars, Certificates & Complimentary Food Pass.",
+        "benefits": "Free Keynote Entry Pass to RKMRC Tech Talk, Technical Seminars & Certificates.",
         "date": "6th August",
         "venue": "Mumukshananda Auditorium, RKMRC",
         "time": "10:30 AM"
