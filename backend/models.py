@@ -16,6 +16,7 @@ class User(Base):
     mobile = Column(String, nullable=True)
     college = Column(String, nullable=True)
     food_pref = Column(String, nullable=True)
+    profile_picture = Column(String, nullable=True)
 
     # Synonyms for SQL expressions and attribute access
     phone = synonym("mobile")
