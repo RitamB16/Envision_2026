@@ -189,8 +189,8 @@ const SceneContainer: React.FC<SceneContainerProps> = ({
     }
   }, [cameraMode, carState, manager, isPageActive]);
 
-  // Dynamic pixel density with automatic GPU performance monitoring
-  const [dpr, setDpr] = useState<number>(isMobile ? 1.0 : 1.25);
+  // Dynamic pixel density with automatic GPU performance monitoring optimized for older mobile devices
+  const [dpr, setDpr] = useState<number>(isMobile ? 0.75 : 1.25);
 
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'fixed', top: 0, left: 0 }}>
@@ -200,7 +200,7 @@ const SceneContainer: React.FC<SceneContainerProps> = ({
         dpr={dpr} 
         camera={{ position: [0, 10, 20], fov: 50 }}
         gl={{ 
-          antialias: true, 
+          antialias: !isMobile, 
           powerPreference: 'high-performance', 
           precision: 'mediump',
           toneMapping: THREE.ACESFilmicToneMapping,
@@ -210,8 +210,8 @@ const SceneContainer: React.FC<SceneContainerProps> = ({
         }}
       >
         <PerformanceMonitor 
-          onIncline={() => setDpr(isMobile ? 1.25 : 1.5)} 
-          onDecline={() => setDpr(0.75)} 
+          onIncline={() => setDpr(isMobile ? 1.0 : 1.5)} 
+          onDecline={() => setDpr(isMobile ? 0.5 : 0.75)} 
         />
         <color attach="background" args={['#030108']} />
         <fog attach="fog" args={['#030108', 35, 210]} />
@@ -238,17 +238,12 @@ const SceneContainer: React.FC<SceneContainerProps> = ({
           />
           <TireEffects />
           
-          {!isPageActive && (
-            isMobile ? (
-              <EffectComposer enableNormalPass={false} multisampling={0}>
-                <Bloom luminanceThreshold={0.65} luminanceSmoothing={0.85} intensity={1.1} mipmapBlur />
-              </EffectComposer>
-            ) : (
-              <EffectComposer enableNormalPass={false} multisampling={0}>
-                <Bloom luminanceThreshold={0.65} luminanceSmoothing={0.85} intensity={1.3} mipmapBlur />
-                <Noise opacity={0.02} />
-              </EffectComposer>
-            )
+          {/* Post-processing disabled on mobile for massive FPS boost on older devices */}
+          {!isMobile && !isPageActive && (
+            <EffectComposer enableNormalPass={false} multisampling={0}>
+              <Bloom luminanceThreshold={0.65} luminanceSmoothing={0.85} intensity={1.3} mipmapBlur />
+              <Noise opacity={0.02} />
+            </EffectComposer>
           )}
           
           <CameraRig 

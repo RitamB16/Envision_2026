@@ -30,6 +30,12 @@ const _qSteer = new THREE.Quaternion();
 const _qFinal = new THREE.Quaternion();
 const _qDefaultFallback = new THREE.Quaternion();
 
+const isMobile = typeof window !== 'undefined' && (
+  /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+  window.innerWidth <= 768 ||
+  (navigator.maxTouchPoints > 0 && /Macintosh|Intel/i.test(navigator.userAgent))
+);
+
 const Car = ({ activeTargetId, introFinished, carState, onCarArrived, onSetCarState }: Props) => {
   const { scene } = useGLTF('/models/car_optimized.glb');
   const carRef = useRef<THREE.Group>(null);
@@ -68,8 +74,8 @@ const Car = ({ activeTargetId, introFinished, carState, onCarArrived, onSetCarSt
     
     scene.traverse((child) => {
       if (child instanceof THREE.Mesh) {
-        child.castShadow = true;
-        child.receiveShadow = true;
+        child.castShadow = !isMobile;
+        child.receiveShadow = !isMobile;
         
         const childNameLower = child.name.toLowerCase();
         if (child.name.includes('Wheel.Ft') || child.name.includes('Wheel.Bk') || childNameLower.includes('wheel')) {
@@ -87,38 +93,62 @@ const Car = ({ activeTargetId, introFinished, carState, onCarArrived, onSetCarSt
           const matNameLower = (mat.name || '').toLowerCase();
           
           if (mat.name && (mat.name === 'CarpaintMetallicBlack' || matNameLower === 'carpaint' || matNameLower.includes('carpaint'))) {
-            const cloneMat = new THREE.MeshPhysicalMaterial({
-              color: new THREE.Color('#0555fa'), // Customized glowing Porsche Electric Cobalt Blue
-              metalness: 0.82,
-              roughness: 0.08,
-              clearcoat: 1.0,
-              clearcoatRoughness: 0.02,
-              envMapIntensity: 2.5, // Pristine wet-look showroom finish
-              normalMap: mat.normalMap,
-              normalScale: mat.normalScale
-            });
+            const cloneMat = isMobile 
+              ? new THREE.MeshStandardMaterial({
+                  color: new THREE.Color('#0555fa'),
+                  metalness: 0.8,
+                  roughness: 0.15,
+                  envMapIntensity: 1.5,
+                  normalMap: mat.normalMap,
+                  normalScale: mat.normalScale
+                })
+              : new THREE.MeshPhysicalMaterial({
+                  color: new THREE.Color('#0555fa'),
+                  metalness: 0.82,
+                  roughness: 0.08,
+                  clearcoat: 1.0,
+                  clearcoatRoughness: 0.02,
+                  envMapIntensity: 2.5,
+                  normalMap: mat.normalMap,
+                  normalScale: mat.normalScale
+                });
             child.material = cloneMat;
           }
           if (mat.name && (matNameLower.includes('glass') || matNameLower.includes('window'))) {
-            const glassMat = new THREE.MeshPhysicalMaterial({
-              color: new THREE.Color('#050814'),
-              metalness: 0.1,
-              roughness: 0.05,
-              transmission: 0.65,
-              transparent: true,
-              opacity: 0.88,
-              ior: 1.5
-            });
+            const glassMat = isMobile
+              ? new THREE.MeshStandardMaterial({
+                  color: new THREE.Color('#050814'),
+                  metalness: 0.1,
+                  roughness: 0.1,
+                  transparent: true,
+                  opacity: 0.85
+                })
+              : new THREE.MeshPhysicalMaterial({
+                  color: new THREE.Color('#050814'),
+                  metalness: 0.1,
+                  roughness: 0.05,
+                  transmission: 0.65,
+                  transparent: true,
+                  opacity: 0.88,
+                  ior: 1.5
+                });
             child.material = glassMat;
           }
           if (mat.name && (matNameLower.includes('taillight') || matNameLower.includes('redg') || matNameLower.includes('tail_light') || matNameLower.includes('brake'))) {
-            const cloneMat = new THREE.MeshPhysicalMaterial({
-              color: new THREE.Color('#ff0022'),
-              emissive: new THREE.Color('#ff0011'),
-              emissiveIntensity: 4.5,
-              clearcoat: 1.0,
-              roughness: 0.1
-            });
+            const cloneMat = isMobile
+              ? new THREE.MeshStandardMaterial({
+                  color: new THREE.Color('#ff0022'),
+                  emissive: new THREE.Color('#ff0011'),
+                  emissiveIntensity: 3.5,
+                  roughness: 0.2
+                })
+              : new THREE.MeshPhysicalMaterial({
+                  color: new THREE.Color('#ff0022'),
+                  emissive: new THREE.Color('#ff0011'),
+                  emissiveIntensity: 4.5,
+                  clearcoat: 1.0,
+                  roughness: 0.1
+                });
             child.material = cloneMat;
           }
           if (mat.name && (matNameLower.includes('headlight') || matNameLower.includes('head_light'))) {
