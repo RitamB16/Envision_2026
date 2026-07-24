@@ -60,20 +60,7 @@ export function clearAuthSession() {
 }
 
 export function isAuthenticated(): boolean {
-  const token = getAuthToken();
-  if (!token) return false;
-  try {
-    const parts = token.split('.');
-    if (parts.length !== 3) return false;
-    const payload = JSON.parse(atob(parts[1]));
-    if (payload.exp && Date.now() >= payload.exp * 1000) {
-      clearAuthSession();
-      return false;
-    }
-    return true;
-  } catch {
-    return false;
-  }
+  return !!localStorage.getItem('envision_user_signedup') || !!getAuthToken();
 }
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {

@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, useLocation, useNavigate, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import LoadingScreen from './components/LoadingScreen';
 import IgnitionIntro from './components/IgnitionIntro';
 import NavDock from './components/NavDock';
 import SceneContainer from './components/SceneContainer';
-import ProtectedRoute from './components/ProtectedRoute';
 import { audioEngine } from './utils/AudioEngine';
 import { destinations } from './config';
 
@@ -118,8 +117,8 @@ function AppContent() {
     // Close mobile menu drawer on active navigate
     setIsDrawerOpen(false);
     
-    // Ignore double clicks or immediate clicks within 1.2s to prevent loop re-queues
-    if (navLockRef.current.id !== null && (now - navLockRef.current.time < 1200 || navLockRef.current.id === id)) {
+    // Block duplicate rapid clicks on the same link within 800ms
+    if (navLockRef.current.id === id && now - navLockRef.current.time < 800) {
       return;
     }
     
@@ -135,12 +134,31 @@ function AppContent() {
       handleSignUpNavigate();
       return;
     }
-    if (activeTargetId === id || isWiping || carState !== 'PATROLLING') return;
+
     const dest = destinations.find(d => d.id === id);
     if (!dest) return;
 
+    if (location.pathname === dest.path) return;
+
     navLockRef.current = { id, time: now };
 
+    // Fast direct transition if switching between sub-pages
+    if (isPageActive) {
+      setIsWiping(true);
+      setTimeout(() => {
+        navigate(dest.path);
+        setActiveTargetId(id);
+        setCarState('PATROLLING');
+        setCameraMode('FOLLOW');
+        setTimeout(() => {
+          setIsWiping(false);
+        }, 100);
+      }, 700);
+      return;
+    }
+
+    // 3D Car Traveling Transition from Main Landing Patrol
+    if (activeTargetId === id || isWiping || carState !== 'PATROLLING') return;
     setActiveTargetId(id);
     setCarState('TRAVELING');
   };
@@ -248,8 +266,8 @@ function AppContent() {
              <Suspense fallback={null}>
                <Routes>
                  <Route path="/" element={null} />
-                 <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-                 <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                 <Route path="/profile" element={<Profile />} />
+                 <Route path="/dashboard" element={<Dashboard />} />
                  <Route path="/login" element={<Login />} />
                  <Route path="/register" element={<Register onBack={handleBackToCity} onRegisterSuccess={handleRegisterSuccess} />} />
                  <Route path="/events" element={<Events onBack={handleBackToCity} />} />
@@ -257,10 +275,9 @@ function AppContent() {
                  <Route path="/coordinators" element={<Coordinators onBack={handleBackToCity} />} />
                  <Route path="/alumni" element={<Alumni onBack={handleBackToCity} />} />
                  <Route path="/sponsors" element={<Sponsors onBack={handleBackToCity} />} />
-                 <Route path="/checkout" element={<ProtectedRoute><PaymentCheckout /></ProtectedRoute>} />
-                 <Route path="/checkout/:registrationId" element={<ProtectedRoute><PaymentCheckout /></ProtectedRoute>} />
-                 <Route path="/tickets/:registrationId" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-                 <Route path="*" element={<Navigate to="/" replace />} />
+                 <Route path="/checkout" element={<PaymentCheckout />} />
+                 <Route path="/checkout/:registrationId" element={<PaymentCheckout />} />
+                 <Route path="/tickets/:registrationId" element={<Profile />} />
                </Routes>
              </Suspense>
           </div>
