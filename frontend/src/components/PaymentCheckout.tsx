@@ -23,7 +23,7 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
   const params = useParams<{ registrationId?: string }>();
   const location = useLocation();
   const stateData = (location.state as any) || {};
-  const { state: regContextState } = useRegistrationContext();
+  const { state: regContextState, clearRegistrationData } = useRegistrationContext();
 
   // Route Guard: Direct manual URL navigation check
   useEffect(() => {
@@ -91,7 +91,7 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
     document.body.appendChild(script);
   }, []);
 
-  // 3-Second Delayed Redirect Countdown on Payment Success
+  // 3-Second Delayed Redirect Countdown on Manual UTR Payment Success
   useEffect(() => {
     let timer: any;
     if (paymentStatus === 'SUCCESS') {
@@ -105,6 +105,7 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
                 registrationId,
                 totalAmount,
                 paymentStatus: 'COMPLETED',
+                payment_id: txnId,
                 txnId
               }
             });
@@ -141,8 +142,17 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
         registration_id: registrationId,
         utr_number: cleanUtr
       });
-      setTxnId(`UTR-${cleanUtr}`);
+      const submittedTxnId = `UTR-${cleanUtr}`;
+      setTxnId(submittedTxnId);
       setPaymentStatus('SUCCESS');
+
+      // State Cleanup
+      clearRegistrationData();
+      try {
+        sessionStorage.removeItem('envision_registration_pipeline_state');
+        sessionStorage.removeItem('registrationData');
+      } catch (e) {}
+
     } catch (err: any) {
       setErrorMessage(err.message || "Failed to verify transaction UTR number.");
     } finally {
@@ -206,28 +216,34 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
           color: "#00f3ff",
           backdrop_color: "#060212"
         },
-        handler: async function (response: any) {
-          setTxnId(response.razorpay_payment_id || `pay_${Date.now()}`);
-
-          // 3. Automated Backend Verification
-          try {
-            await api.post('/payments/verify', {
-              registration_id: registrationId,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_signature: response.razorpay_signature
-            });
-          } catch (verifyErr) {
-            console.warn("Verification warning:", verifyErr);
-          }
-
-          // Trigger Success UX
+        handler: function (response: any) {
+          const paymentId = response.razorpay_payment_id || `pay_${Date.now()}`;
+          setTxnId(paymentId);
           setPaymentStatus('SUCCESS');
+
+          // 1. State Cleanup: Clear temporary registration data so the pipeline resets
+          clearRegistrationData();
+          try {
+            sessionStorage.removeItem('envision_registration_pipeline_state');
+            sessionStorage.removeItem('registrationData');
+          } catch (e) {}
+
+          // 2. Redirection: Immediately redirect to success profile page without redundant verify API call
+          navigate('/profile', {
+            state: {
+              justRegisteredEvent: eventName,
+              registrationId,
+              totalAmount,
+              paymentStatus: 'COMPLETED',
+              payment_id: paymentId,
+              txnId: paymentId
+            }
+          });
         },
         modal: {
           ondismiss: function () {
             setPaymentStatus('FAILED');
-            setErrorMessage("Payment was canceled or dismissed. You can try again below.");
+            setErrorMessage("Payment was cancelled or dismissed. You can retry payment when ready.");
           }
         }
       };
@@ -248,7 +264,7 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
     } catch (err: any) {
       console.error("Payment Error:", err);
       setPaymentStatus('FAILED');
-      setErrorMessage(err.message || "Failed to initiate payment gateway.");
+      setErrorMessage(err.message || "Failed to initiate Razorpay payment gateway.");
     }
   };
 
@@ -326,7 +342,7 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
             </div>
 
             <button
-              onClick={() => navigate('/profile', { state: { justRegisteredEvent: eventName, registrationId } })}
+              onClick={() => navigate('/profile', { state: { justRegisteredEvent: eventName, registrationId, payment_id: txnId } })}
               className="px-8 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-black font-extrabold uppercase font-mono tracking-wider shadow-[0_0_25px_rgba(16,185,129,0.4)] transition-all transform hover:scale-105 active:scale-95 cursor-pointer"
             >
               VIEW PROFILE DASHBOARD &rarr;

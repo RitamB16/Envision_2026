@@ -8,12 +8,12 @@ class UserBase(BaseModel):
     name: str
 
 class UserResponse(BaseModel):
-    id: UUID  # <--- Changed to UUID to fix the validation crash
+    id: Union[UUID, str]
     email: str
     name: str
     fest_id: Optional[str] = None
-    role: str = "PARTICIPANT"
-    is_approved: bool = True
+    role: Optional[str] = "PARTICIPANT"
+    is_approved: Optional[bool] = True
     profile_picture: Optional[str] = None
     department: Optional[str] = "Computer Science"
     full_name: Optional[str] = None
@@ -54,18 +54,20 @@ class MagicLinkResponse(BaseModel):
 class EventResponse(BaseModel):
     id: str
     name: str
-    category: str
-    price: str
-    price_amount: int
-    requires_team: bool = False
-    max_team_size: int = 1
-    has_food: bool = True
+    category: Optional[str] = "GENERAL"
+    price: Optional[str] = "FREE"
+    price_amount: Optional[Union[int, float, str]] = 0
+    requires_team: Optional[bool] = False
+    max_team_size: Optional[int] = 1
+    has_food: Optional[bool] = True
+    max_capacity: Optional[int] = 100
     notes: Optional[str] = None
     image: Optional[str] = None
     benefits: Optional[str] = None
     date: Optional[str] = None
     venue: Optional[str] = None
     time: Optional[str] = None
+    created_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -88,10 +90,10 @@ class EventRegistrationCreate(BaseModel):
     transaction_id: Optional[str] = None
 
 class EventRegistrationResponse(BaseModel):
-    id: Union[str, UUID]
-    user_id: UUID  # <--- Updated to UUID to prevent future crashes here
-    event_id: Union[str, UUID]
-    team_id: Optional[Union[str, UUID]] = None
+    id: Union[UUID, str]
+    user_id: Union[UUID, str]
+    event_id: Union[UUID, str]
+    team_id: Optional[Union[UUID, str]] = None
     food_preference: Optional[str] = None
     user_email: Optional[str] = None
     user_name: Optional[str] = None
@@ -101,8 +103,8 @@ class EventRegistrationResponse(BaseModel):
     college: Optional[str] = None
     transaction_id: Optional[str] = None
     razorpay_order_id: Optional[str] = None
-    payment_status: str = "CONFIRMED"
-    status: str
+    payment_status: Optional[str] = "PENDING"
+    status: Optional[str] = "PENDING"
     created_at: Optional[datetime] = None
     event: Optional[EventResponse] = None
 
@@ -112,14 +114,16 @@ class TeamInviteCreate(BaseModel):
     email: EmailStr
 
 class TeamInviteResponse(BaseModel):
-    id: Union[str, UUID]
-    team_id: Union[str, UUID]
-    event_id: Union[str, UUID]
+    id: Union[UUID, str]
+    team_id: Union[UUID, str]
+    event_id: Union[UUID, str]
     invited_email: str
-    invite_token: str
-    invite_url: str
-    status: str
-    message: str
+    invite_token: Optional[str] = None
+    invite_url: Optional[str] = None
+    status: Optional[str] = "PENDING"
+    message: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
 
 class SoloRegistrationCreate(BaseModel):
     event_name: str

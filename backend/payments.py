@@ -40,11 +40,12 @@ def create_order(
 ):
     """
     Idempotent Razorpay Order Creation:
-    Fetches true price from DB and creates/ reuses order reference.
+    Fetches true price from DB and creates/reuses order reference.
     """
-    reg = db.query(models.EventRegistration).filter(
-        models.EventRegistration.id == payload.registration_id,
-        models.EventRegistration.user_id == current_user.id
+    # FIX: Use physical reg_id column to prevent synonym query resolution issues
+    reg = db.query(models.Registration).filter(
+        models.Registration.reg_id == payload.registration_id,
+        models.Registration.participant_id == current_user.id
     ).first()
 
     if not reg:
@@ -53,13 +54,13 @@ def create_order(
             detail="Registration record not found."
         )
 
-    if reg.payment_status == "COMPLETED":
+    if reg.payment_status in ("COMPLETED", "SUCCESS"):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Registration is already paid and completed."
         )
 
-    event = db.query(models.Event).filter(models.Event.id == reg.event_id).first()
+    event = db.query(models.Event).filter(models.Event.id == reg.event_name).first()
     if not event:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -71,21 +72,21 @@ def create_order(
     key_id = os.getenv("RAZORPAY_KEY_ID") or getattr(settings, "RAZORPAY_KEY_ID", "rzp_test_mockkey123")
 
     # Idempotency: Reuse active unpaid order if already present
-    if reg.razorpay_order_id:
+    if reg.payment_order_id:
         try:
-            existing_order = client.order.fetch(reg.razorpay_order_id)
+            existing_order = client.order.fetch(reg.payment_order_id)
             if existing_order.get("status") in ["created", "attempted"] and existing_order.get("amount") == price_in_paise:
                 return {
-                    "razorpay_order_id": reg.razorpay_order_id,
+                    "razorpay_order_id": reg.payment_order_id,
                     "amount": price_in_paise,
                     "currency": "INR",
                     "key_id": key_id,
                     "reused_existing_order": True
                 }
         except Exception:
-            if "order_mock_" in str(reg.razorpay_order_id):
+            if "order_mock_" in str(reg.payment_order_id):
                 return {
-                    "razorpay_order_id": reg.razorpay_order_id,
+                    "razorpay_order_id": reg.payment_order_id,
                     "amount": price_in_paise,
                     "currency": "INR",
                     "key_id": key_id,
@@ -104,10 +105,10 @@ def create_order(
         order = client.order.create(data=order_data)
         order_id = order.get("id")
     except Exception as e:
-        print(f"Razorpay Order creation notice: {e}")
+        print(f"[!] Razorpay Order creation notice: {e}")
         order_id = f"order_mock_{str(payload.registration_id)[:8]}"
 
-    reg.razorpay_order_id = order_id
+    reg.payment_order_id = order_id
     db.commit()
 
     return {
@@ -128,9 +129,9 @@ def verify_payment(
     """
     Cryptographically verifies Razorpay payment signature and updates payment_status in DB.
     """
-    reg = db.query(models.EventRegistration).filter(
-        models.EventRegistration.id == payload.registration_id,
-        models.EventRegistration.user_id == current_user.id
+    reg = db.query(models.Registration).filter(
+        models.Registration.reg_id == payload.registration_id,
+        models.Registration.participant_id == current_user.id
     ).first()
 
     if not reg:
@@ -154,7 +155,7 @@ def verify_payment(
             detail="Invalid payment signature."
         )
     except Exception as e:
-        print(f"Signature Verification Security Alert: {e}")
+        print(f"[!] Signature Verification Security Alert: {e}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Payment signature verification failed."
@@ -164,8 +165,8 @@ def verify_payment(
     reg.transaction_id = payload.razorpay_payment_id
 
     if reg.team_id:
-        teammate_regs = db.query(models.EventRegistration).filter(
-            models.EventRegistration.team_id == reg.team_id
+        teammate_regs = db.query(models.Registration).filter(
+            models.Registration.team_id == reg.team_id
         ).all()
         for tm_reg in teammate_regs:
             tm_reg.payment_status = "COMPLETED"
@@ -201,9 +202,9 @@ def submit_utr(
             detail="Invalid UTR / Transaction Reference number. Please enter a valid 12-digit UPI Ref No."
         )
 
-    reg = db.query(models.EventRegistration).filter(
-        models.EventRegistration.id == payload.registration_id,
-        models.EventRegistration.user_id == current_user.id
+    reg = db.query(models.Registration).filter(
+        models.Registration.reg_id == payload.registration_id,
+        models.Registration.participant_id == current_user.id
     ).first()
 
     if not reg:
@@ -216,8 +217,8 @@ def submit_utr(
     reg.transaction_id = f"UTR-{utr}"
 
     if reg.team_id:
-        teammate_regs = db.query(models.EventRegistration).filter(
-            models.EventRegistration.team_id == reg.team_id
+        teammate_regs = db.query(models.Registration).filter(
+            models.Registration.team_id == reg.team_id
         ).all()
         for tm_reg in teammate_regs:
             tm_reg.payment_status = "COMPLETED"
@@ -231,4 +232,3 @@ def submit_utr(
         "message": "Transaction UTR submitted and verified.",
         "utr": utr
     }
-

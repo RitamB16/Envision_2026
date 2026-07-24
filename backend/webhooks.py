@@ -22,7 +22,7 @@ async def razorpay_webhook(
     """
     Asynchronous Razorpay Webhook Endpoint.
     Cryptographically verifies origin signature, handles payment.captured events,
-    and updates registration & team payment status idempotently.
+    and updates registration & team payment status idempotently with atomic error safety.
     """
     # 1. Extract raw body bytes and signature header
     body_bytes = await request.body()
@@ -66,27 +66,40 @@ async def razorpay_webhook(
 
     event_type = event_payload.get("event")
 
-    # 4. Handle payment.captured event idempotently
-    if event_type == "payment.captured":
+    # 4. Handle payment.captured or order.paid events
+    if event_type in ("payment.captured", "order.paid"):
         payment_entity = event_payload.get("payload", {}).get("payment", {}).get("entity", {})
 
         payment_id = payment_entity.get("id")
-        order_id = payment_entity.get("order_id")
+        order_id = payment_entity.get("order_id") or event_payload.get("payload", {}).get("order", {}).get("entity", {}).get("id")
         receipt = payment_entity.get("receipt")  # registration_id passed during order creation
         notes = payment_entity.get("notes", {})
         registration_id = receipt or notes.get("registration_id")
 
-        # Query registration record by registration_id or payment_id
         reg = None
-        if registration_id:
-            reg = db.query(models.EventRegistration).filter(
-                models.EventRegistration.id == registration_id
-            ).first()
 
-        if not reg and payment_id:
-            reg = db.query(models.EventRegistration).filter(
-                models.EventRegistration.transaction_id == payment_id
-            ).first()
+        # FIX 2: Safely attempt UUID query for registration_id to prevent parsing crashes
+        if registration_id:
+            try:
+                reg = db.query(models.EventRegistration).filter(
+                    models.EventRegistration.id == registration_id
+                ).first()
+            except Exception as uuid_err:
+                print(f"[!] Malformed registration_id string ignored during query: {uuid_err}")
+                db.rollback()
+                reg = None
+
+        # FIX 1: Fallback query using order_id instead of payment_id
+        if not reg and order_id:
+            try:
+                reg = db.query(models.EventRegistration).filter(
+                    (models.EventRegistration.transaction_id == order_id) |
+                    (models.EventRegistration.payment_order_id == order_id)
+                ).first()
+            except Exception as order_err:
+                print(f"[!] Order ID query error: {order_err}")
+                db.rollback()
+                reg = None
 
         if not reg:
             return {
@@ -94,34 +107,44 @@ async def razorpay_webhook(
                 "message": f"No registration matching receipt '{registration_id}' or order '{order_id}' found."
             }
 
-        # Idempotency Check: Avoid redundant DB updates or duplicate commits
-        if reg.payment_status == "COMPLETED":
+        # FIX 3: Wrap status update, teammate sync, and db.commit() in try...except with db.rollback() to prevent 500 retry storms
+        try:
+            # Idempotency Check: Avoid redundant DB updates or duplicate commits
+            if reg.payment_status in ("COMPLETED", "SUCCESS"):
+                return {
+                    "status": "ok",
+                    "message": f"Registration '{reg.id}' is already marked as COMPLETED. No duplicate update performed."
+                }
+
+            # Update EventRegistration payment status & overwrite transaction_id with payment_id
+            reg.payment_status = "COMPLETED"
+            if payment_id:
+                reg.transaction_id = payment_id
+
+            # Update teammates linked under the same team_id
+            if reg.team_id:
+                teammate_regs = db.query(models.EventRegistration).filter(
+                    models.EventRegistration.team_id == reg.team_id
+                ).all()
+                for tm_reg in teammate_regs:
+                    tm_reg.payment_status = "COMPLETED"
+                    if payment_id:
+                        tm_reg.transaction_id = payment_id
+
+            db.commit()
+
             return {
                 "status": "ok",
-                "message": f"Registration '{reg.id}' is already marked as COMPLETED. No duplicate update performed."
+                "message": f"Payment successfully processed for registration '{reg.id}'."
             }
 
-        # Update EventRegistration payment status
-        reg.payment_status = "COMPLETED"
-        if payment_id:
-            reg.transaction_id = payment_id
-
-        # Update teammates linked under the same team_id
-        if reg.team_id:
-            teammate_regs = db.query(models.EventRegistration).filter(
-                models.EventRegistration.team_id == reg.team_id
-            ).all()
-            for tm_reg in teammate_regs:
-                tm_reg.payment_status = "COMPLETED"
-                if payment_id and not tm_reg.transaction_id:
-                    tm_reg.transaction_id = payment_id
-
-        db.commit()
-
-        return {
-            "status": "ok",
-            "message": f"Payment successfully processed for registration '{reg.id}'."
-        }
+        except Exception as e:
+            db.rollback()
+            print(f"[!] Webhook Database Commit Error: {e}")
+            return {
+                "status": "error",
+                "message": f"Database commit error: {e}"
+            }
 
     return {
         "status": "ignored",

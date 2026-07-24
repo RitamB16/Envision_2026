@@ -353,13 +353,17 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
                     </div>
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      {registrations.map(reg => {
+                      {registrations.map((reg, idx) => {
                         const eventName = reg.event?.name || reg.event_id?.toUpperCase() || 'ENVISION EVENT';
-                        const isPaid = reg.payment_status === 'COMPLETED' || reg.payment_status === 'CONFIRMED' || reg.event_id === 'techtalk';
+                        const isTechTalk = reg.event_id === 'techtalk' || eventName.includes('TECH TALK');
+                        const isPaid = reg.payment_status === 'COMPLETED' || reg.payment_status === 'CONFIRMED' || isTechTalk;
+                        const statusLabel = isTechTalk
+                          ? '✓ FREE AUTO-ENROLLED PASS'
+                          : (isPaid ? '✓ CONFIRMED & PAID' : 'PENDING CHECKOUT');
 
                         return (
                           <div
-                            key={reg.id}
+                            key={`reg-${reg.id || idx}-${idx}`}
                             style={{
                               padding: '16px',
                               borderRadius: '16px',
@@ -390,17 +394,23 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
                                   fontFamily: 'monospace'
                                 }}
                               >
-                                {isPaid ? '✓ CONFIRMED & PAID' : 'PENDING CHECKOUT'}
+                                {statusLabel}
                               </span>
                             </div>
 
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px', fontSize: '11px', color: '#9ca3af', fontFamily: 'monospace', paddingTop: '8px', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px', fontSize: '11px', color: '#9ca3af', fontFamily: 'monospace', paddingTop: '8px', borderTop: '1px solid rgba(255, 255, 255, 0.08)', wordBreak: 'break-word' }}>
                               <div>REG ID: <strong style={{ color: '#38bdf8' }}>{reg.id}</strong></div>
                               {reg.food_preference && (
                                 <div>FOOD PREF: <strong style={{ color: '#f472b6' }}>{reg.food_preference}</strong></div>
                               )}
                               {reg.team_name && (
                                 <div>TEAM: <strong style={{ color: '#c084fc' }}>{reg.team_name}</strong></div>
+                              )}
+                              {reg.transaction_id && (
+                                <div>TXN REF: <strong style={{ color: '#fef08a' }}>{reg.transaction_id}</strong></div>
+                              )}
+                              {reg.team_members && (
+                                <div style={{ gridColumn: '1 / -1' }}>TEAM MEMBERS: <strong style={{ color: '#a7f3d0' }}>{reg.team_members}</strong></div>
                               )}
                             </div>
 

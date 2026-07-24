@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timezone
 from sqlalchemy import Column, String, Boolean, DateTime, Integer, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import synonym
+from sqlalchemy.orm import synonym, relationship, foreign
 from database import Base
 
 class User(Base):
@@ -71,12 +71,55 @@ class Registration(Base):
     payment_status = Column(String, nullable=False, default="PENDING")
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
 
+    # Relationships for Eager Loading
+    participant = relationship("User", backref="registrations", lazy="joined")
+    team = relationship("Team", backref="registrations", lazy="joined")
+    event_detail = relationship(
+        "Event",
+        primaryjoin="Registration.event_name == foreign(Event.id)",
+        uselist=False,
+        lazy="joined",
+        viewonly=True
+    )
+
     # Synonyms for SQL expressions and attribute access
     id = synonym("reg_id")
     user_id = synonym("participant_id")
     event_id = synonym("event_name")
     transaction_id = synonym("payment_order_id")
     status = synonym("payment_status")
+
+    @property
+    def razorpay_order_id(self):
+        return self.payment_order_id
+
+    @property
+    def user_email(self):
+        return self.participant.email if self.participant else None
+
+    @property
+    def user_name(self):
+        return (self.participant.name or self.participant.email) if self.participant else None
+
+    @property
+    def user_phone(self):
+        return self.participant.mobile if self.participant else None
+
+    @property
+    def college(self):
+        return self.participant.college if self.participant else None
+
+    @property
+    def food_preference(self):
+        return self.participant.food_pref if self.participant else None
+
+    @property
+    def team_name(self):
+        return self.team.team_name if self.team else None
+
+    @property
+    def event(self):
+        return self.event_detail
 
 
 # Compatibility alias for legacy handlers

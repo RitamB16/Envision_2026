@@ -283,11 +283,14 @@ const queryClient = new QueryClient({
   },
 });
 
+import ScrollToTop from './components/ScrollToTop';
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <RegistrationProvider>
         <BrowserRouter>
+          <ScrollToTop />
           <AppContent />
         </BrowserRouter>
       </RegistrationProvider>

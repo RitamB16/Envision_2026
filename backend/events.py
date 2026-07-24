@@ -6,12 +6,11 @@ from fastapi_cache import FastAPICache
 from fastapi_cache.decorator import cache
 from limiter import limiter
 from sqlalchemy.orm import Session
-from jose import jwt
 import models, schemas
 from database import get_db
 from security import get_current_user
 from config import settings
-from auth import get_frontend_url, generate_fest_id
+from auth import generate_fest_id
 
 router = APIRouter(prefix="/events", tags=["events"])
 
@@ -177,10 +176,7 @@ def get_user_registrations(
         auto_techtalk_reg = models.EventRegistration(
             user_id=current_user.id,
             event_id="techtalk",
-            user_email=current_user.email,
-            user_name=current_user.full_name or current_user.name,
-            food_preference="Veg",
-            college=current_user.college,
+            payment_order_id=f"auto_free_{uuid.uuid4().hex[:10]}",
             payment_status="COMPLETED",
             status="CONFIRMED"
         )
@@ -230,7 +226,6 @@ async def create_event(
     db.commit()
     db.refresh(db_event)
 
-    # Invalidate Redis catalog cache immediately
     await FastAPICache.clear(namespace="events")
     return db_event
 
@@ -256,7 +251,6 @@ async def update_event(
     db.commit()
     db.refresh(event)
 
-    # Invalidate Redis catalog cache immediately
     await FastAPICache.clear(namespace="events")
     return event
 
@@ -321,9 +315,8 @@ def register_for_event(
             )
 
         teammates_to_register = []
-
-        # 1. Process full teammate details submitted directly by Team Leader
         tm_food_map = {}
+
         if payload.teammate_details:
             if len(payload.teammate_details) > (event.max_team_size - 1):
                 raise HTTPException(
@@ -343,7 +336,6 @@ def register_for_event(
                 tm_phone = tm_detail.phone.strip() if tm_detail.phone else None
                 tm_college = tm_detail.college.strip() if tm_detail.college else None
 
-                # Find or auto-create teammate user
                 tm_user = db.query(models.User).filter(models.User.email == tm_email).first()
                 if not tm_user:
                     fest_id = generate_fest_id(db)
@@ -372,9 +364,9 @@ def register_for_event(
                     db.commit()
                     db.refresh(tm_user)
 
-                teammates_to_register.append(tm_user)
+                if tm_user not in teammates_to_register:
+                    teammates_to_register.append(tm_user)
 
-        # 2. Fallback to teammate Fest IDs if passed
         provided_ids = [fid.strip() for fid in (payload.teammate_fest_ids or []) if fid.strip()]
         if provided_ids:
             for fest_id in provided_ids:
@@ -400,7 +392,6 @@ def register_for_event(
         db.refresh(new_team)
         new_team_id = new_team.id
 
-        # Format member summary with generated Fest IDs
         registered_members = [f"{current_user.name} ({current_user.fest_id or 'Leader'})"]
         for tm in teammates_to_register:
             registered_members.append(f"{tm.name} ({tm.fest_id or 'Member'})")
@@ -449,7 +440,6 @@ def register_for_event(
         status="CONFIRMED"
     )
 
-    # Sync college and phone to current user profile if missing
     if payload.college and not current_user.college:
         current_user.college = payload.college
     if payload.phone and not current_user.phone:
@@ -475,106 +465,6 @@ def register_for_event(
         "user_name": current_user.full_name or current_user.name,
         "payment_status": initial_payment_status
     }
-
-
-@router.post("/teams/{team_id}/invite", response_model=schemas.TeamInviteResponse)
-def create_team_invite(
-    team_id: str,
-    payload: schemas.TeamInviteCreate,
-    request: Request,
-    current_user: models.User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """Generate a Team Magic Link Invitation for a teammate via email."""
-    team = db.query(models.Team).filter(models.Team.id == team_id).first()
-    if not team:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Team not found.")
-
-    if team.leader_id != current_user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only the Team Leader can send invitations.")
-
-    token_data = {
-        "team_id": team.id,
-        "event_id": team.event_id,
-        "invited_email": payload.email,
-        "invited_by": current_user.name,
-        "type": "team_invite"
-    }
-    invite_token = jwt.encode(token_data, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
-
-    db_invite = models.TeamInvite(
-        team_id=team.id,
-        event_id=team.event_id,
-        invited_by_user_id=current_user.id,
-        invited_email=payload.email,
-        invite_token=invite_token,
-        status="PENDING"
-    )
-    db.add(db_invite)
-    db.commit()
-    db.refresh(db_invite)
-
-    frontend_url = get_frontend_url(request)
-    invite_url = f"{frontend_url}/register?invite_token={invite_token}"
-
-    return schemas.TeamInviteResponse(
-        id=db_invite.id,
-        team_id=team.id,
-        event_id=team.event_id,
-        invited_email=payload.email,
-        invite_token=invite_token,
-        invite_url=invite_url,
-        status="PENDING",
-        message=f"Magic invitation link created for {payload.email}!"
-    )
-
-
-@router.post("/teams/join-via-invite")
-def join_team_via_invite(
-    invite_token: str,
-    current_user: models.User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """Validate Team Magic Link Invitation Token and join teammate to team."""
-    try:
-        payload = jwt.decode(invite_token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
-        if payload.get("type") != "team_invite":
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token type.")
-
-        team_id = payload.get("team_id")
-        event_id = payload.get("event_id")
-    except Exception:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired magic invitation token.")
-
-    team = db.query(models.Team).filter(models.Team.id == team_id).first()
-    if not team:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Team no longer exists.")
-
-    existing_reg = db.query(models.EventRegistration).filter(
-        models.EventRegistration.user_id == current_user.id,
-        models.EventRegistration.event_id == event_id,
-        models.EventRegistration.status != "CANCELLED"
-    ).first()
-
-    if existing_reg:
-        return {"message": f"You are already registered in team '{team.name}'."}
-
-    new_reg = models.EventRegistration(
-        user_id=current_user.id,
-        event_id=event_id,
-        team_id=team_id,
-        food_preference="Veg",
-        user_email=current_user.email,
-        user_name=current_user.full_name or current_user.name,
-        team_name=team.name,
-        college=current_user.college,
-        payment_status="COMPLETED",
-        status="CONFIRMED"
-    )
-    db.add(new_reg)
-    db.commit()
-
-    return {"message": f"Successfully joined team '{team.name}' for Envision '26!"}
 
 
 @router.delete("/registrations/{registration_id}")
@@ -607,8 +497,7 @@ def get_event_participants(
 ):
     """
     Event-Wise Data Retrieval Endpoint:
-    Retrieves complete participant records for a specific event after registration closes
-    (Name, Fest ID, Email, Phone/Mobile, College, Food Preference, Team Name, Member List, Payment Status, Txn ID).
+    Retrieves complete participant records for a specific event after registration closes.
     """
     seed_events_if_empty(db)
     event = db.query(models.Event).filter(models.Event.id == event_id).first()
@@ -667,7 +556,7 @@ def export_all_event_data(
 ):
     """
     Master Event-Wise Export Endpoint:
-    Groups all registered participant data by event for administrative reporting & data retrieval after registration closes.
+    Groups all registered participant data by event for administrative reporting.
     """
     seed_events_if_empty(db)
     all_events = db.query(models.Event).all()

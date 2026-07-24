@@ -72,7 +72,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...options,
-    credentials: 'include', // Automatically send and receive HttpOnly cookies
+    credentials: 'include',
     headers,
   });
 
@@ -84,7 +84,11 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
       }
     }
     const errorData = await response.json().catch(() => ({}));
-    const error = new Error(errorData.detail || `Request failed with status ${response.status}`);
+    let msg = errorData.detail || `Request failed with status ${response.status}`;
+    if (response.status === 429) {
+      msg = "Rate limit exceeded (Too Many Requests). Please wait a few seconds before trying again.";
+    }
+    const error = new Error(msg);
     (error as any).status = response.status;
     throw error;
   }

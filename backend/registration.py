@@ -58,7 +58,7 @@ EVENT_CAPACITY_LIMITS = {
 def check_event_capacity(db: Session, event_name: str):
     """
     Checks event capacity BEFORE generating a Razorpay order.
-    Counts active registrations (both 'SUCCESS' and 'PENDING').
+    Counts active registrations safely across SUCCESS, COMPLETED, and PENDING statuses.
     """
     normalized = event_name.lower().replace(" ", "-").strip()
     event = db.query(models.Event).filter(models.Event.id == normalized).first()
@@ -72,9 +72,10 @@ def check_event_capacity(db: Session, event_name: str):
     if max_cap >= 999999 or max_cap == 0:
         return
 
+    # Count active rows including COMPLETED, SUCCESS, and PENDING
     active_count = db.query(models.Registration).filter(
         models.Registration.event_name == event_name,
-        models.Registration.payment_status.in_(["SUCCESS", "PENDING"])
+        models.Registration.payment_status.in_(["SUCCESS", "COMPLETED", "PENDING"])
     ).count()
 
     if active_count >= max_cap:
@@ -113,7 +114,6 @@ def register_solo(
         db.commit()
         db.refresh(participant)
     else:
-        # Update missing information if provided
         updated = False
         if payload.mobile and not participant.mobile:
             participant.mobile = payload.mobile
@@ -128,11 +128,11 @@ def register_solo(
             db.commit()
             db.refresh(participant)
 
-    # Check if already successfully registered for this event
+    # Check if already registered successfully (SUCCESS or COMPLETED)
     existing_reg = db.query(models.Registration).filter(
         models.Registration.participant_id == participant.id,
         models.Registration.event_name == payload.event_name,
-        models.Registration.payment_status == "SUCCESS"
+        models.Registration.payment_status.in_(["SUCCESS", "COMPLETED"])
     ).first()
     if existing_reg:
         raise HTTPException(
@@ -146,7 +146,7 @@ def register_solo(
     
     if price_in_paise == 0:
         order_id = f"free_order_{uuid.uuid4().hex[:12]}"
-        payment_status_val = "SUCCESS"
+        payment_status_val = "COMPLETED"
     else:
         client = get_razorpay_client()
         try:
@@ -191,12 +191,10 @@ def register_team(
 ):
     """
     Endpoint 2: Accepts team details (leader + up to 2 members, max team size 3),
-    verifies capacity caps, executes inside an ATOMIC TRANSACTION to prevent orphaned data,
-    creates/updates participants, creates a team row, creates Razorpay order, and returns Order ID.
+    verifies capacity caps, executes inside an ATOMIC TRANSACTION to prevent orphaned data.
     """
     leader_email = payload.leader_email.strip().lower()
     
-    # Enforce maximum 3 members total (Leader + max 2 extra members)
     if len(payload.members) > 2:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -206,7 +204,6 @@ def register_team(
     # Concurrency & Capacity check
     check_event_capacity(db, payload.event_name)
 
-    # ATOMIC TRANSACTION BLOCK
     try:
         # 1. Fetch or Create Leader Participant
         leader = db.query(models.User).filter(models.User.email == leader_email).first()
@@ -230,12 +227,12 @@ def register_team(
                 leader.food_pref = payload.leader_food_pref
             db.flush()
 
-        # 2. Fetch or Create Teammate Participants (max 2 members)
+        # 2. Fetch or Create Teammate Participants
         teammates = []
         for member in payload.members:
             member_email = member.email.strip().lower()
             if member_email == leader_email:
-                continue # Avoid adding leader as member twice
+                continue
                 
             tm = db.query(models.User).filter(models.User.email == member_email).first()
             if not tm:
@@ -274,7 +271,7 @@ def register_team(
         
         if price_in_paise == 0:
             order_id = f"free_order_{uuid.uuid4().hex[:12]}"
-            payment_status_val = "SUCCESS"
+            payment_status_val = "COMPLETED"
         else:
             client = get_razorpay_client()
             try:
@@ -344,7 +341,7 @@ async def razorpay_webhook(
     """
     Endpoint 3: Production-Ready Webhook Pipeline.
     Strictly verifies x-razorpay-signature, enforces idempotency,
-    and returns 200 OK on internal DB events to avoid retry loops.
+    and updates payments to COMPLETED format.
     """
     body_bytes = await request.body()
     body_str = body_bytes.decode("utf-8")
@@ -393,20 +390,20 @@ async def razorpay_webhook(
                 if not registrations:
                     return {"status": "ignored", "message": f"Order '{order_id}' not found in database."}
 
-                # IDEMPOTENCY CHECK: If already marked as SUCCESS, return 200 OK immediately
-                if all(reg.payment_status == "SUCCESS" for reg in registrations):
+                # IDEMPOTENCY CHECK: If already marked as COMPLETED or SUCCESS, return 200 OK immediately
+                if all(reg.payment_status in ("COMPLETED", "SUCCESS") for reg in registrations):
                     return {
                         "status": "ok",
-                        "message": f"Order '{order_id}' is already marked as SUCCESS. Idempotent response."
+                        "message": f"Order '{order_id}' is already marked as completed. Idempotent response."
                     }
 
                 for reg in registrations:
-                    reg.payment_status = "SUCCESS"
+                    reg.payment_status = "COMPLETED"
                 db.commit()
                 
                 return {
                     "status": "ok",
-                    "message": f"Updated {len(registrations)} registration(s) for order {order_id} to SUCCESS."
+                    "message": f"Updated {len(registrations)} registration(s) for order {order_id} to COMPLETED."
                 }
             except Exception as db_err:
                 db.rollback()
