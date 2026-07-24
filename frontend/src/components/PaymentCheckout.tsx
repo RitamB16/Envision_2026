@@ -85,10 +85,10 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
         setCountdown((prev) => {
           if (prev <= 1) {
             clearInterval(timer);
-            navigate(`/tickets/${registrationId}`, {
+            navigate('/profile', {
               state: {
+                justRegisteredEvent: eventName,
                 registrationId,
-                eventName,
                 totalAmount,
                 paymentStatus: 'COMPLETED',
                 txnId
@@ -296,15 +296,15 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
                 />
               </div>
               <p className="text-xs text-center text-cyan-300 font-mono animate-pulse">
-                Redirecting to your verified ticket pass in <strong className="text-white text-base">{countdown}</strong> seconds...
+                Redirecting to your student profile dashboard in <strong className="text-white text-base">{countdown}</strong> seconds...
               </p>
             </div>
 
             <button
-              onClick={() => navigate(`/tickets/${registrationId}`)}
-              className="px-8 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-black font-extrabold uppercase font-mono tracking-wider shadow-[0_0_25px_rgba(16,185,129,0.4)] transition-all transform hover:scale-105 active:scale-95"
+              onClick={() => navigate('/profile', { state: { justRegisteredEvent: eventName, registrationId } })}
+              className="px-8 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-black font-extrabold uppercase font-mono tracking-wider shadow-[0_0_25px_rgba(16,185,129,0.4)] transition-all transform hover:scale-105 active:scale-95 cursor-pointer"
             >
-              VIEW TICKET PASS NOW &rarr;
+              VIEW PROFILE DASHBOARD &rarr;
             </button>
           </div>
         )}
@@ -401,11 +401,22 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
               
               {/* Failed Error Notice */}
               {paymentStatus === 'FAILED' && errorMessage && (
-                <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/40 text-red-300 text-xs font-mono flex items-start gap-3 animate-shake">
-                  <span className="text-lg">❌</span>
-                  <div className="flex-1">
-                    <strong className="block text-red-400 font-bold mb-0.5">Payment Failed or Canceled</strong>
-                    <p className="text-gray-300 leading-relaxed">{errorMessage}</p>
+                <div className="p-4 rounded-xl bg-red-500/15 border border-red-500/50 text-red-300 text-xs font-mono flex flex-col gap-3 animate-shake shadow-lg">
+                  <div className="flex items-start gap-3">
+                    <span className="text-xl">❌</span>
+                    <div className="flex-1">
+                      <strong className="block text-red-400 font-bold text-sm mb-0.5">Payment Failed or Canceled</strong>
+                      <p className="text-gray-300 leading-relaxed">{errorMessage}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-2 border-t border-red-500/20">
+                    <button
+                      onClick={() => navigate(`/events?payment_failed=true&event=${encodeURIComponent(eventName)}`)}
+                      className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white font-mono text-xs font-bold uppercase tracking-wider transition-colors shadow-md cursor-pointer"
+                    >
+                      RETURN TO EVENTS PAGE &rarr;
+                    </button>
                   </div>
                 </div>
               )}

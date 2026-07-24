@@ -1219,6 +1219,29 @@ export default function Events({ onBack: _onBack }: Props) {
         }
       `}</style>
 
+      {/* Payment Failure Popup Modal */}
+      {searchParams.get('payment_failed') === 'true' && (
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-fade-in">
+          <div className="w-full max-w-md bg-[#120521] border-2 border-red-500/60 rounded-2xl p-6 text-center shadow-[0_0_50px_rgba(239,68,68,0.4)] relative">
+            <div className="w-16 h-16 rounded-full bg-red-500/20 border border-red-500 flex items-center justify-center mx-auto mb-4 text-2xl text-red-400">
+              ❌
+            </div>
+            <h3 className="text-xl font-extrabold text-red-400 font-mono tracking-wider uppercase mb-2">
+              PAYMENT FAILED / CANCELED
+            </h3>
+            <p className="text-xs text-gray-300 font-sans leading-relaxed mb-6">
+              Your payment for <strong className="text-cyan-300">{searchParams.get('event') || 'Envision Track'}</strong> could not be completed or was canceled. You can try registering again below.
+            </p>
+            <button
+              onClick={() => setSearchParams({})}
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500 text-white font-mono text-xs font-bold uppercase tracking-wider transition-all shadow-lg cursor-pointer"
+            >
+              DISMISS & RETRY REGISTRATION
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* State Router View: Grid */}
       {view === 'grid' && (
         <>

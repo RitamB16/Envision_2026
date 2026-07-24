@@ -113,6 +113,8 @@ export interface EventRegistration {
   id: string;
   user_id: string;
   event_id: string;
+  food_preference?: string;
+  payment_status?: string;
   user_email: string;
   user_name: string;
   user_phone?: string;

@@ -1,12 +1,19 @@
 import { useState, useEffect, FormEvent, MouseEvent as ReactMouseEvent } from 'react';
-import { api, UserProfile, clearAuthSession } from '../utils/api';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { api, UserProfile, EventRegistration, clearAuthSession } from '../utils/api';
 
 interface StudentDashboardProps {
   onClose?: () => void;
 }
 
 export default function StudentDashboard({ onClose }: StudentDashboardProps) {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const stateData = (location.state as any) || {};
+  const justRegisteredEvent = stateData.justRegisteredEvent;
+
   const [activeTab, setActiveTab] = useState<'overview' | 'form'>('overview');
+  const [registrations, setRegistrations] = useState<EventRegistration[]>([]);
   const [user, setUser] = useState<UserProfile | null>(() => {
     const name = localStorage.getItem('user_name');
     const email = localStorage.getItem('user_email');
@@ -35,7 +42,7 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Fetch initial profile from backend
+  // Fetch initial profile & registrations from backend
   useEffect(() => {
     async function fetchProfile() {
       try {
@@ -49,7 +56,20 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
         console.error('Failed to fetch user profile:', err);
       }
     }
+
+    async function fetchRegistrations() {
+      try {
+        const regs = await api.get<EventRegistration[]>('/events/registrations/me');
+        if (Array.isArray(regs)) {
+          setRegistrations(regs);
+        }
+      } catch (err) {
+        console.warn('Registrations fetch notice:', err);
+      }
+    }
+
     fetchProfile();
+    fetchRegistrations();
   }, []);
 
   const handleLogout = () => {
@@ -303,6 +323,111 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
                 <p style={{ fontSize: '13px', color: '#d1d5db', marginTop: '8px', fontFamily: 'monospace', lineHeight: '1.5' }}>
                   Your student pass is active. Access your fest credentials, track unlocked event workshops, or complete your academic profile below.
                 </p>
+                {/* Just Registered Success Alert Banner */}
+                {justRegisteredEvent && (
+                  <div style={{ marginTop: '16px', padding: '16px', borderRadius: '16px', backgroundColor: 'rgba(6, 78, 59, 0.65)', border: '1px solid rgba(16, 185, 129, 0.5)', color: '#6ee7b7', fontSize: '13px', fontFamily: 'monospace', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', boxShadow: '0 0 25px rgba(16, 185, 129, 0.3)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{ fontSize: '20px' }}>🎉</span>
+                      <div>
+                        <strong style={{ display: 'block', color: '#ffffff' }}>PAYMENT CONFIRMED!</strong>
+                        <span>Successfully registered for <strong style={{ color: '#00f3ff' }}>{justRegisteredEvent}</strong>. Your ticket pass is active below.</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Registered Events Catalog Section */}
+                <div style={{ marginTop: '24px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                    <h3 style={{ fontSize: '14px', fontWeight: 900, color: '#00f3ff', margin: 0, fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                      🎟️ MY REGISTERED TRACKS & EVENT PASSES
+                    </h3>
+                    <span style={{ fontSize: '11px', color: '#9ca3af', fontFamily: 'monospace' }}>
+                      {registrations.length} TRACKS REGISTERED
+                    </span>
+                  </div>
+
+                  {registrations.length === 0 ? (
+                    <div style={{ padding: '24px', borderRadius: '16px', backgroundColor: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.1)', textAlign: 'center', color: '#9ca3af', fontSize: '12px', fontFamily: 'monospace' }}>
+                      No registered events found yet. Explore tracks on the <a href="/events" style={{ color: '#00f3ff', textDecoration: 'underline' }}>Events Page</a>.
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {registrations.map(reg => {
+                        const eventName = reg.event?.name || reg.event_id?.toUpperCase() || 'ENVISION EVENT';
+                        const isPaid = reg.payment_status === 'COMPLETED' || reg.payment_status === 'CONFIRMED' || reg.event_id === 'techtalk';
+
+                        return (
+                          <div
+                            key={reg.id}
+                            style={{
+                              padding: '16px',
+                              borderRadius: '16px',
+                              backgroundColor: 'rgba(14, 7, 38, 0.85)',
+                              border: isPaid ? '1px solid rgba(0, 243, 255, 0.3)' : '1px solid rgba(234, 179, 8, 0.4)',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '10px'
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <span style={{ width: '10px', height: '10px', borderRadius: '9999px', backgroundColor: isPaid ? '#10b981' : '#eab308' }} />
+                                <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 900, color: '#ffffff', fontFamily: 'monospace' }}>
+                                  {eventName}
+                                </h4>
+                              </div>
+
+                              <span
+                                style={{
+                                  padding: '4px 10px',
+                                  borderRadius: '9999px',
+                                  backgroundColor: isPaid ? 'rgba(16, 185, 129, 0.2)' : 'rgba(234, 179, 8, 0.2)',
+                                  border: isPaid ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid rgba(234, 179, 8, 0.4)',
+                                  color: isPaid ? '#6ee7b7' : '#fef08a',
+                                  fontSize: '10px',
+                                  fontWeight: 800,
+                                  fontFamily: 'monospace'
+                                }}
+                              >
+                                {isPaid ? '✓ CONFIRMED & PAID' : 'PENDING CHECKOUT'}
+                              </span>
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px', fontSize: '11px', color: '#9ca3af', fontFamily: 'monospace', paddingTop: '8px', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                              <div>REG ID: <strong style={{ color: '#38bdf8' }}>{reg.id}</strong></div>
+                              {reg.food_preference && (
+                                <div>FOOD PREF: <strong style={{ color: '#f472b6' }}>{reg.food_preference}</strong></div>
+                              )}
+                              {reg.team_name && (
+                                <div>TEAM: <strong style={{ color: '#c084fc' }}>{reg.team_name}</strong></div>
+                              )}
+                            </div>
+
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '6px' }}>
+                              <button
+                                onClick={() => navigate(`/tickets/${reg.id}`)}
+                                style={{
+                                  padding: '8px 16px',
+                                  borderRadius: '10px',
+                                  backgroundColor: 'rgba(0, 243, 255, 0.15)',
+                                  border: '1px solid rgba(0, 243, 255, 0.4)',
+                                  color: '#00f3ff',
+                                  fontSize: '11px',
+                                  fontWeight: 800,
+                                  fontFamily: 'monospace',
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                VIEW TICKET PASS ↗
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
 
                 {/* Info Cards Grid */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginTop: '20px' }}>
