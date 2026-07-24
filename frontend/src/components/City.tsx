@@ -31,8 +31,10 @@ const City: React.FC = () => {
             const cloneMat = mat.clone();
             cloneMat.emissiveIntensity = isMobile ? 0.95 : 1.35;
             // Also ensure it actually emits color
-            if (cloneMat.emissive.getHex() === 0x000000 && cloneMat.color) {
-              cloneMat.emissive.copy(cloneMat.color);
+            if (cloneMat.emissive && typeof cloneMat.emissive.getHex === 'function') {
+              if (cloneMat.emissive.getHex() === 0x000000 && cloneMat.color) {
+                cloneMat.emissive.copy(cloneMat.color);
+              }
             }
             child.material = cloneMat;
           }

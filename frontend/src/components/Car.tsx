@@ -124,7 +124,9 @@ const Car = ({ activeTargetId, introFinished, carState, onCarArrived, onSetCarSt
           if (mat.name && (matNameLower.includes('headlight') || matNameLower.includes('head_light'))) {
             const cloneMat = mat.clone();
             cloneMat.emissiveIntensity = 0; 
-            if (cloneMat.emissive.getHex() === 0) cloneMat.emissive.setHex(0xffffff);
+            if (cloneMat.emissive && typeof cloneMat.emissive.getHex === 'function') {
+              if (cloneMat.emissive.getHex() === 0) cloneMat.emissive.setHex(0xffffff);
+            }
             child.material = cloneMat;
           }
         }
