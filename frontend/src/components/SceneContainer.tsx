@@ -197,7 +197,7 @@ const SceneContainer: React.FC<SceneContainerProps> = ({
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'fixed', top: 0, left: 0 }}>
       <Canvas 
-        frameloop={isPageActive ? "demand" : "always"}
+        frameloop="always"
         shadows={!isMobile} 
         dpr={canvasDpr} 
         camera={{ position: [0, 10, 20], fov: 50 }}
