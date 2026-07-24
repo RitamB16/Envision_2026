@@ -1,3 +1,5 @@
+import random
+import string
 from sqlalchemy.orm import Session
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
@@ -31,6 +33,15 @@ def ensure_valid_fest_id(user: User, db: Session) -> bool:
         user.fest_id = generate_fest_id(db)
         return True
     return False
+
+def get_frontend_url(request: Request) -> str:
+    origin = request.headers.get("origin") or request.headers.get("referer")
+    if origin:
+        from urllib.parse import urlparse
+        parsed = urlparse(origin)
+        if parsed.scheme and parsed.netloc:
+            return f"{parsed.scheme}://{parsed.netloc}"
+    return getattr(settings, "FRONTEND_URL", "https://envision-2026-seven.vercel.app")
 
 def set_auth_cookie(response: Response, request: Request, access_token: str):
     origin = request.headers.get("origin", "")
