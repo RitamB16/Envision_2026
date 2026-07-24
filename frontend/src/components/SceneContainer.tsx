@@ -72,19 +72,19 @@ const isMobile = typeof window !== 'undefined' && (
   (navigator.maxTouchPoints > 0 && /Macintosh|Intel/i.test(navigator.userAgent))
 );
 
-const getSkyFragmentShader = (_mobileMode: boolean) => `
+const getSkyFragmentShader = (mobileMode: boolean) => `
   varying vec3 vWorldPosition;
 
   void main() {
     vec3 dir = normalize(vWorldPosition);
     float yFactor = clamp(dir.y, 0.0, 1.0);
     
-    // --- Ultra-Lightweight Sunset Twilight Horizon Gradient ---
-    vec3 sunburstGold       = vec3(1.0, 0.62, 0.15); // Fiery golden sunburst
-    vec3 sunsetFieryOrange  = vec3(0.98, 0.22, 0.08); // Deep fiery orange
-    vec3 twilightPink       = vec3(0.85, 0.15, 0.55); // Rich twilight pink
-    vec3 duskCyanTeal       = vec3(0.02, 0.42, 0.72); // Glowing dusk cyan/teal
-    vec3 deepNightBlue      = vec3(0.01, 0.04, 0.22); // Deep cosmic night sky
+    // --- Balanced Sunset Twilight Horizon Gradient ---
+    vec3 sunburstGold       = vec3(0.96, 0.55, 0.12);
+    vec3 sunsetFieryOrange  = vec3(0.92, 0.18, 0.06);
+    vec3 twilightPink       = vec3(0.78, 0.12, 0.50);
+    vec3 duskCyanTeal       = vec3(0.02, 0.38, 0.68);
+    vec3 deepNightBlue      = vec3(0.01, 0.04, 0.22);
 
     vec3 finalColor;
     if (yFactor < 0.05) {
@@ -98,9 +98,9 @@ const getSkyFragmentShader = (_mobileMode: boolean) => `
     }
 
     if (dir.y >= 0.0) {
-      // Soft ultra-fast horizontal sunset cloud accent
+      // Soft horizontal sunset cloud accent
       float horizonCloud = exp(-yFactor * 12.0) * (sin(dir.x * 24.0) * 0.5 + 0.5);
-      finalColor += vec3(0.95, 0.30, 0.40) * horizonCloud * 0.30;
+      finalColor += vec3(0.90, 0.25, 0.35) * horizonCloud * ${mobileMode ? '0.16' : '0.28'};
     }
     
     gl_FragColor = vec4(finalColor, 1.0);
@@ -196,10 +196,10 @@ const SceneContainer: React.FC<Props> = ({
     }
   }, [cameraMode, carState, manager, isPageActive]);
 
-  // Bounded canvas pixel density: 1.0 DPR on mobile, 1.25 on desktop to eliminate GPU fill-rate lag
+  // Dynamic crisp pixel density: 1.25 DPR on mobile, 1.35 on desktop for ultra-sharp visuals without frame drops
   const canvasDpr = isMobile 
-    ? Math.min(window.devicePixelRatio, 1.0) 
-    : Math.min(window.devicePixelRatio, 1.25);
+    ? Math.min(window.devicePixelRatio, 1.25) 
+    : Math.min(window.devicePixelRatio, 1.35);
 
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'fixed', top: 0, left: 0 }}>
@@ -209,20 +209,22 @@ const SceneContainer: React.FC<Props> = ({
         dpr={canvasDpr} 
         camera={{ position: [0, 10, 20], fov: 50 }}
         gl={{ 
-          antialias: !isMobile, 
+          antialias: true, 
           powerPreference: 'high-performance', 
-          precision: isMobile ? 'lowp' : 'mediump',
+          precision: 'mediump',
+          toneMapping: THREE.ACESFilmicToneMapping,
+          toneMappingExposure: isMobile ? 0.94 : 1.15,
           stencil: false,
           depth: true
         }}
       >
         <color attach="background" args={['#080210']} />
         <fog attach="fog" args={['#080210', 50, 240]} />
-        <ambientLight intensity={0.18} color="#223366" />
+        <ambientLight intensity={0.22} color="#2a3d75" />
         <directionalLight 
           castShadow={!isMobile} 
           position={[120, 180, -250]} 
-          intensity={0.4} 
+          intensity={0.45} 
           color="#d6e6ff" 
           shadow-bias={-0.001}
           shadow-mapSize={isMobile ? [256, 256] : [1024, 1024]}
@@ -241,11 +243,17 @@ const SceneContainer: React.FC<Props> = ({
           />
           <TireEffects />
           
-          {!isMobile && !isPageActive && (
-            <EffectComposer enableNormalPass={false} multisampling={0}>
-              <Bloom luminanceThreshold={0.6} luminanceSmoothing={0.9} intensity={1.3} mipmapBlur />
-              <Noise opacity={0.02} />
-            </EffectComposer>
+          {!isPageActive && (
+            isMobile ? (
+              <EffectComposer enableNormalPass={false} multisampling={0}>
+                <Bloom luminanceThreshold={0.65} luminanceSmoothing={0.85} intensity={1.1} mipmapBlur />
+              </EffectComposer>
+            ) : (
+              <EffectComposer enableNormalPass={false} multisampling={0}>
+                <Bloom luminanceThreshold={0.65} luminanceSmoothing={0.85} intensity={1.3} mipmapBlur />
+                <Noise opacity={0.02} />
+              </EffectComposer>
+            )
           )}
           
           <CameraRig 

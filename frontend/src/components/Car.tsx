@@ -378,23 +378,32 @@ const Car = ({ activeTargetId, introFinished, carState, onCarArrived, onSetCarSt
       <group rotation={[0, Math.PI, 0]}>
         <primitive object={scene} />
 
-        {/* Subtle Red LED Ground Glow strictly behind rear bumper */}
+        {/* Hyper-Realistic Red LED Taillight Angled Road Reflection */}
+        <spotLight
+          position={[0, 0.45, -2.15]}
+          color="#ff001a"
+          intensity={2.6}
+          distance={4.8}
+          angle={Math.PI / 3}
+          penumbra={0.7}
+          decay={1.8}
+        />
         <pointLight
           ref={leftTailLightRef}
-          position={[-0.6, 0.25, -2.2]}
-          color="#ff0022"
-          distance={2.2}
-          decay={2.0}
-          intensity={0.7}
+          position={[-0.6, 0.3, -2.2]}
+          color="#ff0522"
+          distance={3.2}
+          decay={1.9}
+          intensity={1.5}
           castShadow={false}
         />
         <pointLight
           ref={rightTailLightRef}
-          position={[0.6, 0.25, -2.2]}
-          color="#ff0022"
-          distance={2.2}
-          decay={2.0}
-          intensity={0.7}
+          position={[0.6, 0.3, -2.2]}
+          color="#ff0522"
+          distance={3.2}
+          decay={1.9}
+          intensity={1.5}
           castShadow={false}
         />
       </group>
