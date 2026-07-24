@@ -4,6 +4,9 @@
 -- Recreates clean participants, teams, and registrations tables.
 -- =================================================================
 
+-- 0. Ensure max_capacity column exists on events table
+ALTER TABLE IF EXISTS public.events ADD COLUMN IF NOT EXISTS max_capacity INTEGER DEFAULT 100;
+
 -- 1. DROP existing triggers, functions, and non-events tables
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 DROP FUNCTION IF EXISTS public.handle_new_user() CASCADE;

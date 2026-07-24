@@ -43,6 +43,18 @@ def generate_env_id(db: Session) -> str:
     return f"ENV-2026-{count:03d}"
 
 
+EVENT_CAPACITY_LIMITS = {
+    "techtalk": 1000,
+    "tech talk": 1000,
+    "syntaxx": 50,
+    "mindspark": 50,
+    "bidquest": 70,
+    "lensverse": 200,
+    "carlsen-chess": 50,
+    "carlsen chess": 50,
+    "chess": 50
+}
+
 def check_event_capacity(db: Session, event_name: str):
     """
     Checks event capacity BEFORE generating a Razorpay order.
@@ -50,7 +62,15 @@ def check_event_capacity(db: Session, event_name: str):
     """
     normalized = event_name.lower().replace(" ", "-").strip()
     event = db.query(models.Event).filter(models.Event.id == normalized).first()
-    max_cap = event.max_capacity if (event and hasattr(event, "max_capacity")) else 100
+    
+    if event and hasattr(event, "max_capacity") and event.max_capacity is not None:
+        max_cap = event.max_capacity
+    else:
+        max_cap = EVENT_CAPACITY_LIMITS.get(event_name.lower().strip(), EVENT_CAPACITY_LIMITS.get(normalized, 100))
+
+    # Unlimited capacity for Tech Talk
+    if max_cap >= 999999 or max_cap == 0:
+        return
 
     active_count = db.query(models.Registration).filter(
         models.Registration.event_name == event_name,
@@ -60,7 +80,7 @@ def check_event_capacity(db: Session, event_name: str):
     if active_count >= max_cap:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Registration capacity for event '{event_name}' has been reached."
+            detail=f"Registration capacity limit of {max_cap} for '{event_name}' has been reached."
         )
 
 

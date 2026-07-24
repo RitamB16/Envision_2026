@@ -25,6 +25,7 @@ DEFAULT_EVENTS = [
         "requires_team": False,
         "max_team_size": 1,
         "has_food": False,
+        "max_capacity": 1000,
         "notes": "100% FREE & Open to All! Direct Registration.",
         "image": "/images/events/techtalk.jpg",
         "benefits": "Free Keynote Entry Pass to RKMRC Tech Talk, Technical Seminars & Certificates.",
@@ -41,6 +42,7 @@ DEFAULT_EVENTS = [
         "requires_team": False,
         "max_team_size": 1,
         "has_food": True,
+        "max_capacity": 50,
         "notes": "Individual Event",
         "image": "/images/events/syntaxx.jpg",
         "benefits": "Participation certificate, Exciting Swags for Winner",
@@ -57,6 +59,7 @@ DEFAULT_EVENTS = [
         "requires_team": True,
         "max_team_size": 2,
         "has_food": True,
+        "max_capacity": 50,
         "notes": "Team (max. 2 members)",
         "image": "/images/events/mindspark.jpg",
         "benefits": "Participation certificate, Winning Cash prize worth ₹499",
@@ -73,6 +76,7 @@ DEFAULT_EVENTS = [
         "requires_team": True,
         "max_team_size": 3,
         "has_food": True,
+        "max_capacity": 70,
         "notes": "Team Event (max. 3 members)",
         "image": "/images/events/bidquest.jpg",
         "benefits": "Participation certificate, Winning Cash prize worth ₹1199",
@@ -89,6 +93,7 @@ DEFAULT_EVENTS = [
         "requires_team": False,
         "max_team_size": 1,
         "has_food": True,
+        "max_capacity": 200,
         "notes": "Top 10 shortlisted participants earn free entry, campus pass & FREE food for live photo competition!",
         "image": "/images/events/lensverse.jpg",
         "benefits": "Top 10 shortlisted photographers get invited to RKMRC campus with FREE food & festival pass to compete in live campus photo competition for winner cash prizes!",
@@ -105,6 +110,7 @@ DEFAULT_EVENTS = [
         "requires_team": False,
         "max_team_size": 1,
         "has_food": True,
+        "max_capacity": 50,
         "notes": "Individual Event",
         "image": "/images/events/chess.jpg",
         "benefits": "Participation certificate, Winning Cash prize worth ₹499",
@@ -135,6 +141,7 @@ def seed_events_if_empty(db: Session):
                 ev.notes = item["notes"]
                 ev.benefits = item["benefits"]
                 ev.venue = item["venue"]
+                ev.max_capacity = item["max_capacity"]
         db.commit()
 
 

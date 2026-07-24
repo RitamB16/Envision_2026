@@ -1,3 +1,6 @@
+import os
+import asyncio
+import urllib.request
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from config import settings
@@ -13,18 +16,46 @@ from slowapi.middleware import SlowAPIMiddleware
 from slowapi.errors import RateLimitExceeded
 from limiter import limiter, _rate_limit_exceeded_handler
 
-import asyncio
 from cache import init_cache
 from sweeper import cleanup_expired_registrations
 
 app = FastAPI(title=settings.PROJECT_NAME)
 
+
+async def keep_alive_ping():
+    """
+    Keep-Alive Task: Pings the backend service every 10 minutes (600 seconds)
+    to prevent Render free tier from spinning down after 15 minutes of inactivity.
+    """
+    await asyncio.sleep(30)
+    render_url = os.getenv("RENDER_EXTERNAL_URL") or "https://envision-2026.onrender.com"
+    ping_url = f"{render_url.rstrip('/')}/ping"
+
+    while True:
+        try:
+            def do_ping():
+                req = urllib.request.Request(ping_url, headers={"User-Agent": "Render-KeepAlive/1.0"})
+                with urllib.request.urlopen(req, timeout=10) as resp:
+                    return resp.getcode()
+            
+            status_code = await asyncio.to_thread(do_ping)
+            print(f"[Keep-Alive] Pinged {ping_url} -> Status {status_code}")
+        except Exception as e:
+            print(f"[Keep-Alive Notice] {e}")
+        
+        await asyncio.sleep(600)  # Ping every 10 minutes
+
+
 @app.on_event("startup")
 async def startup_event():
-    # Auto-Migration Check: Detect legacy tables and drop all tables EXCEPT 'events' to recreate clean schema
+    # Auto-Migration: Ensure max_capacity column exists on events and legacy schemas are cleaned up
     try:
         from sqlalchemy import text
         with engine.connect() as conn:
+            # 1. Safely add max_capacity column to events if missing
+            conn.execute(text("ALTER TABLE public.events ADD COLUMN IF NOT EXISTS max_capacity INTEGER DEFAULT 100;"))
+            
+            # 2. Check if legacy teams table exists without team_id column
             teams_table_exists = conn.execute(text(
                 "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'teams');"
             )).scalar()
@@ -35,13 +66,15 @@ async def startup_event():
                 )).scalar()
                 
                 if not team_id_col_exists:
-                    print("[!] Auto-Cleanup: Dropping all legacy tables except 'events'...")
+                    print("[!] Auto-Cleanup: Dropping legacy tables lacking team_id...")
                     conn.execute(text("DROP TABLE IF EXISTS registrations CASCADE;"))
                     conn.execute(text("DROP TABLE IF EXISTS event_registrations CASCADE;"))
                     conn.execute(text("DROP TABLE IF EXISTS teams CASCADE;"))
                     conn.execute(text("DROP TABLE IF EXISTS participants CASCADE;"))
                     conn.execute(text("DROP TABLE IF EXISTS users CASCADE;"))
-                    conn.commit()
+            
+            conn.commit()
+            print("✅ Auto-migration check completed (events max_capacity column verified).")
     except Exception as migration_err:
         print(f"[!] Migration Check Notice: {migration_err}")
 
@@ -53,6 +86,7 @@ async def startup_event():
 
     await init_cache()
     asyncio.create_task(cleanup_expired_registrations())
+    asyncio.create_task(keep_alive_ping())
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
@@ -87,3 +121,7 @@ app.include_router(registration_router)
 @app.get("/")
 def root():
     return {"status": "online", "message": "Welcome to the Tech Fest API"}
+
+@app.get("/ping")
+def ping():
+    return {"status": "awake", "message": "Keep-alive ping successful"}
