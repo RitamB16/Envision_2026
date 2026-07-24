@@ -109,6 +109,33 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const [utrInput, setUtrInput] = useState<string>('');
+  const [isSubmittingUtr, setIsSubmittingUtr] = useState<boolean>(false);
+
+  const handleVerifyUTR = async () => {
+    const cleanUtr = utrInput.trim();
+    if (!cleanUtr || cleanUtr.length < 6) {
+      setErrorMessage("Please enter a valid 12-digit UPI UTR / Ref Number from your payment app receipt.");
+      return;
+    }
+
+    setIsSubmittingUtr(true);
+    setErrorMessage(null);
+
+    try {
+      await api.post('/payments/submit-utr', {
+        registration_id: registrationId,
+        utr_number: cleanUtr
+      });
+      setTxnId(`UTR-${cleanUtr}`);
+      setPaymentStatus('SUCCESS');
+    } catch (err: any) {
+      setErrorMessage(err.message || "Failed to verify transaction UTR number.");
+    } finally {
+      setIsSubmittingUtr(false);
+    }
+  };
+
   const handlePayNow = async () => {
     setPaymentStatus('PROCESSING');
     setErrorMessage(null);
@@ -188,9 +215,10 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
         });
         rzp.open();
       } else {
-        // Direct Razorpay.me fallback if SDK fails to load
+        // Direct Razorpay.me link fallback if SDK fails to load
         window.open(RAZORPAY_ME_URL, '_blank');
-        setTimeout(() => setPaymentStatus('SUCCESS'), 2500);
+        setPaymentStatus('IDLE');
+        setErrorMessage("Payment page opened in a new tab. After completing payment, enter your 12-digit UPI UTR below to confirm registration.");
       }
     } catch (err: any) {
       console.error("Payment Error:", err);
@@ -449,9 +477,41 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
                       onClick={handleCopyUPI}
                       className="px-3 py-1.5 rounded bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 font-mono text-[11px] font-semibold transition-colors flex-shrink-0"
                     >
-                      {copied ? 'COPIED! ✅' : 'COPY UPI'}
+                      {copied ? 'COPIED! ✅' : 'COPY LINK'}
                     </button>
                   </div>
+                </div>
+              </div>
+
+              {/* Method 3: Submit 12-Digit UTR Number for UPI App Payments */}
+              <div className="bg-[#0e0726]/90 border border-purple-500/30 rounded-2xl p-5 sm:p-6 shadow-xl space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-mono tracking-wider text-purple-300 uppercase font-bold">
+                    METHOD 3: VERIFY 12-DIGIT UPI UTR / REF NO
+                  </h4>
+                  <span className="text-[10px] text-cyan-300 font-mono">
+                    FOR UPI APP PAYMENTS
+                  </span>
+                </div>
+                <p className="text-[11px] text-gray-400 leading-relaxed">
+                  Paid via Google Pay, PhonePe, Paytm, or BHIM? Enter your 12-digit UPI UTR / Ref No from your payment app receipt below to verify and unlock your ticket pass.
+                </p>
+
+                <div className="flex flex-col sm:flex-row gap-2.5">
+                  <input
+                    type="text"
+                    className="flex-1 bg-[#04010d] border border-white/20 focus:border-cyan-400 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono outline-none transition-all placeholder:text-gray-600"
+                    placeholder="Enter 12-digit UTR (e.g. 420185938210)"
+                    value={utrInput}
+                    onChange={(e) => setUtrInput(e.target.value)}
+                  />
+                  <button
+                    onClick={handleVerifyUTR}
+                    disabled={isSubmittingUtr || !utrInput.trim()}
+                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 disabled:opacity-50 text-white text-xs font-mono font-bold tracking-wider uppercase transition-all shadow-md flex items-center justify-center gap-2 flex-shrink-0"
+                  >
+                    {isSubmittingUtr ? 'VERIFYING...' : 'VERIFY & COMPLETE REGISTRATION'}
+                  </button>
                 </div>
               </div>
 

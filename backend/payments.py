@@ -178,3 +178,57 @@ def verify_payment(
         "status": "success",
         "message": "Payment verified"
     }
+
+
+class SubmitUTRRequest(BaseModel):
+    registration_id: str
+    utr_number: str
+
+
+@router.post("/submit-utr")
+def submit_utr(
+    payload: SubmitUTRRequest,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Submits 12-digit UPI UTR / Payment Ref Number for manual verification.
+    """
+    utr = payload.utr_number.strip()
+    if len(utr) < 6:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid UTR / Transaction Reference number. Please enter a valid 12-digit UPI Ref No."
+        )
+
+    reg = db.query(models.EventRegistration).filter(
+        models.EventRegistration.id == payload.registration_id,
+        models.EventRegistration.user_id == current_user.id
+    ).first()
+
+    if not reg:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Registration record not found."
+        )
+
+    reg.payment_status = "COMPLETED"
+    reg.transaction_id = f"UTR-{utr}"
+
+    if reg.team_id:
+        teammate_regs = db.query(models.EventRegistration).filter(
+            models.EventRegistration.team_id == reg.team_id
+        ).all()
+        for tm_reg in teammate_regs:
+            tm_reg.payment_status = "COMPLETED"
+            if not tm_reg.transaction_id:
+                tm_reg.transaction_id = f"UTR-{utr}"
+
+    db.commit()
+
+    return {
+        "status": "success",
+        "message": "Transaction UTR submitted and verified.",
+        "utr": utr
+    }
+
