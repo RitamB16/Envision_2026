@@ -12,13 +12,11 @@ const City: React.FC = () => {
   const { scene } = useGLTF('/models/city_optimized.glb');
 
   useEffect(() => {
-    if (!scene) return;
     const isProcessed = (scene as any).__processed;
 
     scene.traverse((child) => {
-      if (child && child instanceof THREE.Mesh) {
+      if (child instanceof THREE.Mesh) {
         const mat = child.material as THREE.MeshStandardMaterial;
-        if (!mat) return;
         const isRoadOrGround = !!((mat && mat.name && mat.name.toLowerCase().includes('road')) || 
                              (child.name && (child.name.toLowerCase().includes('ground') || child.name.toLowerCase().includes('floor'))));
 
@@ -33,10 +31,8 @@ const City: React.FC = () => {
             const cloneMat = mat.clone();
             cloneMat.emissiveIntensity = isMobile ? 0.95 : 1.35;
             // Also ensure it actually emits color
-            if (cloneMat.emissive && typeof cloneMat.emissive.getHex === 'function') {
-              if (cloneMat.emissive.getHex() === 0x000000 && cloneMat.color) {
-                cloneMat.emissive.copy(cloneMat.color);
-              }
+            if (cloneMat.emissive.getHex() === 0x000000 && cloneMat.color) {
+              cloneMat.emissive.copy(cloneMat.color);
             }
             child.material = cloneMat;
           }
@@ -49,10 +45,9 @@ const City: React.FC = () => {
         }
       }
     });
-    if (scene) (scene as any).__processed = true;
+    (scene as any).__processed = true;
   }, [scene]);
 
-  if (!scene) return null;
   return <primitive object={scene} scale={0.01} />;
 };
 

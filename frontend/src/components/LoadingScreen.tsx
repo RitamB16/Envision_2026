@@ -9,19 +9,12 @@ const LoadingScreen: React.FC<Props> = ({ onStart }) => {
   const { progress } = useProgress();
 
   useEffect(() => {
-    if (progress >= 100) {
+    if (progress === 100) {
       const timer = setTimeout(() => {
         onStart();
-      }, 500);
+      }, 600);
       return () => clearTimeout(timer);
     }
-
-    // Maximum safety fallback timer: auto-start after 3.5s so website ALWAYS opens smoothly
-    const fallbackTimer = setTimeout(() => {
-      onStart();
-    }, 3500);
-
-    return () => clearTimeout(fallbackTimer);
   }, [progress, onStart]);
 
   return (
@@ -32,7 +25,7 @@ const LoadingScreen: React.FC<Props> = ({ onStart }) => {
           top: 0;
           left: 0;
           width: 100vw;
-          height: 100vh;
+          height: 100dvh;
           z-index: 999;
           background: #030114;
           display: flex;

@@ -37,10 +37,6 @@ export function setAuthSession(accessToken: string, user: UserProfile) {
     localStorage.setItem('user_phone', user.phone);
   }
   localStorage.setItem('envision_user_signedup', 'true');
-
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(new Event('auth-change'));
-  }
 }
 
 export function clearAuthSession() {

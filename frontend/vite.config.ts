@@ -6,19 +6,16 @@ export default defineConfig({
   plugins: [react()],
   build: {
     target: 'esnext',
-    chunkSizeWarningLimit: 1600,
+    chunkSizeWarningLimit: 1200,
     rollupOptions: {
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            if (id.includes('three') || id.includes('@react-three') || id.includes('postprocessing')) {
+            if (id.includes('three') || id.includes('@react-three')) {
               return 'vendor-three';
             }
             if (id.includes('gsap')) {
               return 'vendor-animation';
-            }
-            if (id.includes('@tanstack/react-query') || id.includes('lucide-react')) {
-              return 'vendor-ui';
             }
           }
         }

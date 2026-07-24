@@ -117,8 +117,8 @@ function AppContent() {
     // Close mobile menu drawer on active navigate
     setIsDrawerOpen(false);
     
-    // Block duplicate rapid clicks on the same link within 800ms
-    if (navLockRef.current.id === id && now - navLockRef.current.time < 800) {
+    // Ignore double clicks or immediate clicks within 1.2s to prevent loop re-queues
+    if (navLockRef.current.id !== null && (now - navLockRef.current.time < 1200 || navLockRef.current.id === id)) {
       return;
     }
     
@@ -134,31 +134,12 @@ function AppContent() {
       handleSignUpNavigate();
       return;
     }
-
+    if (activeTargetId === id || isWiping || carState !== 'PATROLLING') return;
     const dest = destinations.find(d => d.id === id);
     if (!dest) return;
 
-    if (location.pathname === dest.path) return;
-
     navLockRef.current = { id, time: now };
 
-    // Fast direct transition if switching between sub-pages
-    if (isPageActive) {
-      setIsWiping(true);
-      setTimeout(() => {
-        navigate(dest.path);
-        setActiveTargetId(id);
-        setCarState('PATROLLING');
-        setCameraMode('FOLLOW');
-        setTimeout(() => {
-          setIsWiping(false);
-        }, 100);
-      }, 700);
-      return;
-    }
-
-    // 3D Car Traveling Transition from Main Landing Patrol
-    if (activeTargetId === id || isWiping || carState !== 'PATROLLING') return;
     setActiveTargetId(id);
     setCarState('TRAVELING');
   };

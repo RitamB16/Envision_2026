@@ -145,7 +145,7 @@ export default function Events({ onBack: _onBack }: Props) {
     queryFn: async () => {
       try {
         const res = await api.get<BackendEvent[]>('/events');
-        if (Array.isArray(res) && res.length > 0) {
+        if (res && res.length > 0) {
           return res.map(be => ({
             id: be.id,
             name: be.name,
@@ -1228,10 +1228,10 @@ export default function Events({ onBack: _onBack }: Props) {
           )}
 
           <div className="events-grid">
-            {((selectedCategory === 'ALL'
-              ? (eventsList || [])
-              : (eventsList || []).filter(e => e.category.toUpperCase() === selectedCategory)
-            ) || []).map(event => (
+            {(selectedCategory === 'ALL'
+              ? eventsList
+              : eventsList.filter(e => e.category.toUpperCase() === selectedCategory)
+            ).map(event => (
               <div key={event.id} className="cyber-card-wrapper">
                 <div
                   className={`cyber-card ${hoveredCardId === event.id ? 'hovered' : ''}`}

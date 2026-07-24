@@ -59,7 +59,6 @@ const Car = ({ activeTargetId, introFinished, carState, onCarArrived, onSetCarSt
   const introFinishedTime = useRef<number | null>(null);
 
   useEffect(() => {
-    if (!scene) return;
     wheelsRef.current = [];
     steeringWheelsRef.current = [];
     tailLightsRef.current = [];
@@ -68,7 +67,7 @@ const Car = ({ activeTargetId, introFinished, carState, onCarArrived, onSetCarSt
     const isProcessed = (scene as any).__processed;
     
     scene.traverse((child) => {
-      if (child && child instanceof THREE.Mesh) {
+      if (child instanceof THREE.Mesh) {
         child.castShadow = true;
         child.receiveShadow = true;
         
@@ -95,8 +94,8 @@ const Car = ({ activeTargetId, introFinished, carState, onCarArrived, onSetCarSt
               clearcoat: 1.0,
               clearcoatRoughness: 0.02,
               envMapIntensity: 2.5, // Pristine wet-look showroom finish
-              ...(mat.normalMap ? { normalMap: mat.normalMap } : {}),
-              ...(mat.normalScale ? { normalScale: mat.normalScale } : {})
+              normalMap: mat.normalMap,
+              normalScale: mat.normalScale
             });
             child.material = cloneMat;
           }
@@ -125,9 +124,7 @@ const Car = ({ activeTargetId, introFinished, carState, onCarArrived, onSetCarSt
           if (mat.name && (matNameLower.includes('headlight') || matNameLower.includes('head_light'))) {
             const cloneMat = mat.clone();
             cloneMat.emissiveIntensity = 0; 
-            if (cloneMat.emissive && typeof cloneMat.emissive.getHex === 'function') {
-              if (cloneMat.emissive.getHex() === 0) cloneMat.emissive.setHex(0xffffff);
-            }
+            if (cloneMat.emissive.getHex() === 0) cloneMat.emissive.setHex(0xffffff);
             child.material = cloneMat;
           }
         }
