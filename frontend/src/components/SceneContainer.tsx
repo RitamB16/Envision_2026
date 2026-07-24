@@ -1,4 +1,4 @@
-import React, { Suspense, useRef, useState, useCallback, useEffect } from 'react';
+import React, { Suspense, useRef, useCallback, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { EffectComposer, Bloom, Noise } from '@react-three/postprocessing';
 import { Environment } from '@react-three/drei';
@@ -31,7 +31,7 @@ const Streetlights = ({ introFinished }: { introFinished: boolean }) => {
     [-100, 10, -75], [-50, 10, -75], [0, 10, -75], [50, 10, -75]
   ];
   const activePositions = isMobile ? basePositions.filter((_, i) => i % 2 === 0) : basePositions;
-  const targetIntensity = isMobile ? 0.75 : 1.05;
+  const targetIntensity = isMobile ? 0.45 : 0.65;
 
   useFrame((state) => {
     if (!introFinished) {
@@ -58,8 +58,8 @@ const Streetlights = ({ introFinished }: { introFinished: boolean }) => {
           key={i}
           ref={(el) => el && (lightsRef.current[i] = el)}
           position={[pos[0], pos[1], pos[2]]} 
-          color="#ffddaa" 
-          distance={65} 
+          color="#ffc888" 
+          distance={55} 
           decay={2}
           intensity={0} 
         />
@@ -147,7 +147,9 @@ const LabelsUpdater: React.FC<{ manager: LandmarkLabelManager | null }> = ({ man
   return null;
 };
 
-const SceneContainer: React.FC<Props> = ({ 
+interface SceneContainerProps extends Props {}
+
+const SceneContainer: React.FC<SceneContainerProps> = ({ 
   activeTargetId, 
   introFinished, 
   carState, 
@@ -156,29 +158,18 @@ const SceneContainer: React.FC<Props> = ({
   onSetCarState,
   isPageActive = false
 }) => {
-  const labelsRef = useRef<Array<{ name: string, object: THREE.Group }>>([]);
-  const [manager, setManager] = useState<LandmarkLabelManager | null>(null);
+  const manager = useRef<LandmarkLabelManager>(new LandmarkLabelManager()).current;
 
-
-
-  // LandmarkLabel registers its group container with LandmarkLabelManager on mount
-  const handleRegister = useCallback((name: string, object: THREE.Group) => {
-    if (!labelsRef.current.some(l => l.name === name)) {
-      labelsRef.current.push({ name, object });
-      if (labelsRef.current.length === 5) {
-        const newManager = new LandmarkLabelManager(labelsRef.current);
-        setManager(newManager);
-        (window as any).__landmarkLabelManager = newManager;
-      }
-    }
-  }, []);
+  const handleRegister = useCallback(() => {
+    onSetCarState('TRAVELING');
+  }, [onSetCarState]);
 
   // Update active target inside manager
   useEffect(() => {
-    if (manager) {
-      if (activeTargetId) {
-        const dest = destinations.find(d => d.id === activeTargetId);
-        if (dest) {
+    if (activeTargetId) {
+      const dest = destinations.find(d => d.id === activeTargetId);
+      if (dest) {
+        if (manager) {
           manager.setActiveLandmark(dest.displayName);
         }
       } else {
@@ -215,19 +206,19 @@ const SceneContainer: React.FC<Props> = ({
           powerPreference: 'high-performance', 
           precision: 'mediump',
           toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: isMobile ? 0.94 : 1.15,
+          toneMappingExposure: isMobile ? 0.85 : 1.0,
           stencil: false,
           depth: true
         }}
       >
-        <color attach="background" args={['#080210']} />
-        <fog attach="fog" args={['#080210', 50, 240]} />
-        <ambientLight intensity={0.22} color="#2a3d75" />
+        <color attach="background" args={['#030108']} />
+        <fog attach="fog" args={['#030108', 35, 210]} />
+        <ambientLight intensity={0.08} color="#18244a" />
         <directionalLight 
           castShadow={!isMobile} 
           position={[120, 180, -250]} 
-          intensity={0.45} 
-          color="#d6e6ff" 
+          intensity={0.18} 
+          color="#6080b0" 
           shadow-bias={-0.001}
           shadow-mapSize={isMobile ? [256, 256] : [1024, 1024]}
         />

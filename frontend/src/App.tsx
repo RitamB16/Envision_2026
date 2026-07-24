@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import LoadingScreen from './components/LoadingScreen';
 import IgnitionIntro from './components/IgnitionIntro';
 import NavDock from './components/NavDock';
 import SceneContainer from './components/SceneContainer';
+import ProtectedRoute from './components/ProtectedRoute';
 import { audioEngine } from './utils/AudioEngine';
 import { destinations } from './config';
 
@@ -247,8 +248,8 @@ function AppContent() {
              <Suspense fallback={null}>
                <Routes>
                  <Route path="/" element={null} />
-                 <Route path="/profile" element={<Profile />} />
-                 <Route path="/dashboard" element={<Dashboard />} />
+                 <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                 <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                  <Route path="/login" element={<Login />} />
                  <Route path="/register" element={<Register onBack={handleBackToCity} onRegisterSuccess={handleRegisterSuccess} />} />
                  <Route path="/events" element={<Events onBack={handleBackToCity} />} />
@@ -256,9 +257,10 @@ function AppContent() {
                  <Route path="/coordinators" element={<Coordinators onBack={handleBackToCity} />} />
                  <Route path="/alumni" element={<Alumni onBack={handleBackToCity} />} />
                  <Route path="/sponsors" element={<Sponsors onBack={handleBackToCity} />} />
-                 <Route path="/checkout" element={<PaymentCheckout />} />
-                 <Route path="/checkout/:registrationId" element={<PaymentCheckout />} />
-                 <Route path="/tickets/:registrationId" element={<Profile />} />
+                 <Route path="/checkout" element={<ProtectedRoute><PaymentCheckout /></ProtectedRoute>} />
+                 <Route path="/checkout/:registrationId" element={<ProtectedRoute><PaymentCheckout /></ProtectedRoute>} />
+                 <Route path="/tickets/:registrationId" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                 <Route path="*" element={<Navigate to="/" replace />} />
                </Routes>
              </Suspense>
           </div>

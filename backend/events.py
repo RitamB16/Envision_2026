@@ -24,10 +24,10 @@ DEFAULT_EVENTS = [
         "price_amount": 0,
         "requires_team": False,
         "max_team_size": 1,
-        "has_food": False,
-        "notes": "100% FREE for everyone! (Note: Food is NOT provided for standalone Tech Talk. Food is only provided to members registered in food-inclusive events).",
+        "has_food": True,
+        "notes": "100% FREE & Open to All! Direct Registration with complimentary food included.",
         "image": "/images/events/techtalk.jpg",
-        "benefits": "Free Keynote Entry Pass to RKMRC Techfest, Expert Seminars & Certificates. (Food is not included for standalone free Tech Talk pass).",
+        "benefits": "Free Keynote Entry Pass to RKMRC Tech Talk, Technical Seminars, Certificates & Complimentary Food Pass.",
         "date": "6th August",
         "venue": "Mumukshananda Auditorium, RKMRC",
         "time": "10:30 AM"
@@ -265,12 +265,6 @@ def register_for_event(
 ):
     """Register for an event (Individual or Team) with Fest ID validation and status checks."""
     seed_events_if_empty(db)
-
-    if event_id == "techtalk":
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Tech Talk pass is automatically unlocked when you register for any technical or quiz event."
-        )
 
     event = db.query(models.Event).filter(models.Event.id == event_id).first()
     if not event:
