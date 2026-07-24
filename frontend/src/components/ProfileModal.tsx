@@ -106,19 +106,20 @@ export default function ProfileModal({ isOpen = true, user: initialUser, onClose
         right: 0,
         bottom: 0,
         width: '100vw',
-        height: '100vh',
-        backgroundColor: 'rgba(0, 0, 0, 0.75)',
-        backdropFilter: 'blur(10px)',
-        WebkitBackdropFilter: 'blur(10px)',
+        height: '100dvh',
+        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 999999,
         pointerEvents: 'auto',
         padding: '16px',
+        paddingBottom: '80px',
         boxSizing: 'border-box',
       }}
-      className="fixed inset-0 z-[999999] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md font-sans select-none overflow-y-auto"
+      className="fixed inset-0 z-[999999] flex items-center justify-center p-4 pb-20 bg-black/85 backdrop-blur-md font-sans select-none overflow-y-auto"
       onClick={onClose}
     >
       {/* 2. Glassmorphic Modal Card Container */}
@@ -126,7 +127,7 @@ export default function ProfileModal({ isOpen = true, user: initialUser, onClose
         style={{
           width: '100%',
           maxWidth: '420px',
-          maxHeight: '90vh',
+          maxHeight: '85dvh',
           overflowY: 'auto',
           backgroundColor: 'rgba(10, 8, 22, 0.94)',
           backdropFilter: 'blur(30px)',
@@ -134,14 +135,14 @@ export default function ProfileModal({ isOpen = true, user: initialUser, onClose
           border: '1px solid rgba(255, 255, 255, 0.18)',
           borderRadius: '28px',
           padding: '24px',
-          paddingBottom: '36px',
+          paddingBottom: '50px',
           boxShadow: '0 25px 60px rgba(0, 0, 0, 0.9), 0 0 40px rgba(0, 243, 255, 0.2)',
           position: 'relative',
           color: '#ffffff',
           zIndex: 999999,
           boxSizing: 'border-box',
         }}
-        className="w-full max-w-md bg-[#0a0816]/95 backdrop-blur-3xl border border-white/20 rounded-[28px] p-6 pb-9 shadow-[0_0_50px_rgba(0,243,255,0.2)] relative max-h-[90vh] overflow-y-auto custom-scrollbar text-white transition-all duration-300"
+        className="w-full max-w-md bg-[#0a0816]/95 backdrop-blur-3xl border border-white/20 rounded-[28px] p-6 pb-12 shadow-[0_0_50px_rgba(0,243,255,0.2)] relative max-h-[85dvh] overflow-y-auto custom-scrollbar text-white transition-all duration-300"
         onClick={(e) => e.stopPropagation()}
         onPointerDown={(e) => e.stopPropagation()}
       >

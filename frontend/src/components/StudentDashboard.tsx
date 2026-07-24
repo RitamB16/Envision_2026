@@ -98,29 +98,30 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
         right: 0,
         bottom: 0,
         width: '100vw',
-        height: '100vh',
-        backgroundColor: 'rgba(0, 0, 0, 0.75)',
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
+        height: '100dvh',
+        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+        backdropFilter: 'blur(14px)',
+        WebkitBackdropFilter: 'blur(14px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 999999,
         pointerEvents: 'auto',
         padding: '16px',
+        paddingBottom: '80px',
         boxSizing: 'border-box',
       }}
       onClick={onClose || (() => (window.location.href = '/'))}
-      className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/75 backdrop-blur-md p-4 font-mono select-none overflow-y-auto"
+      className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/85 backdrop-blur-md p-4 pb-20 font-mono select-none overflow-y-auto"
     >
       {/* Scrollable Cyberpunk Glass Container */}
       <div
         style={{
           width: '100%',
-          maxWidth: '900px',
-          maxHeight: '90vh',
+          maxWidth: '920px',
+          maxHeight: '85dvh',
           overflowY: 'auto',
-          backgroundColor: 'rgba(12, 7, 33, 0.95)',
+          backgroundColor: 'rgba(12, 7, 33, 0.96)',
           backdropFilter: 'blur(30px)',
           WebkitBackdropFilter: 'blur(30px)',
           border: '2px solid rgba(0, 243, 255, 0.4)',
@@ -130,8 +131,9 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
           color: '#ffffff',
           zIndex: 999999,
           boxSizing: 'border-box',
+          paddingBottom: '40px',
         }}
-        className="w-full max-w-4xl max-h-[92vh] overflow-y-auto custom-scrollbar bg-[#0c0721]/95 backdrop-blur-3xl border-2 border-[#00f3ff]/40 rounded-3xl shadow-[0_0_60px_rgba(0,243,255,0.3)] flex flex-col md:flex-row relative text-white font-sans transition-all duration-300"
+        className="w-full max-w-4xl max-h-[85dvh] overflow-y-auto custom-scrollbar bg-[#0c0721]/96 backdrop-blur-3xl border-2 border-[#00f3ff]/40 rounded-3xl shadow-[0_0_60px_rgba(0,243,255,0.3)] flex flex-col md:flex-row relative text-white font-sans transition-all duration-300 pb-10"
         onClick={(e: ReactMouseEvent) => e.stopPropagation()}
         onPointerDown={(e: ReactMouseEvent) => e.stopPropagation()}
       >
