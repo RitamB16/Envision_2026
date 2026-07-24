@@ -14,20 +14,15 @@ async def cleanup_expired_registrations():
             db = SessionLocal()
             cutoff = datetime.now(timezone.utc) - timedelta(minutes=15)
 
-            expired_regs = db.query(models.EventRegistration).filter(
-                models.EventRegistration.payment_status == "PENDING",
-                models.EventRegistration.created_at <= cutoff
+            expired_regs = db.query(models.Registration).filter(
+                models.Registration.payment_status == "PENDING",
+                models.Registration.created_at <= cutoff
             ).all()
 
             if expired_regs:
                 count = len(expired_regs)
                 for reg in expired_regs:
                     reg.payment_status = "EXPIRED"
-                    reg.status = "EXPIRED"
-
-                    event = db.query(models.Event).filter(models.Event.id == reg.event_id).first()
-                    if event and hasattr(event, "seats_available") and event.seats_available is not None:
-                        event.seats_available += 1
 
                 db.commit()
                 print(f"[Sweeper] Expired {count} abandoned PENDING registrations older than 15m.")

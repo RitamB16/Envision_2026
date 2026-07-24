@@ -62,6 +62,10 @@ class Team(Base):
     event_name = Column(String, nullable=False)
     leader_id = Column(UUID(as_uuid=True), ForeignKey("participants.id", ondelete="CASCADE"), nullable=False)
 
+    @property
+    def id(self):
+        return str(self.team_id)
+
 
 class Registration(Base):
     __tablename__ = "registrations"
@@ -73,3 +77,35 @@ class Registration(Base):
     payment_order_id = Column(String, nullable=False)
     payment_status = Column(String, nullable=False, default="PENDING")
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+
+    @property
+    def id(self):
+        return str(self.reg_id)
+
+    @property
+    def user_id(self):
+        return str(self.participant_id)
+
+    @property
+    def event_id(self):
+        return self.event_name
+
+    @property
+    def transaction_id(self):
+        return self.payment_order_id
+
+    @transaction_id.setter
+    def transaction_id(self, val):
+        self.payment_order_id = val
+
+    @property
+    def status(self):
+        return self.payment_status
+
+    @status.setter
+    def status(self, val):
+        self.payment_status = val
+
+
+# Compatibility alias for legacy handlers
+EventRegistration = Registration
