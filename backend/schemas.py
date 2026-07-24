@@ -1,5 +1,6 @@
-from typing import Optional, List
+from typing import Optional, List, Union
 from datetime import datetime
+from uuid import UUID
 from pydantic import BaseModel, ConfigDict, EmailStr
 
 class UserBase(BaseModel):
@@ -7,7 +8,7 @@ class UserBase(BaseModel):
     name: str
 
 class UserResponse(BaseModel):
-    id: str
+    id: UUID  # <--- Changed to UUID to fix the validation crash
     email: str
     name: str
     fest_id: Optional[str] = None
@@ -87,10 +88,10 @@ class EventRegistrationCreate(BaseModel):
     transaction_id: Optional[str] = None
 
 class EventRegistrationResponse(BaseModel):
-    id: str
-    user_id: str
-    event_id: str
-    team_id: Optional[str] = None
+    id: Union[str, UUID]
+    user_id: UUID  # <--- Updated to UUID to prevent future crashes here
+    event_id: Union[str, UUID]
+    team_id: Optional[Union[str, UUID]] = None
     food_preference: Optional[str] = None
     user_email: Optional[str] = None
     user_name: Optional[str] = None
@@ -111,9 +112,9 @@ class TeamInviteCreate(BaseModel):
     email: EmailStr
 
 class TeamInviteResponse(BaseModel):
-    id: str
-    team_id: str
-    event_id: str
+    id: Union[str, UUID]
+    team_id: Union[str, UUID]
+    event_id: Union[str, UUID]
     invited_email: str
     invite_token: str
     invite_url: str
