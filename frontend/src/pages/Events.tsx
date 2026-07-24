@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import PageLayout from './PageLayout';
 import { api, BackendEvent } from '../utils/api';
+import { useRegistrationContext } from '../context/RegistrationContext';
 
 interface EventData {
   id: string;
@@ -136,6 +137,7 @@ interface Props {
 export default function Events({ onBack: _onBack }: Props) {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { updateRegistrationData, setStep } = useRegistrationContext();
 
   const view = (searchParams.get('view') as 'grid' | 'detail' | 'register') || 'grid';
   const eventId = searchParams.get('id') || '';
@@ -396,6 +398,16 @@ export default function Events({ onBack: _onBack }: Props) {
       }
 
       if (res.is_free || res.amount === 0) {
+        updateRegistrationData({
+          step: 'SUCCESS',
+          eventId: selectedEvent.id,
+          eventName: selectedEvent.name,
+          registrationId: res.registration_id || res.team_id,
+          amount: 0,
+          isFree: true,
+        });
+        setStep('SUCCESS');
+
         setRegSuccessMsg(`🎉 REGISTRATION CONFIRMED FOR ${selectedEvent.name.toUpperCase()}!`);
         setTimeout(() => {
           navigate('/profile');
@@ -404,6 +416,23 @@ export default function Events({ onBack: _onBack }: Props) {
         const regId = res.registration_id || res.team_id || 'REG-PENDING';
         const orderId = res.razorpay_order_id;
         
+        updateRegistrationData({
+          step: 'CHECKOUT',
+          eventId: selectedEvent.id,
+          eventName: selectedEvent.name,
+          registrationId: regId,
+          razorpayOrderId: orderId,
+          amount: res.amount || selectedEvent.price,
+          isFree: false,
+          phone: phone,
+          userName: fullName,
+          userEmail: email,
+          college: college,
+          foodPref: foodPreference,
+          teamName: selectedEvent.requires_team ? teamName : undefined
+        });
+        setStep('CHECKOUT');
+
         setRegSuccessMsg(`🎉 Registration created! Redirecting to secure checkout...`);
         setTimeout(() => {
           navigate(`/checkout/${regId}`, {

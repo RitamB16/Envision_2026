@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { api, RAZORPAY_ME_URL, RAZORPAY_UPI_ID } from '../utils/api';
+import { useRegistrationContext } from '../context/RegistrationContext';
 
 export type PaymentStatus = 'IDLE' | 'PROCESSING' | 'SUCCESS' | 'FAILED';
 
@@ -22,11 +23,24 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
   const params = useParams<{ registrationId?: string }>();
   const location = useLocation();
   const stateData = (location.state as any) || {};
+  const { state: regContextState } = useRegistrationContext();
 
-  const registrationId = props.registrationId || params.registrationId || stateData.registrationId || 'REG-PENDING';
-  const eventName = props.eventName || stateData.eventName || 'ENVISION FEST EVENT';
-  const registrationType = props.registrationType || stateData.registrationType || 'Individual';
-  const baseFee = props.baseFee || stateData.baseFee || 39;
+  // Route Guard: Direct manual URL navigation check
+  useEffect(() => {
+    const hasLocationState = !!(stateData.registrationId || stateData.razorpayOrderId || stateData.razorpay_order_id);
+    const hasPropsState = !!(props.registrationId && props.registrationId !== 'REG-PENDING');
+    const hasContextState = !!(regContextState.registrationId || regContextState.razorpayOrderId);
+
+    if (!hasLocationState && !hasPropsState && !hasContextState) {
+      console.warn("Direct URL navigation to /checkout detected without active registration session. Redirecting to /events.");
+      navigate('/events', { replace: true });
+    }
+  }, [stateData, props.registrationId, regContextState, navigate]);
+
+  const registrationId = props.registrationId || params.registrationId || stateData.registrationId || regContextState.registrationId || 'REG-PENDING';
+  const eventName = props.eventName || stateData.eventName || regContextState.eventName || 'ENVISION FEST EVENT';
+  const registrationType = props.registrationType || stateData.registrationType || (regContextState.teamName ? 'Team' : 'Individual');
+  const baseFee = props.baseFee || stateData.baseFee || regContextState.amount || 39;
 
   // Dynamic participant contact phone lookup (No dummy numbers)
   const [realPhone, setRealPhone] = useState<string>(

@@ -43,18 +43,41 @@ def generate_env_id(db: Session) -> str:
     return f"ENV-2026-{count:03d}"
 
 
+def check_event_capacity(db: Session, event_name: str):
+    """
+    Checks event capacity BEFORE generating a Razorpay order.
+    Counts active registrations (both 'SUCCESS' and 'PENDING').
+    """
+    normalized = event_name.lower().replace(" ", "-").strip()
+    event = db.query(models.Event).filter(models.Event.id == normalized).first()
+    max_cap = event.max_capacity if (event and hasattr(event, "max_capacity")) else 100
+
+    active_count = db.query(models.Registration).filter(
+        models.Registration.event_name == event_name,
+        models.Registration.payment_status.in_(["SUCCESS", "PENDING"])
+    ).count()
+
+    if active_count >= max_cap:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Registration capacity for event '{event_name}' has been reached."
+        )
+
+
 @router.post("/register/solo")
 def register_solo(
     payload: schemas.SoloRegistrationCreate,
     db: Session = Depends(get_db)
 ):
     """
-    Endpoint 1: Accepts individual event details, checks if the user exists in participants
-    (updates missing info like college/mobile/food_pref), creates a Razorpay order,
-    inserts a 'PENDING' row into registrations, and returns the Order ID.
+    Endpoint 1: Accepts individual event details, verifies capacity caps,
+    creates/updates participant, creates a Razorpay order, inserts a 'PENDING' row, and returns Order ID.
     """
     email_clean = payload.email.strip().lower()
     
+    # Concurrency & Capacity check
+    check_event_capacity(db, payload.event_name)
+
     # Fetch or Create Participant
     participant = db.query(models.User).filter(models.User.email == email_clean).first()
     if not participant:
@@ -148,8 +171,8 @@ def register_team(
 ):
     """
     Endpoint 2: Accepts team details (leader + up to 2 members, max team size 3),
-    creates/updates participants, creates a row in teams, creates a Razorpay order,
-    inserts 'PENDING' rows into registrations linked to the team, and returns the Order ID.
+    verifies capacity caps, executes inside an ATOMIC TRANSACTION to prevent orphaned data,
+    creates/updates participants, creates a team row, creates Razorpay order, and returns Order ID.
     """
     leader_email = payload.leader_email.strip().lower()
     
@@ -160,136 +183,137 @@ def register_team(
             detail="Teams cannot exceed 3 members total (Leader + up to 2 members)."
         )
 
-    # 1. Fetch or Create Leader Participant
-    leader = db.query(models.User).filter(models.User.email == leader_email).first()
-    if not leader:
-        leader = models.User(
-            name=payload.leader_name.strip(),
-            email=leader_email,
-            mobile=payload.leader_mobile,
-            college=payload.leader_college,
-            food_pref=payload.leader_food_pref,
-            env_id=generate_env_id(db)
-        )
-        db.add(leader)
-        db.commit()
-        db.refresh(leader)
-    else:
-        updated = False
-        if payload.leader_mobile and not leader.mobile:
-            leader.mobile = payload.leader_mobile
-            updated = True
-        if payload.leader_college and not leader.college:
-            leader.college = payload.leader_college
-            updated = True
-        if payload.leader_food_pref and not leader.food_pref:
-            leader.food_pref = payload.leader_food_pref
-            updated = True
-        if updated:
-            db.commit()
-            db.refresh(leader)
+    # Concurrency & Capacity check
+    check_event_capacity(db, payload.event_name)
 
-    # 2. Fetch or Create Teammate Participants (max 2 members)
-    teammates = []
-    for member in payload.members:
-        member_email = member.email.strip().lower()
-        if member_email == leader_email:
-            continue # Avoid adding leader as member twice
-            
-        tm = db.query(models.User).filter(models.User.email == member_email).first()
-        if not tm:
-            tm = models.User(
-                name=member.name.strip(),
-                email=member_email,
-                mobile=member.mobile,
-                college=member.college or payload.leader_college,
-                food_pref=member.food_pref,
+    # ATOMIC TRANSACTION BLOCK
+    try:
+        # 1. Fetch or Create Leader Participant
+        leader = db.query(models.User).filter(models.User.email == leader_email).first()
+        if not leader:
+            leader = models.User(
+                name=payload.leader_name.strip(),
+                email=leader_email,
+                mobile=payload.leader_mobile,
+                college=payload.leader_college,
+                food_pref=payload.leader_food_pref,
                 env_id=generate_env_id(db)
             )
-            db.add(tm)
-            db.commit()
-            db.refresh(tm)
+            db.add(leader)
+            db.flush()
         else:
-            updated = False
-            if member.mobile and not tm.mobile:
-                tm.mobile = member.mobile
-                updated = True
-            if member.college and not tm.college:
-                tm.college = member.college
-                updated = True
-            if member.food_pref and not tm.food_pref:
-                tm.food_pref = member.food_pref
-                updated = True
-            if updated:
-                db.commit()
-                db.refresh(tm)
-        teammates.append(tm)
+            if payload.leader_mobile and not leader.mobile:
+                leader.mobile = payload.leader_mobile
+            if payload.leader_college and not leader.college:
+                leader.college = payload.leader_college
+            if payload.leader_food_pref and not leader.food_pref:
+                leader.food_pref = payload.leader_food_pref
+            db.flush()
 
-    # 3. Create Teams table row
-    team = models.Team(
-        team_name=payload.team_name.strip(),
-        event_name=payload.event_name,
-        leader_id=leader.id
-    )
-    db.add(team)
-    db.commit()
-    db.refresh(team)
+        # 2. Fetch or Create Teammate Participants (max 2 members)
+        teammates = []
+        for member in payload.members:
+            member_email = member.email.strip().lower()
+            if member_email == leader_email:
+                continue # Avoid adding leader as member twice
+                
+            tm = db.query(models.User).filter(models.User.email == member_email).first()
+            if not tm:
+                tm = models.User(
+                    name=member.name.strip(),
+                    email=member_email,
+                    mobile=member.mobile,
+                    college=member.college or payload.leader_college,
+                    food_pref=member.food_pref,
+                    env_id=generate_env_id(db)
+                )
+                db.add(tm)
+                db.flush()
+            else:
+                if member.mobile and not tm.mobile:
+                    tm.mobile = member.mobile
+                if member.college and not tm.college:
+                    tm.college = member.college
+                if member.food_pref and not tm.food_pref:
+                    tm.food_pref = member.food_pref
+                db.flush()
+            teammates.append(tm)
 
-    # 4. Create Razorpay order
-    price_amount = get_event_price(db, payload.event_name)
-    price_in_paise = price_amount * 100
-    
-    if price_in_paise == 0:
-        order_id = f"free_order_{uuid.uuid4().hex[:12]}"
-        payment_status_val = "SUCCESS"
-    else:
-        client = get_razorpay_client()
-        try:
-            order_data = {
-                "amount": price_in_paise,
-                "currency": "INR",
-                "receipt": f"receipt_{uuid.uuid4().hex[:10]}",
-                "payment_capture": 1
-            }
-            order = client.order.create(data=order_data)
-            order_id = order.get("id")
-            payment_status_val = "PENDING"
-        except Exception as e:
-            print(f"[!] Razorpay Team Order Creation Notice: {e}")
-            order_id = f"order_mock_{uuid.uuid4().hex[:12]}"
-            payment_status_val = "PENDING"
+        # 3. Create Teams table row
+        team = models.Team(
+            team_name=payload.team_name.strip(),
+            event_name=payload.event_name,
+            leader_id=leader.id
+        )
+        db.add(team)
+        db.flush()
 
-    # 5. Insert registration rows for leader and teammates
-    leader_reg = models.Registration(
-        participant_id=leader.id,
-        event_name=payload.event_name,
-        team_id=team.team_id,
-        payment_order_id=order_id,
-        payment_status=payment_status_val
-    )
-    db.add(leader_reg)
+        # 4. Create Razorpay order
+        price_amount = get_event_price(db, payload.event_name)
+        price_in_paise = price_amount * 100
+        
+        if price_in_paise == 0:
+            order_id = f"free_order_{uuid.uuid4().hex[:12]}"
+            payment_status_val = "SUCCESS"
+        else:
+            client = get_razorpay_client()
+            try:
+                order_data = {
+                    "amount": price_in_paise,
+                    "currency": "INR",
+                    "receipt": f"receipt_{uuid.uuid4().hex[:10]}",
+                    "payment_capture": 1
+                }
+                order = client.order.create(data=order_data)
+                order_id = order.get("id")
+                payment_status_val = "PENDING"
+            except Exception as e:
+                print(f"[!] Razorpay Team Order Creation Notice: {e}")
+                order_id = f"order_mock_{uuid.uuid4().hex[:12]}"
+                payment_status_val = "PENDING"
 
-    for tm in teammates:
-        tm_reg = models.Registration(
-            participant_id=tm.id,
+        # 5. Insert registration rows for leader and teammates
+        leader_reg = models.Registration(
+            participant_id=leader.id,
             event_name=payload.event_name,
             team_id=team.team_id,
             payment_order_id=order_id,
             payment_status=payment_status_val
         )
-        db.add(tm_reg)
+        db.add(leader_reg)
 
-    db.commit()
-    db.refresh(leader_reg)
+        for tm in teammates:
+            tm_reg = models.Registration(
+                participant_id=tm.id,
+                event_name=payload.event_name,
+                team_id=team.team_id,
+                payment_order_id=order_id,
+                payment_status=payment_status_val
+            )
+            db.add(tm_reg)
 
-    return {
-        "status": "success",
-        "team_id": str(team.team_id),
-        "registration_id": str(leader_reg.reg_id),
-        "razorpay_order_id": order_id,
-        "amount": price_amount,
-        "is_free": price_amount == 0
-    }
+        db.commit()
+        db.refresh(leader_reg)
+
+        return {
+            "status": "success",
+            "team_id": str(team.team_id),
+            "registration_id": str(leader_reg.reg_id),
+            "razorpay_order_id": order_id,
+            "amount": price_amount,
+            "is_free": price_amount == 0
+        }
+
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception as err:
+        db.rollback()
+        print(f"[!] Atomic Team Registration Error (Rolled Back): {err}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to complete team registration. Database transaction rolled back."
+        )
 
 
 @router.post("/webhook/razorpay")
@@ -298,8 +322,9 @@ async def razorpay_webhook(
     db: Session = Depends(get_db)
 ):
     """
-    Endpoint 3: Listens for successful payment events. Verifies the signature securely,
-    finds the payment_order_id in registrations, and updates the status to 'SUCCESS'.
+    Endpoint 3: Production-Ready Webhook Pipeline.
+    Strictly verifies x-razorpay-signature, enforces idempotency,
+    and returns 200 OK on internal DB events to avoid retry loops.
     """
     body_bytes = await request.body()
     body_str = body_bytes.decode("utf-8")
@@ -340,17 +365,35 @@ async def razorpay_webhook(
             order_id = event_payload.get("payload", {}).get("order", {}).get("entity", {}).get("id")
 
         if order_id:
-            registrations = db.query(models.Registration).filter(
-                models.Registration.payment_order_id == order_id
-            ).all()
-            
-            for reg in registrations:
-                reg.payment_status = "SUCCESS"
-            db.commit()
-            
-            return {
-                "status": "ok",
-                "message": f"Updated {len(registrations)} registration(s) for order {order_id} to SUCCESS."
-            }
+            try:
+                registrations = db.query(models.Registration).filter(
+                    models.Registration.payment_order_id == order_id
+                ).all()
+                
+                if not registrations:
+                    return {"status": "ignored", "message": f"Order '{order_id}' not found in database."}
+
+                # IDEMPOTENCY CHECK: If already marked as SUCCESS, return 200 OK immediately
+                if all(reg.payment_status == "SUCCESS" for reg in registrations):
+                    return {
+                        "status": "ok",
+                        "message": f"Order '{order_id}' is already marked as SUCCESS. Idempotent response."
+                    }
+
+                for reg in registrations:
+                    reg.payment_status = "SUCCESS"
+                db.commit()
+                
+                return {
+                    "status": "ok",
+                    "message": f"Updated {len(registrations)} registration(s) for order {order_id} to SUCCESS."
+                }
+            except Exception as db_err:
+                db.rollback()
+                print(f"[!] Webhook Database Error (Safely Handled): {db_err}")
+                return {
+                    "status": "error",
+                    "message": f"Webhook received but internal DB error logged: {db_err}"
+                }
             
     return {"status": "ignored"}

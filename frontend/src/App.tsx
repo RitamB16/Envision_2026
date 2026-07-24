@@ -270,6 +270,8 @@ function AppContent() {
   );
 }
 
+import { RegistrationProvider } from './context/RegistrationContext';
+
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const queryClient = new QueryClient({
@@ -284,9 +286,11 @@ const queryClient = new QueryClient({
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AppContent />
-      </BrowserRouter>
+      <RegistrationProvider>
+        <BrowserRouter>
+          <AppContent />
+        </BrowserRouter>
+      </RegistrationProvider>
     </QueryClientProvider>
   );
 }
