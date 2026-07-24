@@ -31,10 +31,10 @@ const EVENTS_DATA: EventData[] = [
     requires_team: false,
     max_team_size: 1,
     has_food: false,
-    notes: 'Open to everyone. Free pass unlocked upon registering in any paid event.',
+    notes: '100% FREE for everyone! (Food is NOT provided for standalone Tech Talk. Food is only provided to members registered in food-inclusive events).',
     image: '/images/events/techtalk.jpg',
     placeholderAlt: 'Tech Talk Seminar',
-    benefits: 'Free Access to Techfest, RKMRC for keynote sessions, technical seminars, and networking hubs.',
+    benefits: 'Free Keynote Entry Pass to RKMRC Techfest, Expert Seminars & Certificates. (Note: Food is not included for free standalone Tech Talk pass).',
     date: '6th August',
     venue: 'Mumukshananda Auditorium, RKMRC',
     Time: '10:30 AM'
@@ -94,14 +94,14 @@ const EVENTS_DATA: EventData[] = [
     price: '₹49',
     requires_team: false,
     max_team_size: 1,
-    has_food: false,
-    notes: 'Individual Event (NO Food Provided)',
+    has_food: true,
+    notes: 'Top 10 shortlisted participants earn free entry, campus pass & FREE food for live photo competition!',
     image: '/images/events/lensverse.jpg',
-    placeholderAlt: 'LensVerse Online Photography',
-    benefits: 'Participation certificate, Winning Cash prize worth ₹499',
+    placeholderAlt: 'LensVerse Photography Competition',
+    benefits: 'Top 10 shortlisted photographers get invited to RKMRC campus with FREE food & festival pass to compete in live campus photo competition for winner cash prizes!',
     date: '6th August',
-    venue: 'Online Submission Portal',
-    Time: 'Flexible submission'
+    venue: 'RKMRC Campus (For Top 10 Finalists)',
+    Time: '10:00 AM'
   },
   {
     id: 'carlsen-chess',

@@ -25,9 +25,9 @@ DEFAULT_EVENTS = [
         "requires_team": False,
         "max_team_size": 1,
         "has_food": False,
-        "notes": "Free for all participants who register in any paid event.",
+        "notes": "100% FREE for everyone! (Note: Food is NOT provided for standalone Tech Talk. Food is only provided to members registered in food-inclusive events).",
         "image": "/images/events/techtalk.jpg",
-        "benefits": "Free Access to Techfest, RKMRC for keynote sessions, technical seminars, and networking hubs.",
+        "benefits": "Free Keynote Entry Pass to RKMRC Techfest, Expert Seminars & Certificates. (Food is not included for standalone free Tech Talk pass).",
         "date": "6th August",
         "venue": "Mumukshananda Auditorium, RKMRC",
         "time": "10:30 AM"
@@ -88,13 +88,13 @@ DEFAULT_EVENTS = [
         "price_amount": 49,
         "requires_team": False,
         "max_team_size": 1,
-        "has_food": False,
-        "notes": "Individual Event (NO Food Provided)",
+        "has_food": True,
+        "notes": "Top 10 shortlisted participants earn free entry, campus pass & FREE food for live photo competition!",
         "image": "/images/events/lensverse.jpg",
-        "benefits": "Participation certificate, Winning Cash prize worth ₹499",
+        "benefits": "Top 10 shortlisted photographers get invited to RKMRC campus with FREE food & festival pass to compete in live campus photo competition for winner cash prizes!",
         "date": "6th August",
-        "venue": "Online Submission Portal",
-        "time": "Flexible submission"
+        "venue": "RKMRC Campus (For Top 10 Finalists)",
+        "time": "10:00 AM"
     },
     {
         "id": "carlsen-chess",
@@ -126,9 +126,15 @@ def seed_events_if_empty(db: Session):
         for item in DEFAULT_EVENTS:
             ev = db.query(models.Event).filter(models.Event.id == item["id"]).first()
             if ev:
+                ev.name = item["name"]
+                ev.price = item["price"]
+                ev.price_amount = item["price_amount"]
                 ev.requires_team = item["requires_team"]
                 ev.max_team_size = item["max_team_size"]
                 ev.has_food = item["has_food"]
+                ev.notes = item["notes"]
+                ev.benefits = item["benefits"]
+                ev.venue = item["venue"]
         db.commit()
 
 
