@@ -20,8 +20,10 @@ export default function Login() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [instantEmail, setInstantEmail] = useState('');
+  const [magicUrl, setMagicUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const magicToken = searchParams.get('magic_token');
@@ -33,6 +35,7 @@ export default function Login() {
   const verifyMagicToken = async (token: string) => {
     setIsLoading(true);
     setErrorMsg(null);
+    setSuccessMsg(null);
     try {
       const response = await fetch(`${API_BASE_URL}/auth/verify-magic-link`, {
         method: 'POST',
@@ -57,6 +60,7 @@ export default function Login() {
 
   const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
     setErrorMsg(null);
+    setSuccessMsg(null);
     setIsLoading(true);
 
     try {
@@ -86,46 +90,51 @@ export default function Login() {
       navigate('/dashboard');
     } catch (err: any) {
       console.error('Login Error:', err);
-      setErrorMsg(err.message || 'Failed to authenticate with backend.');
+      setErrorMsg(err.message || 'Failed to authenticate with Google.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleInstantSignIn = async (e: React.FormEvent) => {
+  const handleSendMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
+    setSuccessMsg(null);
+    setMagicUrl(null);
 
-    if (!instantEmail.trim()) {
-      setErrorMsg('Please enter a valid Email address.');
+    const emailClean = instantEmail.trim().toLowerCase();
+    if (!emailClean) {
+      setErrorMsg('Please enter a valid Gmail address.');
       return;
     }
 
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/instant-login`, {
+      const response = await fetch(`${API_BASE_URL}/auth/magic-link`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
         body: JSON.stringify({
-          email: instantEmail.trim(),
+          email: emailClean,
         }),
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || `Instant sign-in failed (Status ${response.status})`);
+        throw new Error(errorData.detail || `Magic link dispatch failed (Status ${response.status})`);
       }
 
-      const data: AuthBackendResponse = await response.json();
-      setAuthSession(data.access_token, data.user);
-      navigate('/dashboard');
+      const data = await response.json();
+      setSuccessMsg(data.message || `Verification Magic Link dispatched to ${emailClean}! Please check your Gmail inbox.`);
+      if (data.magic_url) {
+        setMagicUrl(data.magic_url);
+      }
     } catch (err: any) {
-      console.error('Instant Sign-In Error:', err);
-      setErrorMsg(err.message || 'Failed to sign in instantly.');
+      console.error('Magic Link Request Error:', err);
+      setErrorMsg(err.message || 'Failed to send verification link. Please sign in directly via Google.');
     } finally {
       setIsLoading(false);
     }
@@ -141,12 +150,29 @@ export default function Login() {
         {/* Header */}
         <div className="text-center mb-6">
           <h1 className="text-xl md:text-2xl font-black tracking-widest text-white uppercase font-mono bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-white to-purple-400">
-            ENVISION // FAST PASS SIGN IN
+            ENVISION // VERIFIED SIGN IN
           </h1>
           <p className="text-xs text-cyan-300/80 tracking-wider font-mono mt-1">
-            Access your tech fest registration & identity badge
+            Official Gmail Verification & Google Identity Sign In
           </p>
         </div>
+
+        {/* Success Alert Box */}
+        {successMsg && (
+          <div className="w-full mb-5 p-4 rounded-xl bg-emerald-950/90 border border-emerald-500/60 text-emerald-300 text-xs text-center font-mono font-bold shadow-[0_0_20px_rgba(16,185,129,0.4)]">
+            {successMsg}
+            {magicUrl && (
+              <div className="mt-3">
+                <a
+                  href={magicUrl}
+                  className="inline-block px-4 py-2 bg-emerald-500 text-black font-extrabold text-[11px] rounded-lg uppercase tracking-wider hover:bg-emerald-400 transition-all shadow-[0_0_15px_rgba(16,185,129,0.5)]"
+                >
+                  👉 CLICK HERE TO VERIFY GMAIL & SIGN IN
+                </a>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Error Alert Box */}
         {errorMsg && (
@@ -178,16 +204,16 @@ export default function Login() {
         <div className="flex items-center gap-3 my-5 w-full">
           <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
           <span className="text-[10px] font-mono font-bold text-gray-400 tracking-widest uppercase">
-            OR FAST PASS SIGN IN
+            OR VERIFY VIA GMAIL MAGIC LINK
           </span>
           <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
         </div>
 
-        {/* Direct Fast Pass Instant Form */}
-        <form onSubmit={handleInstantSignIn} className="w-full text-left">
+        {/* Gmail Magic Link Form */}
+        <form onSubmit={handleSendMagicLink} className="w-full text-left">
           <div className="mb-4">
             <label className="block text-[11px] font-bold text-cyan-300 tracking-wider uppercase font-mono mb-1.5">
-              EMAIL ADDRESS *
+              GMAIL ADDRESS *
             </label>
             <input
               type="email"
@@ -204,13 +230,13 @@ export default function Login() {
             disabled={isLoading}
             className="w-full py-3 bg-gradient-to-r from-cyan-400 via-purple-600 to-pink-500 text-white font-black text-xs uppercase tracking-widest font-mono rounded-xl shadow-[0_0_25px_rgba(0,243,255,0.4)] hover:shadow-[0_0_35px_rgba(0,243,255,0.6)] hover:scale-[1.01] active:scale-[0.98] transition-all disabled:opacity-50"
           >
-            ⚡ INSTANT SIGN IN TO DASHBOARD
+            ✉️ SEND VERIFICATION LINK TO GMAIL
           </button>
         </form>
 
         {/* Footer note */}
         <div className="mt-6 text-center text-[10px] font-mono text-gray-500">
-          Envision TechFest &bull; Fast Pass Identity Protocol
+          Envision TechFest &bull; Verified Identity Protocol
         </div>
       </div>
     </div>
