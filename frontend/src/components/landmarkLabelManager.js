@@ -12,9 +12,9 @@
 import * as THREE from 'three';
 
 export class LandmarkLabelManager {
-  constructor(labels, opts = {}) {
-    this.labels = labels;
-    this.baseScale = new Map(labels.map(l => [l.name, l.object.scale.clone()]));
+  constructor(labels = [], opts = {}) {
+    this.labels = Array.isArray(labels) ? labels : [];
+    this.baseScale = new Map(this.labels.map(l => [l.name, l.object && l.object.scale ? l.object.scale.clone() : new THREE.Vector3(1, 1, 1)]));
 
     this.inactiveScale = opts.inactiveScale ?? 0.45;
     this.inactiveOpacity = opts.inactiveOpacity ?? 0.35;
@@ -23,7 +23,7 @@ export class LandmarkLabelManager {
     this.activeName = null;
     this.pageOpen = false;
 
-    this._current = new Map(labels.map(l => [l.name, { scale: 1, opacity: 1 }]));
+    this._current = new Map(this.labels.map(l => [l.name, { scale: 1, opacity: 1 }]));
   }
 
   setActiveLandmark(name) {

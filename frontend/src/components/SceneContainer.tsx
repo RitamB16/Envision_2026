@@ -158,7 +158,7 @@ const SceneContainer: React.FC<SceneContainerProps> = ({
   onSetCarState,
   isPageActive = false
 }) => {
-  const manager = useRef<LandmarkLabelManager>(new LandmarkLabelManager()).current;
+  const manager = useRef<LandmarkLabelManager>(new LandmarkLabelManager([])).current;
 
   const handleRegister = useCallback(() => {
     onSetCarState('TRAVELING');
