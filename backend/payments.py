@@ -23,6 +23,11 @@ class CreateOrderRequest(BaseModel):
     registration_id: str
 
 
+class AdminVerifyPaymentRequest(BaseModel):
+    registration_id: str
+    action: str = "APPROVE"  # APPROVE or REJECT
+
+
 @router.post("/verify-upi")
 @router.post("/submit-utr")
 @router.post("/verify")
@@ -91,8 +96,8 @@ def verify_upi_payment(
     
     print(f"[AUDIT LOG - UTR SUBMISSION SUCCESS] Timestamp: {timestamp_str} | User ID: {current_user.id} | Email: {current_user.email} | Reg ID: {reg.reg_id} | Event: {reg.event_name} | UTR: {utr} | IP: {client_ip} | UserAgent: {user_agent}")
 
-    # 6. Update registration payment status & store UTR transaction ID
-    reg.payment_status = "COMPLETED"
+    # 6. Update registration payment status to PENDING_VERIFICATION & store UTR transaction ID
+    reg.payment_status = "PENDING_VERIFICATION"
     reg.payment_order_id = utr_txn_id
 
     # 7. Sync teammates if part of a team registration
@@ -101,16 +106,17 @@ def verify_upi_payment(
             models.Registration.team_id == reg.team_id
         ).all()
         for tm_reg in teammate_regs:
-            tm_reg.payment_status = "COMPLETED"
+            tm_reg.payment_status = "PENDING_VERIFICATION"
             tm_reg.payment_order_id = utr_txn_id
 
     db.commit()
 
     return {
-        "status": "success",
-        "message": "UPI Payment & 12-digit UTR verified successfully.",
+        "status": "pending_verification",
+        "message": "12-digit UTR recorded successfully. Registration status updated to PENDING_VERIFICATION for manual bank audit within 2 hours.",
         "utr": utr,
         "registration_id": str(reg.reg_id),
+        "payment_status": "PENDING_VERIFICATION",
         "timestamp": timestamp_str
     }
 
@@ -159,4 +165,49 @@ def create_upi_order(
         "amount": price_amount,
         "currency": "INR",
         "upi_id": upi_id
+    }
+
+
+@router.post("/admin/approve-utr")
+def admin_approve_utr(
+    payload: AdminVerifyPaymentRequest,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Administrative Endpoint to manually approve/reject UTR payment records after bank statement cross-referencing.
+    """
+    if current_user.role not in ("ADMIN", "COORDINATOR", "SUPERADMIN"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied. Administrator privileges required for manual bank verification approval."
+        )
+
+    reg = db.query(models.Registration).filter(
+        models.Registration.reg_id == payload.registration_id
+    ).first()
+
+    if not reg:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Registration record not found."
+        )
+
+    target_status = "PAID" if payload.action.upper() == "APPROVE" else "REJECTED"
+    reg.payment_status = target_status
+
+    if reg.team_id:
+        teammate_regs = db.query(models.Registration).filter(
+            models.Registration.team_id == reg.team_id
+        ).all()
+        for tm_reg in teammate_regs:
+            tm_reg.payment_status = target_status
+
+    db.commit()
+
+    return {
+        "status": "success",
+        "message": f"Registration '{reg.reg_id}' status updated to {target_status} after manual bank audit.",
+        "registration_id": str(reg.reg_id),
+        "payment_status": target_status
     }

@@ -60,13 +60,18 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
 
   const numericFee = typeof baseFee === 'number' ? baseFee : parseInt(String(baseFee).replace(/\D/g, '')) || 39;
   const totalAmount = numericFee;
-  const targetUpiId = RAZORPAY_UPI_ID || '8336048128@ybl';
 
-  // Construct standard Indian UPI Deep Link
-  const upiDeepLink = `upi://pay?pa=${encodeURIComponent(targetUpiId)}&pn=${encodeURIComponent("Envision26 TechFest")}&am=${totalAmount}&cu=INR&tn=${encodeURIComponent(`Reg ${registrationId}`)}`;
+  // Sanitized NPCI-compliant UPI parameters
+  const cleanTargetVpa = (RAZORPAY_UPI_ID || '8336048128@ybl').trim();
+  const cleanPayeeName = "Envision TechFest";
+  const cleanAmount = String(totalAmount).trim();
+  const cleanNote = `Reg_${String(registrationId).replace(/[^a-zA-Z0-9]/g, '').slice(0, 12)}`;
 
-  // Construct QR Code Image URL
-  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(upiDeepLink)}&color=00f3ff&bgcolor=0a051d`;
+  // Construct strictly encoded NPCI-compliant UPI Deep Link Intent
+  const upiDeepLink = `upi://pay?pa=${encodeURIComponent(cleanTargetVpa)}&pn=${encodeURIComponent(cleanPayeeName)}&am=${encodeURIComponent(cleanAmount)}&cu=INR&tn=${encodeURIComponent(cleanNote)}`;
+
+  // Construct High-Resolution QR Code Image URL
+  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(upiDeepLink)}&color=00f3ff&bgcolor=0a051d`;
 
   useEffect(() => {
     if (!realPhone) {
@@ -116,7 +121,7 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
   }, [paymentStatus, registrationId, eventName, totalAmount, txnId, navigate]);
 
   const handleCopyUPI = () => {
-    navigator.clipboard.writeText(targetUpiId);
+    navigator.clipboard.writeText(cleanTargetVpa);
     setCopied(true);
     setTimeout(() => setCopied(false), 2200);
   };
@@ -213,51 +218,51 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
           </span>
         </div>
 
-        {/* ================= SUCCESS STATE ================= */}
+        {/* ================= PENDING VERIFICATION STATE ================= */}
         {paymentStatus === 'SUCCESS' && (
           <div className="py-6 px-2 text-center flex flex-col items-center justify-center animate-fade-in">
             <div className="relative mb-4">
-              <div className="w-20 h-20 rounded-full bg-emerald-500/20 border-2 border-emerald-400 flex items-center justify-center shadow-[0_0_40px_rgba(16,185,129,0.4)]">
-                <svg className="w-10 h-10 text-emerald-400 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+              <div className="w-20 h-20 rounded-full bg-amber-500/20 border-2 border-amber-400 flex items-center justify-center shadow-[0_0_40px_rgba(245,158,11,0.35)]">
+                <svg className="w-10 h-10 text-amber-400 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
             </div>
 
-            <h2 className="text-xl sm:text-2xl font-black text-emerald-400 font-mono uppercase mb-1">
-              UTR SUBMITTED FOR VERIFICATION!
+            <h2 className="text-xl sm:text-2xl font-black text-amber-400 font-mono uppercase mb-1">
+              PENDING ADMIN VERIFICATION
             </h2>
             <p className="text-gray-300 text-xs sm:text-sm max-w-sm mb-4 font-sans leading-relaxed">
-              Your 12-digit UTR reference <strong className="text-cyan-300">{txnId}</strong> for <strong className="text-cyan-300">{eventName}</strong> is recorded.
+              Your 12-digit UTR reference <strong className="text-cyan-300">{txnId}</strong> for <strong className="text-cyan-300">{eventName}</strong> has been logged.
             </p>
 
-            {/* 2-Hour Manual Verification Timeline Box */}
-            <div className="w-full bg-[#070318] border border-cyan-500/30 rounded-xl p-3.5 mb-5 text-left font-mono space-y-2 box-border">
+            {/* Manual Bank Verification Explanation Card */}
+            <div className="w-full bg-[#070318] border border-amber-500/30 rounded-xl p-3.5 mb-5 text-left font-mono space-y-2 box-border">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-gray-400">AUDIT STATUS:</span>
-                <span className="text-emerald-400 font-extrabold bg-emerald-500/15 px-2 py-0.5 rounded border border-emerald-500/30 text-[10.5px]">
-                  ⏳ VERIFIED WITHIN 2 HOURS
+                <span className="text-amber-400 font-extrabold bg-amber-500/15 px-2 py-0.5 rounded border border-amber-500/30 text-[10.5px]">
+                  ⏳ PENDING MANUAL BANK AUDIT
                 </span>
               </div>
               <p className="text-[11px] text-gray-300 font-sans leading-relaxed border-t border-white/10 pt-2 m-0">
-                Our fest accounts team checks your submitted 12-digit UTR/UPI number against bank statements within <strong>2 hours</strong>. Your pass is saved on your student dashboard.
+                Your registration is currently in <strong>PENDING_VERIFICATION</strong>. Our accounts team manually verifies your 12-digit UTR against official bank statements within <strong>2 hours</strong> before granting final approval.
               </p>
               <div className="w-full bg-gray-800 rounded-full h-1.5 overflow-hidden mt-2">
                 <div 
-                  className="bg-gradient-to-r from-emerald-500 to-cyan-400 h-full transition-all duration-1000 ease-linear"
+                  className="bg-gradient-to-r from-amber-500 to-cyan-400 h-full transition-all duration-1000 ease-linear"
                   style={{ width: `${((3 - countdown) / 3) * 100}%` }}
                 />
               </div>
               <p className="text-[10.5px] text-center text-cyan-300 font-mono animate-pulse m-0 pt-1">
-                Redirecting to profile in <strong className="text-white">{countdown}</strong>s...
+                Redirecting to dashboard in <strong className="text-white">{countdown}</strong>s...
               </p>
             </div>
 
             <button
               onClick={() => navigate('/profile', { state: { justRegisteredEvent: eventName, registrationId, payment_id: txnId } })}
-              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-black font-black uppercase font-mono text-xs sm:text-sm tracking-wider shadow-[0_0_25px_rgba(16,185,129,0.3)] hover:scale-[1.01] transition-transform cursor-pointer"
+              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 via-cyan-500 to-emerald-400 text-black font-black uppercase font-mono text-xs sm:text-sm tracking-wider shadow-[0_0_25px_rgba(245,158,11,0.3)] hover:scale-[1.01] transition-transform cursor-pointer"
             >
-              VIEW DASHBOARD & UNLOCKED PASSES &rarr;
+              VIEW DASHBOARD (STATUS: PENDING VERIFICATION) &rarr;
             </button>
           </div>
         )}
@@ -349,7 +354,7 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
                   <div className="text-[11px] text-gray-400 font-mono">Scan QR Code or copy VPA ID:</div>
                   <div className="flex items-center justify-center sm:justify-start gap-2">
                     <span className="text-xs sm:text-sm font-mono font-extrabold text-cyan-300 bg-cyan-950/60 border border-cyan-500/40 px-2.5 py-1.5 rounded-md truncate">
-                      {targetUpiId}
+                      {cleanTargetVpa}
                     </span>
                     <button
                       type="button"
