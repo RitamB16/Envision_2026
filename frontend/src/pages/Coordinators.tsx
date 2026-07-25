@@ -13,9 +13,22 @@ interface MemberItem {
   imgId: string;
 }
 
+interface SectionTheme {
+  border: string;
+  hoverBorder: string;
+  textGlow: string;
+  roleText: string;
+  pillBg: string;
+  pillText: string;
+  shadowGlow: string;
+  headerGlow: string;
+  badgeBg: string;
+}
+
 interface CategorySection {
   id: string;
   title: string;
+  theme: SectionTheme;
   members: MemberItem[];
 }
 
@@ -23,6 +36,17 @@ interface CategorySection {
 const FACULTY_SECTION: CategorySection = {
   id: 'faculty',
   title: 'DEPARTMENT FACULTY',
+  theme: {
+    border: 'border-amber-500/60',
+    hoverBorder: 'hover:border-amber-300',
+    textGlow: 'text-amber-300',
+    roleText: 'text-amber-400/90',
+    pillBg: 'bg-amber-950/80 border-amber-500/60',
+    pillText: 'text-amber-200',
+    shadowGlow: 'shadow-[0_0_30px_rgba(245,158,11,0.25)] hover:shadow-[0_0_40px_rgba(245,158,11,0.45)]',
+    headerGlow: 'from-amber-400 via-yellow-200 to-amber-500',
+    badgeBg: 'bg-amber-500/20 border-amber-400/50 text-amber-300'
+  },
   members: [
     {
       name: 'SRI BIBEK RANJAN GHOSH',
@@ -62,6 +86,17 @@ const OTHER_SECTIONS: CategorySection[] = [
   {
     id: 'organisers',
     title: 'FEST ORGANISERS',
+    theme: {
+      border: 'border-cyan-500/60',
+      hoverBorder: 'hover:border-cyan-300',
+      textGlow: 'text-cyan-300',
+      roleText: 'text-cyan-400/90',
+      pillBg: 'bg-cyan-950/80 border-cyan-400/60',
+      pillText: 'text-cyan-200',
+      shadowGlow: 'shadow-[0_0_30px_rgba(0,243,255,0.25)] hover:shadow-[0_0_40px_rgba(0,243,255,0.45)]',
+      headerGlow: 'from-cyan-300 via-blue-200 to-cyan-400',
+      badgeBg: 'bg-cyan-500/20 border-cyan-400/50 text-cyan-300'
+    },
     members: [
       {
         name: 'SUMAN GUCHAIT',
@@ -72,10 +107,10 @@ const OTHER_SECTIONS: CategorySection[] = [
       },
       {
         name: 'RITAM BERA',
-        role: 'ADMIN / LEAD ORGANISER',
+        role: 'ADMIN / FEST ORGANISER',
         phone: '+91 7718219011',
-        photoUrl: 'https://ibb.co/NkyVPK9',
-        imgId: 'NkyVPK9'
+        photoUrl: 'https://ibb.co/VWVFdpf8',
+        imgId: 'VWVFdpf8'
       },
       {
         name: 'JYOTIPRABA PAL',
@@ -117,6 +152,17 @@ const OTHER_SECTIONS: CategorySection[] = [
   {
     id: 'photography',
     title: 'PHOTOGRAPHY COORDINATORS',
+    theme: {
+      border: 'border-rose-500/60',
+      hoverBorder: 'hover:border-rose-300',
+      textGlow: 'text-rose-300',
+      roleText: 'text-rose-400/90',
+      pillBg: 'bg-rose-950/80 border-rose-400/60',
+      pillText: 'text-rose-200',
+      shadowGlow: 'shadow-[0_0_30px_rgba(244,63,94,0.25)] hover:shadow-[0_0_40px_rgba(244,63,94,0.45)]',
+      headerGlow: 'from-rose-300 via-pink-200 to-rose-400',
+      badgeBg: 'bg-rose-500/20 border-rose-400/50 text-rose-300'
+    },
     members: [
       {
         name: 'RAJESH TIKADAR',
@@ -144,6 +190,17 @@ const OTHER_SECTIONS: CategorySection[] = [
   {
     id: 'chess',
     title: 'CHESS COORDINATORS',
+    theme: {
+      border: 'border-emerald-500/60',
+      hoverBorder: 'hover:border-emerald-300',
+      textGlow: 'text-emerald-300',
+      roleText: 'text-emerald-400/90',
+      pillBg: 'bg-emerald-950/80 border-emerald-400/60',
+      pillText: 'text-emerald-200',
+      shadowGlow: 'shadow-[0_0_30px_rgba(16,185,129,0.25)] hover:shadow-[0_0_40px_rgba(16,185,129,0.45)]',
+      headerGlow: 'from-emerald-300 via-teal-200 to-emerald-400',
+      badgeBg: 'bg-emerald-500/20 border-emerald-400/50 text-emerald-300'
+    },
     members: [
       {
         name: 'SAUMYARUP SARKAR',
@@ -156,21 +213,32 @@ const OTHER_SECTIONS: CategorySection[] = [
         name: 'HIRAK JYOTI SARKAR',
         role: 'CHESS COORDINATOR',
         phone: '+91 9907485141',
-        photoUrl: 'https://ibb.co/HT3h4tfph',
-        imgId: 'HT3h4tfph'
+        photoUrl: 'https://ibb.co/VWVFdpf8',
+        imgId: 'VWVFdpf8'
       },
       {
         name: 'JYOTIPRABA PAL',
         role: 'CHESS COORDINATOR',
         phone: '+91 9734772175',
-        photoUrl: 'https://ibb.co/9m9Bdjyx',
-        imgId: '9m9Bdjyx'
+        photoUrl: 'https://ibb.co/TxSz8pjq',
+        imgId: 'TxSz8pjq'
       }
     ]
   },
   {
     id: 'auction',
     title: 'AUCTION COORDINATORS',
+    theme: {
+      border: 'border-purple-500/60',
+      hoverBorder: 'hover:border-purple-300',
+      textGlow: 'text-purple-300',
+      roleText: 'text-purple-400/90',
+      pillBg: 'bg-purple-950/80 border-purple-400/60',
+      pillText: 'text-purple-200',
+      shadowGlow: 'shadow-[0_0_30px_rgba(168,85,247,0.25)] hover:shadow-[0_0_40px_rgba(168,85,247,0.45)]',
+      headerGlow: 'from-purple-300 via-fuchsia-200 to-purple-400',
+      badgeBg: 'bg-purple-500/20 border-purple-400/50 text-purple-300'
+    },
     members: [
       {
         name: 'RUDRA PRATAP ROY',
@@ -191,6 +259,17 @@ const OTHER_SECTIONS: CategorySection[] = [
   {
     id: 'quiz',
     title: 'QUIZ COORDINATORS',
+    theme: {
+      border: 'border-indigo-500/60',
+      hoverBorder: 'hover:border-indigo-300',
+      textGlow: 'text-indigo-300',
+      roleText: 'text-indigo-400/90',
+      pillBg: 'bg-indigo-950/80 border-indigo-400/60',
+      pillText: 'text-indigo-200',
+      shadowGlow: 'shadow-[0_0_30px_rgba(99,102,241,0.25)] hover:shadow-[0_0_40px_rgba(99,102,241,0.45)]',
+      headerGlow: 'from-indigo-300 via-sky-200 to-indigo-400',
+      badgeBg: 'bg-indigo-500/20 border-indigo-400/50 text-indigo-300'
+    },
     members: [
       {
         name: 'SUBHAJIT MAHAPATRA',
@@ -211,27 +290,38 @@ const OTHER_SECTIONS: CategorySection[] = [
   {
     id: 'coding',
     title: 'CODING COORDINATORS',
+    theme: {
+      border: 'border-cyan-400/70',
+      hoverBorder: 'hover:border-cyan-200',
+      textGlow: 'text-cyan-200',
+      roleText: 'text-cyan-300/90',
+      pillBg: 'bg-cyan-950/85 border-cyan-300/60',
+      pillText: 'text-cyan-100',
+      shadowGlow: 'shadow-[0_0_30px_rgba(6,182,212,0.3)] hover:shadow-[0_0_40px_rgba(6,182,212,0.5)]',
+      headerGlow: 'from-cyan-200 via-blue-100 to-cyan-300',
+      badgeBg: 'bg-cyan-500/20 border-cyan-400/50 text-cyan-200'
+    },
     members: [
       {
         name: 'RITAM BERA',
         role: 'CODING COORDINATOR',
         phone: '+91 7718219011',
-        photoUrl: 'https://ibb.co/NkyVPK9',
-        imgId: 'NkyVPK9'
+        photoUrl: 'https://ibb.co/VWVFdpf8',
+        imgId: 'VWVFdpf8'
       },
       {
         name: 'JEET BHATTACHARJEE',
         role: 'CODING COORDINATOR',
         phone: '+91 8170909952',
-        photoUrl: 'https://ibb.co/rRN3FWTz',
-        imgId: 'rRN3FWTz'
+        photoUrl: 'https://ibb.co/G4QPb3pj',
+        imgId: 'G4QPb3pj'
       }
     ]
   }
 ];
 
-// Chamfered Cyberpunk Card Component (matching provided reference layout)
-const MemberCard: React.FC<{ member: MemberItem }> = ({ member }) => {
+// High-Style Chamfered Cyberpunk Card Component (matching reference layout with vivid theme support)
+const MemberCard: React.FC<{ member: MemberItem; theme: SectionTheme }> = ({ member, theme }) => {
   const [imgSrc, setImgSrc] = useState<string>(`https://i.ibb.co/${member.imgId}/image.jpg`);
   const [hasError, setHasError] = useState<boolean>(false);
 
@@ -246,24 +336,28 @@ const MemberCard: React.FC<{ member: MemberItem }> = ({ member }) => {
       style={{
         clipPath: 'polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px)',
       }}
-      className="relative p-6 sm:p-7 bg-slate-950/85 backdrop-blur-xl border border-cyan-500/50 shadow-[0_0_25px_rgba(0,243,255,0.2)] flex flex-col items-center text-center justify-between transition-all duration-300 hover:border-cyan-300 hover:shadow-[0_0_35px_rgba(0,243,255,0.35)] hover:-translate-y-1 w-full box-sizing-border"
+      className={`relative p-6 sm:p-7 bg-slate-950/90 backdrop-blur-2xl border ${theme.border} ${theme.hoverBorder} ${theme.shadowGlow} flex flex-col items-center text-center justify-between transition-all duration-300 hover:-translate-y-2 hover:scale-[1.02] w-full box-sizing-border group`}
     >
+      {/* High-Tech Top Corner Bracket Accents */}
+      <div className="absolute top-2 left-2 w-2 h-2 border-t-2 border-l-2 border-cyan-400/60"></div>
+      <div className="absolute bottom-2 right-2 w-2 h-2 border-b-2 border-r-2 border-cyan-400/60"></div>
+
       {/* 1. TOP: Name & Role */}
-      <div className="space-y-1.5 w-full mb-4">
-        <h3 className="text-base sm:text-lg font-black text-white font-mono tracking-wider uppercase leading-tight">
+      <div className="space-y-1.5 w-full mb-3">
+        <h3 className="text-base sm:text-lg font-black text-white font-mono tracking-wider uppercase leading-tight group-hover:text-cyan-200 transition-colors">
           {member.name}
         </h3>
-        <p className="text-xs font-mono font-semibold text-cyan-300/90 uppercase tracking-widest">
+        <p className={`text-xs font-mono font-bold uppercase tracking-widest ${theme.roleText}`}>
           {member.role}
         </p>
       </div>
 
-      {/* 2. CENTER: Portrait Photo Frame */}
+      {/* 2. CENTER: Portrait Photo Frame with Neon Glow */}
       <a
         href={member.photoUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="relative my-3 w-32 h-36 sm:w-36 sm:h-40 rounded-xl overflow-hidden border border-cyan-400/40 shadow-md group flex items-center justify-center bg-black/60 shrink-0"
+        className={`relative my-3 w-32 h-36 sm:w-36 sm:h-40 rounded-xl overflow-hidden border ${theme.border} shadow-lg group-hover:shadow-[0_0_20px_rgba(0,243,255,0.4)] flex items-center justify-center bg-black/70 shrink-0 transition-all duration-300`}
         title={`View photo of ${member.name}`}
       >
         {!hasError ? (
@@ -276,25 +370,25 @@ const MemberCard: React.FC<{ member: MemberItem }> = ({ member }) => {
                 setHasError(true);
               }
             }}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
             loading="lazy"
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-slate-900 via-slate-950 to-cyan-950 flex flex-col items-center justify-center p-2 text-center">
-            <span className="text-2xl font-extrabold font-mono text-cyan-300 tracking-wider">
+            <span className={`text-2xl font-extrabold font-mono ${theme.textGlow} tracking-wider`}>
               {getInitials(member.name)}
             </span>
           </div>
         )}
       </a>
 
-      {/* 3. BOTTOM: Mobile Number Container (NO ICONS as explicitly requested) */}
+      {/* 3. BOTTOM: Mobile Number Container (NO ICONS strictly maintained) */}
       {member.phone ? (
         <div
           style={{
             clipPath: 'polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px)',
           }}
-          className="w-full mt-4 py-2 px-3 bg-cyan-950/70 border border-cyan-400/50 text-cyan-200 text-xs sm:text-sm font-mono font-extrabold tracking-widest text-center shadow-inner"
+          className={`w-full mt-4 py-2 px-3 ${theme.pillBg} ${theme.pillText} text-xs sm:text-sm font-mono font-extrabold tracking-widest text-center shadow-inner transition-all duration-300 group-hover:scale-[1.02]`}
         >
           {member.phone}
         </div>
@@ -310,33 +404,68 @@ const MemberCard: React.FC<{ member: MemberItem }> = ({ member }) => {
 export default function Coordinators({ onBack }: Props) {
   return (
     <PageLayout title="ABOUT US" onBack={onBack}>
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-14 text-center">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-16 text-center">
+
+        {/* High Visual Cyber Hero Banner */}
+        <div className="relative p-6 sm:p-10 rounded-3xl bg-gradient-to-r from-purple-950/80 via-slate-950/90 to-cyan-950/80 border border-cyan-500/40 shadow-[0_0_60px_rgba(0,243,255,0.2)] backdrop-blur-2xl text-center space-y-4 overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-cyan-500/10 via-transparent to-transparent pointer-events-none"></div>
+          
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-500/15 border border-cyan-400/50 text-cyan-300 text-xs font-mono font-black tracking-widest uppercase shadow-[0_0_15px_rgba(0,243,255,0.3)]">
+            ⚡ RAMAKRISHNA MISSION RESIDENTIAL COLLEGE (AUTONOMOUS), NARENDRAPUR
+          </div>
+
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-200 to-purple-300 font-mono tracking-tight drop-shadow-[0_0_30px_rgba(0,243,255,0.3)]">
+            ENVISION '26 ABOUT US
+          </h1>
+
+          <p className="text-xs sm:text-sm text-cyan-100/90 font-mono max-w-3xl mx-auto leading-relaxed">
+            DEPARTMENT OF COMPUTER SCIENCE FACULTY MENTORS, EXECUTIVE ORGANISERS & COMPETITION HEADS
+          </p>
+
+          <div className="pt-2 flex items-center justify-center gap-3 flex-wrap text-[11px] font-mono font-bold text-gray-300">
+            <span className="px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/50 text-amber-300">
+              5 FACULTY MENTORS
+            </span>
+            <span className="px-3 py-1 rounded-full bg-cyan-500/20 border border-cyan-400/50 text-cyan-300">
+              7 FEST ORGANISERS
+            </span>
+            <span className="px-3 py-1 rounded-full bg-purple-500/20 border border-purple-400/50 text-purple-300">
+              14 COMPETITION HEADS
+            </span>
+          </div>
+        </div>
 
         {/* SECTION 1: FACULTY MEMBERS */}
         <div className="space-y-8">
-          <h2 className="text-2xl sm:text-3xl font-black text-white font-mono tracking-widest uppercase text-center border-b border-cyan-500/30 pb-4">
-            {FACULTY_SECTION.title}
-          </h2>
+          <div className="relative flex flex-col items-center">
+            <h2 className={`text-2xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r ${FACULTY_SECTION.theme.headerGlow} font-mono tracking-widest uppercase text-center pb-3`}>
+              {FACULTY_SECTION.title}
+            </h2>
+            <div className="w-32 h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent rounded-full shadow-[0_0_15px_rgba(245,158,11,0.6)]"></div>
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 justify-items-center">
             {FACULTY_SECTION.members.map((mem, idx) => (
-              <MemberCard key={idx} member={mem} />
+              <MemberCard key={idx} member={mem} theme={FACULTY_SECTION.theme} />
             ))}
           </div>
         </div>
 
-        {/* SECTIONS 2-7: ORGANISERS AND EVENT COORDINATORS (STRICT ORDER) */}
+        {/* SECTIONS 2-7: ORGANISERS AND EVENT COORDINATORS (STRICT ORDER MAINTAINED) */}
         {OTHER_SECTIONS.map((section) => (
           <div key={section.id} className="space-y-8 pt-4">
-            {/* Category Header */}
-            <h2 className="text-2xl sm:text-3xl font-black text-white font-mono tracking-widest uppercase text-center border-b border-cyan-500/30 pb-4">
-              {section.title}
-            </h2>
+            {/* Category Header with Glow Underline */}
+            <div className="relative flex flex-col items-center">
+              <h2 className={`text-2xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r ${section.theme.headerGlow} font-mono tracking-widest uppercase text-center pb-3`}>
+                {section.title}
+              </h2>
+              <div className="w-32 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent rounded-full shadow-[0_0_15px_rgba(0,243,255,0.6)]"></div>
+            </div>
 
             {/* Grid of Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 justify-items-center">
               {section.members.map((mem, idx) => (
-                <MemberCard key={idx} member={mem} />
+                <MemberCard key={idx} member={mem} theme={section.theme} />
               ))}
             </div>
           </div>
