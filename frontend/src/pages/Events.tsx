@@ -240,16 +240,6 @@ export default function Events({ onBack: _onBack }: Props) {
     setIsNavigating(false);
   }, [searchParams]);
 
-  useEffect(() => {
-    if (!document.getElementById('razorpay-sdk')) {
-      const script = document.createElement('script');
-      script.id = 'razorpay-sdk';
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      script.async = true;
-      document.body.appendChild(script);
-    }
-  }, []);
-
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>, cardId: string) => {
     if (typeof window !== 'undefined' && window.innerWidth < 768) return;
 

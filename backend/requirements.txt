@@ -9,7 +9,6 @@ google-auth
 python-jose[cryptography]
 passlib
 email-validator
-razorpay
 slowapi
 fastapi-cache2
 redis

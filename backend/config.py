@@ -24,11 +24,6 @@ class Settings(BaseSettings):
     CLOUDINARY_CLOUD_NAME: str
     CLOUDINARY_API_KEY: str
     CLOUDINARY_API_SECRET: str
-
-    RAZORPAY_KEY_ID: str = "rzp_test_TGuT8hs5QZ9uy9"
-    RAZORPAY_KEY_SECRET: str = "Smb0IOLOAy5wzyp7cX2IOTqL"
-    RAZORPAY_WEBHOOK_SECRET: str = "whsec_mocksecret123"
-
     model_config = SettingsConfigDict(
         env_file=ENV_FILE_PATH,
         env_file_encoding="utf-8",

@@ -1,7 +1,6 @@
 import os
 import uuid
 import json
-import razorpay
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
@@ -11,11 +10,6 @@ import schemas
 from config import settings
 
 router = APIRouter(tags=["registration"])
-
-def get_razorpay_client():
-    key_id = os.getenv("RAZORPAY_KEY_ID") or getattr(settings, "RAZORPAY_KEY_ID", "rzp_test_TGuT8hs5QZ9uy9")
-    key_secret = os.getenv("RAZORPAY_KEY_SECRET") or getattr(settings, "RAZORPAY_KEY_SECRET", "Smb0IOLOAy5wzyp7cX2IOTqL")
-    return razorpay.Client(auth=(key_id, key_secret))
 
 
 def get_event_price(db: Session, event_name: str) -> int:
@@ -140,7 +134,7 @@ def register_solo(
             detail=f"You are already registered for {payload.event_name}."
         )
 
-    # Create Razorpay Order or Free Order
+    # Create Direct Order (Free or UPI)
     price_amount = get_event_price(db, payload.event_name)
     price_in_paise = price_amount * 100
     
@@ -148,21 +142,8 @@ def register_solo(
         order_id = f"free_order_{uuid.uuid4().hex[:12]}"
         payment_status_val = "COMPLETED"
     else:
-        client = get_razorpay_client()
-        try:
-            order_data = {
-                "amount": price_in_paise,
-                "currency": "INR",
-                "receipt": f"receipt_{uuid.uuid4().hex[:10]}",
-                "payment_capture": 1
-            }
-            order = client.order.create(data=order_data)
-            order_id = order.get("id")
-            payment_status_val = "PENDING"
-        except Exception as e:
-            print(f"[!] Razorpay Order Creation Notice: {e}")
-            order_id = f"order_mock_{uuid.uuid4().hex[:12]}"
-            payment_status_val = "PENDING"
+        order_id = f"upi_order_{uuid.uuid4().hex[:12]}"
+        payment_status_val = "PENDING"
 
     # Insert registration record
     registration = models.Registration(
@@ -178,7 +159,7 @@ def register_solo(
     return {
         "status": "success",
         "registration_id": str(registration.reg_id),
-        "razorpay_order_id": order_id,
+        "order_id": order_id,
         "amount": price_amount,
         "is_free": price_amount == 0
     }
@@ -265,7 +246,7 @@ def register_team(
         db.add(team)
         db.flush()
 
-        # 4. Create Razorpay order
+        # 4. Create Direct Order (Free or UPI)
         price_amount = get_event_price(db, payload.event_name)
         price_in_paise = price_amount * 100
         
@@ -273,21 +254,8 @@ def register_team(
             order_id = f"free_order_{uuid.uuid4().hex[:12]}"
             payment_status_val = "COMPLETED"
         else:
-            client = get_razorpay_client()
-            try:
-                order_data = {
-                    "amount": price_in_paise,
-                    "currency": "INR",
-                    "receipt": f"receipt_{uuid.uuid4().hex[:10]}",
-                    "payment_capture": 1
-                }
-                order = client.order.create(data=order_data)
-                order_id = order.get("id")
-                payment_status_val = "PENDING"
-            except Exception as e:
-                print(f"[!] Razorpay Team Order Creation Notice: {e}")
-                order_id = f"order_mock_{uuid.uuid4().hex[:12]}"
-                payment_status_val = "PENDING"
+            order_id = f"upi_order_{uuid.uuid4().hex[:12]}"
+            payment_status_val = "PENDING"
 
         # 5. Insert registration rows for leader and teammates
         leader_reg = models.Registration(
@@ -316,7 +284,7 @@ def register_team(
             "status": "success",
             "team_id": str(team.team_id),
             "registration_id": str(leader_reg.reg_id),
-            "razorpay_order_id": order_id,
+            "order_id": order_id,
             "amount": price_amount,
             "is_free": price_amount == 0
         }
@@ -331,86 +299,3 @@ def register_team(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to complete team registration. Database transaction rolled back."
         )
-
-
-@router.post("/webhook/razorpay")
-async def razorpay_webhook(
-    request: Request,
-    db: Session = Depends(get_db)
-):
-    """
-    Endpoint 3: Production-Ready Webhook Pipeline.
-    Strictly verifies x-razorpay-signature, enforces idempotency,
-    and updates payments to COMPLETED format.
-    """
-    body_bytes = await request.body()
-    body_str = body_bytes.decode("utf-8")
-    
-    signature = request.headers.get("x-razorpay-signature")
-    webhook_secret = os.getenv("RAZORPAY_WEBHOOK_SECRET") or getattr(settings, "RAZORPAY_WEBHOOK_SECRET", "whsec_mocksecret123")
-    
-    if signature:
-        try:
-            client = get_razorpay_client()
-            client.utility.verify_webhook_signature(
-                body_str,
-                signature,
-                webhook_secret
-            )
-        except Exception as e:
-            print(f"[!] Webhook Signature Verification Error: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Signature verification failed."
-            )
-
-    try:
-        event_payload = json.loads(body_str)
-    except Exception:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid JSON payload."
-        )
-
-    event_type = event_payload.get("event")
-    
-    if event_type in ("payment.captured", "order.paid"):
-        payment_entity = event_payload.get("payload", {}).get("payment", {}).get("entity", {})
-        order_id = payment_entity.get("order_id")
-        
-        if not order_id:
-            order_id = event_payload.get("payload", {}).get("order", {}).get("entity", {}).get("id")
-
-        if order_id:
-            try:
-                registrations = db.query(models.Registration).filter(
-                    models.Registration.payment_order_id == order_id
-                ).all()
-                
-                if not registrations:
-                    return {"status": "ignored", "message": f"Order '{order_id}' not found in database."}
-
-                # IDEMPOTENCY CHECK: If already marked as COMPLETED or SUCCESS, return 200 OK immediately
-                if all(reg.payment_status in ("COMPLETED", "SUCCESS") for reg in registrations):
-                    return {
-                        "status": "ok",
-                        "message": f"Order '{order_id}' is already marked as completed. Idempotent response."
-                    }
-
-                for reg in registrations:
-                    reg.payment_status = "COMPLETED"
-                db.commit()
-                
-                return {
-                    "status": "ok",
-                    "message": f"Updated {len(registrations)} registration(s) for order {order_id} to COMPLETED."
-                }
-            except Exception as db_err:
-                db.rollback()
-                print(f"[!] Webhook Database Error (Safely Handled): {db_err}")
-                return {
-                    "status": "error",
-                    "message": f"Webhook received but internal DB error logged: {db_err}"
-                }
-            
-    return {"status": "ignored"}

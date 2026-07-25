@@ -213,5 +213,6 @@ export const destinations: RouteConfig[] = [
     glowColor: '#e5c158',
     fontFamily: "'Outfit', sans-serif"
   }
-];export const RAZORPAY_ME_URL = "https://razorpay.me/@ritambera8705";
-export const RAZORPAY_UPI_ID = "ritambera8705@razorpay";
+];
+export const FEST_UPI_ID = (import.meta.env as any).VITE_FEST_UPI_ID || "8336048128@ybl";
+export const RAZORPAY_UPI_ID = FEST_UPI_ID;

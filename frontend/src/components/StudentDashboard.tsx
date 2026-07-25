@@ -415,9 +415,12 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
                       {registrations.map((reg, idx) => {
                         const eventName = reg.event?.name || reg.event_id?.toUpperCase() || 'ENVISION EVENT';
                         const isTechTalk = reg.event_id === 'techtalk' || eventName.includes('TECH TALK');
-                        const isPaid = reg.payment_status === 'COMPLETED' || reg.payment_status === 'CONFIRMED' || isTechTalk;
+                        const isPendingVerification = reg.payment_status === 'PENDING_VERIFICATION';
+                        const isPaid = reg.payment_status === 'COMPLETED' || reg.payment_status === 'CONFIRMED' || reg.payment_status === 'SUCCESS' || isPendingVerification || isTechTalk;
                         const statusLabel = isTechTalk
                           ? '✓ FREE AUTO-ENROLLED PASS'
+                          : isPendingVerification
+                          ? '⏳ UTR SUBMITTED (VERIFICATION PENDING)'
                           : (isPaid ? '✓ CONFIRMED & PAID' : 'PENDING CHECKOUT');
 
                         return (
