@@ -95,6 +95,10 @@ export default function ProfileModal({ isOpen = true, user: initialUser, onClose
     }
   };
 
+  if (showDashboard) {
+    return <StudentDashboard onClose={() => setShowDashboard(false)} />;
+  }
+
   return (
     // 1. Full-Screen Dark Overlay with fixed position & inline style fallback
     <div
@@ -230,7 +234,7 @@ export default function ProfileModal({ isOpen = true, user: initialUser, onClose
             <button
               onClick={() => {
                 if (onClose) onClose();
-                navigate('/events');
+                navigate('/dashboard');
               }}
               style={{
                 flex: 1,

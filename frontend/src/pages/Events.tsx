@@ -30,7 +30,7 @@ const EVENT_RULES_LINKS: Record<string, string> = {
   bidquest: 'https://ibb.co/spH899Sy',
   'carlsen-chess': 'https://ibb.co/GvDyX0mB',
   chess: 'https://ibb.co/DgrbN57k',
-  lensverse: 'https://ibb.co/MxCRd9hg'
+  lensverse: 'https://ibb.co/PzQxbTX5'
 };
 
 const EVENT_DESCRIPTIONS: Record<string, string> = {
@@ -1418,8 +1418,8 @@ export default function Events({ onBack: _onBack }: Props) {
               <button
                 key={cat.id}
                 className={`px-3 py-1.5 text-xs font-mono font-extrabold uppercase rounded-xl transition-all whitespace-nowrap cursor-pointer ${selectedCategory === cat.id
-                    ? 'bg-cyan-500/30 text-cyan-300 border border-cyan-400/60 shadow-[0_0_15px_rgba(0,243,255,0.3)] scale-[1.02]'
-                    : 'text-gray-400 hover:text-white bg-white/5 border border-white/10 hover:border-white/20'
+                  ? 'bg-cyan-500/30 text-cyan-300 border border-cyan-400/60 shadow-[0_0_15px_rgba(0,243,255,0.3)] scale-[1.02]'
+                  : 'text-gray-400 hover:text-white bg-white/5 border border-white/10 hover:border-white/20'
                   }`}
                 onClick={() => setSelectedCategory(cat.id)}
               >
