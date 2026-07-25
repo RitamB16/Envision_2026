@@ -43,6 +43,22 @@ const EVENT_DESCRIPTIONS: Record<string, string> = {
   techtalk: 'Join top industry visionaries and tech pioneers for an inspiring keynote seminar exploring AI breakthroughs, future tech stacks, and career pathways in modern software engineering.'
 };
 
+interface EventContact {
+  head: string;
+  phone: string;
+  rawPhone: string;
+}
+
+const EVENT_CONTACTS: Record<string, EventContact> = {
+  syntaxx: { head: 'Ritam Bera', phone: '+91 77182 19011', rawPhone: '+917718219011' },
+  mindspark: { head: 'Subhajit Mahapatra', phone: '+91 83899 44951', rawPhone: '+918389944951' },
+  bidquest: { head: 'Anik Bhunia', phone: '+91 78721 69208', rawPhone: '+917872169208' },
+  'carlsen-chess': { head: 'Soumyarup Sarkar', phone: '+91 82933 55649', rawPhone: '+918293355649' },
+  chess: { head: 'Soumyarup Sarkar', phone: '+91 82933 55649', rawPhone: '+918293355649' },
+  lensverse: { head: 'Souvik Roy', phone: '+91 89429 09735', rawPhone: '+918942909735' },
+  techtalk: { head: 'Jyotipraba Pal', phone: '+91 97347 72175', rawPhone: '+919734772175' }
+};
+
 const EVENTS_DATA: EventData[] = [
   {
     id: 'techtalk',
@@ -1601,11 +1617,54 @@ export default function Events({ onBack: _onBack }: Props) {
                   )}
                 </div>
               )}
-              {activeTab === 'contact' && (
-                <p>
-                  For tracking queries, resource support, or generic coordination assistance, reach out to the event supervisor at: <strong className="text-cyan-300">{selectedEvent.id}@envision.org</strong>.
-                </p>
-              )}
+              {activeTab === 'contact' && (() => {
+                const contact = EVENT_CONTACTS[selectedEvent.id.toLowerCase()];
+                return (
+                  <div className="space-y-3 font-sans">
+                    <p className="text-xs text-gray-300 leading-relaxed m-0">
+                      For event rules, coordination, or queries regarding <strong className="text-cyan-300">{selectedEvent.name}</strong>, please contact the designated Event Head directly:
+                    </p>
+                    
+                    {contact && (
+                      <div className="p-3.5 rounded-xl bg-gradient-to-br from-purple-950/70 via-black/80 to-cyan-950/70 border border-cyan-400/40 space-y-2 text-left shadow-lg">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-mono text-cyan-400 font-extrabold uppercase tracking-wider">
+                            👤 DESIGNATED EVENT HEAD
+                          </span>
+                          <span className="text-[10px] font-mono text-purple-300 bg-purple-900/60 px-2 py-0.5 rounded border border-purple-500/40">
+                            {selectedEvent.name}
+                          </span>
+                        </div>
+
+                        <div className="text-sm font-extrabold text-white tracking-wide flex items-center gap-2">
+                          <span>👤</span> {contact.head}
+                        </div>
+
+                        <div className="text-xs font-mono text-cyan-300 flex items-center gap-2">
+                          <span>📞</span> {contact.phone}
+                        </div>
+
+                        <div className="pt-2 border-t border-white/10 flex items-center gap-2">
+                          <a
+                            href={`tel:${contact.rawPhone}`}
+                            className="flex-1 py-2 px-3 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/35 border border-cyan-400/50 text-cyan-300 font-mono text-xs font-bold text-center transition-all flex items-center justify-center gap-1.5 no-underline cursor-pointer active:scale-95"
+                          >
+                            <span>📞</span> Call Head
+                          </a>
+                          <a
+                            href={`https://wa.me/${contact.rawPhone.replace('+', '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 py-2 px-3 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/35 border border-emerald-400/50 text-emerald-300 font-mono text-xs font-bold text-center transition-all flex items-center justify-center gap-1.5 no-underline cursor-pointer active:scale-95"
+                          >
+                            <span>💬</span> WhatsApp
+                          </a>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
               {activeTab === 'terms' && (
                 <ol className="list-decimal pl-4 sm:pl-5 space-y-2.5 text-[11.5px] sm:text-xs text-gray-200 font-sans leading-relaxed">
                   <li className="pl-1"><strong className="text-purple-300">Non-Refundable Policy:</strong> All event registration fees are strictly non-refundable and non-transferable.</li>

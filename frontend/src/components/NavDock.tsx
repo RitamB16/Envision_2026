@@ -1016,16 +1016,16 @@ const NavDock: React.FC<Props> = ({ onNavigate, activeTargetId, carState, isPage
 
           {/* 3. Right Social Icons Dock */}
           <div className="social-dock-right hud-interactive desktop-only">
-            <a href="https://instagram.com" target="_blank" rel="noreferrer" className="social-circle-btn" aria-label="Instagram">
+            <a href="https://www.instagram.com/envision_rkm?igsh=aTEyYTdiZmcydHN0" target="_blank" rel="noreferrer" className="social-circle-btn" aria-label="Instagram">
               <SocialInstagram />
             </a>
-            <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="social-circle-btn" aria-label="LinkedIn">
+            <a href="https://www.linkedin.com/in/computer-science-department-4b590440b?utm_source=share_via&utm_content=profile&utm_medium=member_android" target="_blank" rel="noreferrer" className="social-circle-btn" aria-label="LinkedIn">
               <SocialLinkedin />
             </a>
-            <a href="https://x.com" target="_blank" rel="noreferrer" className="social-circle-btn" aria-label="Twitter X">
+            <a href="https://x.com/Envision_26" target="_blank" rel="noreferrer" className="social-circle-btn" aria-label="Twitter X">
               <SocialX />
             </a>
-            <a href="https://wa.me/9123456789" target="_blank" rel="noreferrer" className="social-circle-btn" aria-label="WhatsApp">
+            <a href="https://chat.whatsapp.com/JJCbhKk8N1j7yNNW7kmKMX" target="_blank" rel="noreferrer" className="social-circle-btn" aria-label="WhatsApp">
               <SocialWhatsapp />
             </a>
           </div>
@@ -1133,16 +1133,16 @@ const NavDock: React.FC<Props> = ({ onNavigate, activeTargetId, carState, isPage
 
               {/* Social Icons inline below Contact Us */}
               <div className="drawer-socials-inline">
-                <a href="https://instagram.com" target="_blank" rel="noreferrer" className="drawer-social-inline-btn" aria-label="Instagram">
+                <a href="https://www.instagram.com/envision_rkm?igsh=aTEyYTdiZmcydHN0" target="_blank" rel="noreferrer" className="drawer-social-inline-btn" aria-label="Instagram">
                   <SocialInstagram />
                 </a>
-                <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="drawer-social-inline-btn" aria-label="LinkedIn">
+                <a href="https://www.linkedin.com/in/computer-science-department-4b590440b?utm_source=share_via&utm_content=profile&utm_medium=member_android" target="_blank" rel="noreferrer" className="drawer-social-inline-btn" aria-label="LinkedIn">
                   <SocialLinkedin />
                 </a>
-                <a href="https://x.com" target="_blank" rel="noreferrer" className="drawer-social-inline-btn" aria-label="Twitter X">
+                <a href="https://x.com/Envision_26" target="_blank" rel="noreferrer" className="drawer-social-inline-btn" aria-label="Twitter X">
                   <SocialX />
                 </a>
-                <a href="https://wa.me/9123456789" target="_blank" rel="noreferrer" className="drawer-social-inline-btn" aria-label="WhatsApp">
+                <a href="https://chat.whatsapp.com/JJCbhKk8N1j7yNNW7kmKMX" target="_blank" rel="noreferrer" className="drawer-social-inline-btn" aria-label="WhatsApp">
                   <SocialWhatsapp />
                 </a>
               </div>
