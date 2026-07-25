@@ -1618,47 +1618,99 @@ export default function Events({ onBack: _onBack }: Props) {
               )}
               {activeTab === 'contact' && (() => {
                 const contact = EVENT_CONTACTS[selectedEvent.id.toLowerCase()];
+                const isPhotographyEvent = selectedEvent.id.toLowerCase() === 'lensverse' || selectedEvent.id.toLowerCase() === 'photography';
+
                 return (
-                  <div className="space-y-3 font-sans">
-                    <p className="text-xs text-gray-300 leading-relaxed m-0">
-                      For event rules, coordination, or queries regarding <strong className="text-cyan-300">{selectedEvent.name}</strong>, please contact the designated Event Head directly:
+                  <div className="space-y-4 font-sans text-left">
+                    <p className="text-xs sm:text-sm text-gray-300 leading-relaxed m-0 font-mono">
+                      For event rules, scheduling, or queries regarding <strong className="text-cyan-300 uppercase">{selectedEvent.name}</strong>, contact the Event Head directly:
                     </p>
 
                     {contact && (
-                      <div className="p-3.5 rounded-xl bg-gradient-to-br from-purple-950/70 via-black/80 to-cyan-950/70 border border-cyan-400/40 space-y-2 text-left shadow-lg">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-mono text-cyan-400 font-extrabold uppercase tracking-wider">
-                            👤 DESIGNATED EVENT HEAD
+                      <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-slate-950/90 via-purple-950/40 to-cyan-950/80 border-2 border-cyan-400/60 space-y-4 text-left shadow-[0_0_35px_rgba(0,243,255,0.25)] relative overflow-hidden backdrop-blur-xl">
+                        {/* Header Badge Row */}
+                        <div className="flex items-center justify-between pb-2.5 border-b border-white/15">
+                          <span className="text-xs font-mono text-cyan-300 font-extrabold uppercase tracking-widest flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                            DESIGNATED EVENT HEAD
                           </span>
-                          <span className="text-[10px] font-mono text-purple-300 bg-purple-900/60 px-2 py-0.5 rounded border border-purple-500/40">
+                          <span className="text-[11px] font-mono text-purple-200 bg-purple-900/70 px-3 py-1 rounded-full border border-purple-400/50 font-black uppercase tracking-wider shadow-sm">
                             {selectedEvent.name}
                           </span>
                         </div>
 
-                        <div className="text-sm font-extrabold text-white tracking-wide flex items-center gap-2">
-                          <span>👤</span> {contact.head}
+                        {/* Event Head Name & Phone Card */}
+                        <div className="p-3.5 rounded-xl bg-black/50 border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                          <div className="space-y-1">
+                            <div className="text-xs font-mono text-gray-400 font-bold uppercase tracking-wider">EVENT COORDINATOR</div>
+                            <div className="text-base sm:text-lg font-black text-white tracking-wide font-mono flex items-center gap-2">
+                              <span className="text-cyan-400 text-lg">👤</span>
+                              <span>{contact.head}</span>
+                            </div>
+                          </div>
+
+                          <div className="px-3 py-1.5 rounded-lg bg-cyan-500/15 border border-cyan-400/40 text-cyan-300 font-mono text-xs sm:text-sm font-extrabold tracking-widest text-center">
+                            📱 {contact.phone}
+                          </div>
                         </div>
 
-                        <div className="text-xs font-mono text-cyan-300 flex items-center gap-2">
-                          <span>📞</span> {contact.phone}
-                        </div>
+                        {/* Action Buttons Bar */}
+                        {isPhotographyEvent ? (
+                          /* 3 Visual Icons/Pills Specifically for Photography (LENSVERSE) */
+                          <div className="pt-2 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            {/* 1. Direct Phone Call Action */}
+                            <a
+                              href={`tel:${contact.rawPhone}`}
+                              className="py-3 px-3.5 rounded-xl bg-gradient-to-r from-cyan-500/25 to-blue-500/25 hover:from-cyan-500/40 hover:to-blue-500/40 border border-cyan-400/60 text-cyan-200 font-mono text-xs font-black text-center transition-all flex items-center justify-center gap-2 no-underline cursor-pointer active:scale-95 shadow-[0_0_15px_rgba(0,243,255,0.2)] hover:shadow-[0_0_20px_rgba(0,243,255,0.4)]"
+                              title={`Call ${contact.head}`}
+                            >
+                              <span className="text-sm">📞</span>
+                              <span>CALL {contact.phone}</span>
+                            </a>
 
-                        <div className="pt-2 border-t border-white/10 flex items-center gap-2">
-                          <a
-                            href={`tel:${contact.rawPhone}`}
-                            className="flex-1 py-2 px-3 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/35 border border-cyan-400/50 text-cyan-300 font-mono text-xs font-bold text-center transition-all flex items-center justify-center gap-1.5 no-underline cursor-pointer active:scale-95"
-                          >
-                            <span>📞</span> Call Head
-                          </a>
-                          <a
-                            href={`https://wa.me/${contact.rawPhone.replace('+', '')}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex-1 py-2 px-3 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/35 border border-emerald-400/50 text-emerald-300 font-mono text-xs font-bold text-center transition-all flex items-center justify-center gap-1.5 no-underline cursor-pointer active:scale-95"
-                          >
-                            <span>💬</span> WhatsApp
-                          </a>
-                        </div>
+                            {/* 2. Official Email Action */}
+                            <a
+                              href="mailto:techfestenvision@gmail.com"
+                              className="py-3 px-3.5 rounded-xl bg-gradient-to-r from-purple-500/25 to-indigo-500/25 hover:from-purple-500/40 hover:to-indigo-500/40 border border-purple-400/60 text-purple-200 font-mono text-xs font-black text-center transition-all flex items-center justify-center gap-2 no-underline cursor-pointer active:scale-95 shadow-[0_0_15px_rgba(168,85,247,0.2)] hover:shadow-[0_0_20px_rgba(168,85,247,0.4)]"
+                              title="Email techfestenvision@gmail.com"
+                            >
+                              <span className="text-sm">✉️</span>
+                              <span>EMAIL US</span>
+                            </a>
+
+                            {/* 3. Official Instagram Action */}
+                            <a
+                              href="https://www.instagram.com/envision_rkm?igsh=aTEyYTdiZmcydHN0"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="py-3 px-3.5 rounded-xl bg-gradient-to-r from-pink-500/25 to-rose-500/25 hover:from-pink-500/40 hover:to-rose-500/40 border border-pink-400/60 text-pink-200 font-mono text-xs font-black text-center transition-all flex items-center justify-center gap-2 no-underline cursor-pointer active:scale-95 shadow-[0_0_15px_rgba(244,63,94,0.2)] hover:shadow-[0_0_20px_rgba(244,63,94,0.4)]"
+                              title="Visit Official Envision Instagram"
+                            >
+                              <span className="text-sm">📸</span>
+                              <span>INSTAGRAM</span>
+                            </a>
+                          </div>
+                        ) : (
+                          /* Standard High-Visual 2-Button Action Bar for Other Events */
+                          <div className="pt-2 flex flex-col sm:flex-row items-center gap-3">
+                            <a
+                              href={`tel:${contact.rawPhone}`}
+                              className="w-full sm:flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-cyan-500/25 to-blue-500/25 hover:from-cyan-500/40 hover:to-blue-500/40 border border-cyan-400/60 text-cyan-200 font-mono text-xs font-black text-center transition-all flex items-center justify-center gap-2.5 no-underline cursor-pointer active:scale-95 shadow-[0_0_15px_rgba(0,243,255,0.2)] hover:shadow-[0_0_20px_rgba(0,243,255,0.4)]"
+                            >
+                              <span className="text-sm">📞</span>
+                              <span>CALL EVENT HEAD</span>
+                            </a>
+                            <a
+                              href={`https://wa.me/${contact.rawPhone.replace('+', '')}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-full sm:flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500/25 to-teal-500/25 hover:from-emerald-500/40 hover:to-teal-500/40 border border-emerald-400/60 text-emerald-200 font-mono text-xs font-black text-center transition-all flex items-center justify-center gap-2.5 no-underline cursor-pointer active:scale-95 shadow-[0_0_15px_rgba(16,185,129,0.2)] hover:shadow-[0_0_20px_rgba(16,185,129,0.4)]"
+                            >
+                              <span className="text-sm">💬</span>
+                              <span>WHATSAPP CHAT</span>
+                            </a>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

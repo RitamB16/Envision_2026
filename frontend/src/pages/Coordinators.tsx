@@ -49,16 +49,16 @@ const FACULTY_SECTION: CategorySection = {
   },
   members: [
     {
-      name: 'SRI BIBEK RANJAN GHOSH',
-      role: 'ASSOCIATE PROFESSOR',
-      photoUrl: 'https://ibb.co/0RzpWTRZ',
-      imgId: '0RzpWTRZ'
-    },
-    {
       name: 'DR. SIDDHARTHA BANERJEE',
       role: 'ASSOCIATE PROFESSOR (HOD)',
       photoUrl: 'https://ibb.co/ycSN2FhM',
       imgId: 'ycSN2FhM'
+    },
+    {
+      name: 'SRI BIBEK RANJAN GHOSH',
+      role: 'ASSOCIATE PROFESSOR',
+      photoUrl: 'https://ibb.co/0RzpWTRZ',
+      imgId: '0RzpWTRZ'
     },
     {
       name: 'DR. SURAJIT GIRI',
@@ -116,8 +116,8 @@ const OTHER_SECTIONS: CategorySection[] = [
         name: 'JYOTIPRABA PAL',
         role: 'FEST ORGANISER',
         phone: '+91 9734772175',
-        photoUrl: 'https://ibb.co/9m9Bdjyx',
-        imgId: '9m9Bdjyx'
+        photoUrl: 'https://ibb.co/TxSz8pjq',
+        imgId: 'TxSz8pjq'
       },
       {
         name: 'ANIRBAN MANDAL',
@@ -213,8 +213,8 @@ const OTHER_SECTIONS: CategorySection[] = [
         name: 'HIRAK JYOTI SARKAR',
         role: 'CHESS COORDINATOR',
         phone: '+91 9907485141',
-        photoUrl: 'https://ibb.co/VWVFdpf8',
-        imgId: 'VWVFdpf8'
+        photoUrl: 'hhttps://ibb.co/b5DLByzW',
+        imgId: 'b5DLByzW'
       },
       {
         name: 'JYOTIPRABA PAL',
@@ -406,33 +406,15 @@ export default function Coordinators({ onBack }: Props) {
     <PageLayout title="ABOUT US" onBack={onBack}>
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-16 text-center">
 
-        {/* High Visual Cyber Hero Banner */}
-        <div className="relative p-6 sm:p-10 rounded-3xl bg-gradient-to-r from-purple-950/80 via-slate-950/90 to-cyan-950/80 border border-cyan-500/40 shadow-[0_0_60px_rgba(0,243,255,0.2)] backdrop-blur-2xl text-center space-y-4 overflow-hidden">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-cyan-500/10 via-transparent to-transparent pointer-events-none"></div>
-          
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-500/15 border border-cyan-400/50 text-cyan-300 text-xs font-mono font-black tracking-widest uppercase shadow-[0_0_15px_rgba(0,243,255,0.3)]">
-            ⚡ RAMAKRISHNA MISSION RESIDENTIAL COLLEGE (AUTONOMOUS), NARENDRAPUR
-          </div>
-
-          <h1 className="text-3xl sm:text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-200 to-purple-300 font-mono tracking-tight drop-shadow-[0_0_30px_rgba(0,243,255,0.3)]">
-            ENVISION '26 ABOUT US
+        {/* Sleek Top Header Label */}
+        <div className="relative pt-2 pb-4 flex flex-col items-center justify-center text-center space-y-2">
+          <h1 className="text-3xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-200 to-purple-300 font-mono tracking-widest uppercase drop-shadow-[0_0_25px_rgba(0,243,255,0.4)]">
+            ABOUT US
           </h1>
-
-          <p className="text-xs sm:text-sm text-cyan-100/90 font-mono max-w-3xl mx-auto leading-relaxed">
-            DEPARTMENT OF COMPUTER SCIENCE FACULTY MENTORS, EXECUTIVE ORGANISERS & COMPETITION HEADS
+          <p className="text-xs sm:text-sm font-mono font-bold text-cyan-300/90 tracking-wider uppercase max-w-2xl px-2">
+            RAMAKRISHNA MISSION RESIDENTIAL COLLEGE (AUTONOMOUS), NARENDRAPUR
           </p>
-
-          <div className="pt-2 flex items-center justify-center gap-3 flex-wrap text-[11px] font-mono font-bold text-gray-300">
-            <span className="px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/50 text-amber-300">
-              5 FACULTY MENTORS
-            </span>
-            <span className="px-3 py-1 rounded-full bg-cyan-500/20 border border-cyan-400/50 text-cyan-300">
-              7 FEST ORGANISERS
-            </span>
-            <span className="px-3 py-1 rounded-full bg-purple-500/20 border border-purple-400/50 text-purple-300">
-              14 COMPETITION HEADS
-            </span>
-          </div>
+          <div className="w-24 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent rounded-full shadow-[0_0_15px_rgba(0,243,255,0.6)] mt-2"></div>
         </div>
 
         {/* SECTION 1: FACULTY MEMBERS */}

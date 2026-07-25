@@ -145,7 +145,7 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
           backdropFilter: 'blur(30px)',
           WebkitBackdropFilter: 'blur(30px)',
           border: '2px solid rgba(0, 243, 255, 0.4)',
-          borderRadius: '24px',
+          borderRadius: '28px',
           boxShadow: '0 0 60px rgba(0, 243, 255, 0.3)',
           position: 'relative',
           color: '#ffffff',
@@ -153,7 +153,8 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
           boxSizing: 'border-box',
           display: 'flex',
           flexDirection: 'column',
-          overflow: 'hidden'
+          overflow: 'hidden',
+          padding: '2px'
         }}
         className="w-full max-w-4xl h-[92dvh] max-h-[92dvh] bg-[#0c0721]/96 backdrop-blur-3xl border-2 border-[#00f3ff]/40 rounded-3xl shadow-[0_0_60px_rgba(0,243,255,0.3)] flex flex-col md:flex-row relative text-white font-sans transition-all duration-300 overflow-hidden"
         onClick={(e: ReactMouseEvent) => e.stopPropagation()}
@@ -198,7 +199,7 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
         </button>
 
         {/* MOBILE TOP COMPACT NAVIGATION BAR (Only visible on mobile screens < 768px) */}
-        <div className="flex md:hidden flex-col p-3 bg-black/60 border-b border-white/10 relative text-left gap-2.5 shrink-0 pt-4">
+        <div className="flex md:hidden flex-col p-4 sm:p-5 pt-6 pb-3.5 bg-black/80 border-b border-white/10 relative text-left gap-3 shrink-0">
           <div className="flex items-center gap-2.5 pr-10">
             <div className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 flex items-center justify-center text-lg shrink-0">
               🎓
@@ -400,7 +401,7 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
             boxSizing: 'border-box',
             WebkitOverflowScrolling: 'touch'
           }}
-          className="p-3.5 sm:p-7 flex-1 overflow-y-auto custom-scrollbar"
+          className="p-5 sm:p-8 flex-1 overflow-y-auto custom-scrollbar"
         >
           {activeTab === 'overview' ? (
             /* TAB 1: Registered Events & Profile Overview */
