@@ -62,10 +62,11 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
   const totalAmount = numericFee;
 
   // Sanitized NPCI-compliant UPI parameters
-  const cleanTargetVpa = (RAZORPAY_UPI_ID || '8336048128@ybl').trim();
+  const cleanTargetVpa = (RAZORPAY_UPI_ID || '8336048128@oksbi').trim();
   const cleanPayeeName = "Envision TechFest";
   const cleanAmount = String(totalAmount).trim();
-  const cleanNote = `Reg_${String(registrationId).replace(/[^a-zA-Z0-9]/g, '').slice(0, 12)}`;
+  const shortId = String(registrationId).replace(/[^a-zA-Z0-9]/g, '').slice(0, 6);
+  const cleanNote = `Reg${shortId || '26'}`;
 
   // Construct strictly encoded NPCI-compliant UPI Deep Link Intent
   const upiDeepLink = `upi://pay?pa=${encodeURIComponent(cleanTargetVpa)}&pn=${encodeURIComponent(cleanPayeeName)}&am=${encodeURIComponent(cleanAmount)}&cu=INR&tn=${encodeURIComponent(cleanNote)}`;

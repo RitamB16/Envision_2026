@@ -2,7 +2,7 @@ export const API_BASE_URL = (
   import.meta.env.VITE_API_BASE_URL ||
   (import.meta.env.PROD ? 'https://envision-2026.onrender.com' : 'http://127.0.0.1:8000')
 ).replace(/\/$/, '');
-export const FEST_UPI_ID = (import.meta.env as any).VITE_FEST_UPI_ID || "8336048128@ybl";
+export const FEST_UPI_ID = (import.meta.env as any).VITE_FEST_UPI_ID || "8336048128@oksbi";
 export const RAZORPAY_UPI_ID = FEST_UPI_ID;
 
 export interface UserProfile {

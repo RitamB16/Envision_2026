@@ -157,7 +157,7 @@ def create_upi_order(
         reg.payment_order_id = order_id
         db.commit()
 
-    upi_id = os.getenv("FEST_UPI_ID") or getattr(settings, "FEST_UPI_ID", "8336048128@ybl")
+    upi_id = os.getenv("FEST_UPI_ID") or getattr(settings, "FEST_UPI_ID", "8336048128@oksbi")
 
     return {
         "status": "success",
