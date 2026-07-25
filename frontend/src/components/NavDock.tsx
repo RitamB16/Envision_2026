@@ -112,8 +112,7 @@ const CloseIcon = () => (
   </svg>
 );
 
-const NavDock: React.FC<Props> = ({ onNavigate, activeTargetId, carState, isPageActive = false, isSignedUp = false, isDrawerOpen, setIsDrawerOpen }) => {
-  const isNavDisabled = carState === 'TRAVELING' || carState === 'RETURNING';
+const NavDock: React.FC<Props> = ({ onNavigate, activeTargetId, isPageActive = false, isSignedUp = false, isDrawerOpen, setIsDrawerOpen }) => {
   const [activeSegments, setActiveSegments] = React.useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
 
   const getPageTitle = () => {
@@ -925,14 +924,17 @@ const NavDock: React.FC<Props> = ({ onNavigate, activeTargetId, carState, isPage
         </div>
 
         {/* Top Right: Glassmorphic ProfileDropdown (if signed up) or prominent "SIGN IN" button (if not signed up) */}
-        <div className="flex items-center justify-end gap-3 hud-interactive relative" style={{ pointerEvents: 'auto', zIndex: 9999 }}>
+        <div className="flex items-center justify-end gap-3 hud-interactive relative" style={{ pointerEvents: 'auto', zIndex: 999999 }}>
           {(isSignedUp || !!(typeof window !== 'undefined' && (localStorage.getItem('access_token') || localStorage.getItem('user_email')))) ? (
             <ProfileDropdown />
           ) : (
             <button 
-              onClick={() => onNavigate('register')}
+              onClick={(e) => {
+                e.stopPropagation();
+                onNavigate('register');
+              }}
               className="signup-pill-btn hud-interactive cursor-pointer"
-              disabled={isNavDisabled}
+              style={{ pointerEvents: 'auto', zIndex: 999999 }}
             >
               SIGN IN
             </button>

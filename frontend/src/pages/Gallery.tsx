@@ -33,7 +33,7 @@ const GALLERY_ITEMS: GalleryItem[] = [
     id: 'auction-3',
     title: 'BIDQUEST AUCTION WINNERS',
     category: 'AUCTION',
-    src: 'https://i.ibb.co/gZfJWcBB/AUTION.jpg',
+    src: 'https://ibb.co/rrdMD01/AUTION.jpg',
     fallbackUrl: 'https://ibb.co/rrdMD01'
   },
 

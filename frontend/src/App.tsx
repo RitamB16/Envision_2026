@@ -91,21 +91,19 @@ function AppContent() {
   };
 
   const handleSignUpNavigate = () => {
-    if (isWiping || location.pathname === '/register') return;
+    if (location.pathname === '/register') return;
 
     const now = Date.now();
     navLockRef.current = { id: 'register', time: now };
 
     setActiveTargetId('register');
     setIsWiping(true);
+    navigate('/register');
+    setCameraMode('PAGE');
+    setCarState('ARRIVED');
     setTimeout(() => {
-      navigate('/register');
-      setCameraMode('PAGE');
-      setCarState('ARRIVED');
-      setTimeout(() => {
-        setIsWiping(false);
-      }, 100);
-    }, 250);
+      setIsWiping(false);
+    }, 150);
   };
 
   const handleNavigate = (id: string) => {
