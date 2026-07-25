@@ -132,6 +132,8 @@ class SoloRegistrationCreate(BaseModel):
     mobile: Optional[str] = None
     college: Optional[str] = None
     food_pref: Optional[str] = None
+    team_name: Optional[str] = None
+    team_id: Optional[UUID] = None
 
 class ParticipantTeammateDetail(BaseModel):
     name: str

@@ -37,7 +37,8 @@ CREATE TABLE public.teams (
     team_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     team_name VARCHAR NOT NULL,
     event_name VARCHAR NOT NULL,
-    leader_id UUID NOT NULL REFERENCES public.participants(id) ON DELETE CASCADE
+    leader_id UUID NOT NULL REFERENCES public.participants(id) ON DELETE CASCADE,
+    CONSTRAINT uix_team_event UNIQUE (team_name, event_name)
 );
 
 -- 4. Create registrations table

@@ -29,7 +29,7 @@ const EVENT_RULES_LINKS: Record<string, string> = {
   mindspark: 'https://ibb.co/v9M8dpD',
   bidquest: 'https://ibb.co/spH899Sy',
   'carlsen-chess': 'https://ibb.co/GvDyX0mB',
-  chess: 'https://ibb.co/GvDyX0mB',
+  chess: 'https://ibb.co/DgrbN57k',
   lensverse: 'https://ibb.co/MxCRd9hg'
 };
 
@@ -225,22 +225,22 @@ export default function Events({ onBack: _onBack }: Props) {
   const matchedEvent = eventsList.find(e => e.id === eventId) || null;
   const selectedEvent = singleEventDetail
     ? {
-        id: singleEventDetail.id,
-        name: singleEventDetail.name,
-        category: singleEventDetail.category,
-        price: singleEventDetail.price,
-        price_amount: singleEventDetail.price_amount,
-        requires_team: singleEventDetail.requires_team ?? false,
-        max_team_size: singleEventDetail.max_team_size ?? 1,
-        has_food: singleEventDetail.has_food ?? true,
-        notes: singleEventDetail.notes || '',
-        image: singleEventDetail.image || '/images/events/syntaxx.jpg',
-        placeholderAlt: singleEventDetail.name,
-        benefits: singleEventDetail.benefits || '',
-        date: singleEventDetail.date || '6th August',
-        venue: singleEventDetail.venue || 'RKMRC',
-        Time: singleEventDetail.time || '10:00 AM'
-      }
+      id: singleEventDetail.id,
+      name: singleEventDetail.name,
+      category: singleEventDetail.category,
+      price: singleEventDetail.price,
+      price_amount: singleEventDetail.price_amount,
+      requires_team: singleEventDetail.requires_team ?? false,
+      max_team_size: singleEventDetail.max_team_size ?? 1,
+      has_food: singleEventDetail.has_food ?? true,
+      notes: singleEventDetail.notes || '',
+      image: singleEventDetail.image || '/images/events/syntaxx.jpg',
+      placeholderAlt: singleEventDetail.name,
+      benefits: singleEventDetail.benefits || '',
+      date: singleEventDetail.date || '6th August',
+      venue: singleEventDetail.venue || 'RKMRC',
+      Time: singleEventDetail.time || '10:00 AM'
+    }
     : matchedEvent;
   const [activeTab, setActiveTab] = useState<'details' | 'rules' | 'contact' | 'terms'>('details');
   const [agreeTerms, setAgreeTerms] = useState<boolean>(false);
@@ -498,7 +498,7 @@ export default function Events({ onBack: _onBack }: Props) {
       } else {
         const regId = res.registration_id || res.team_id || 'REG-PENDING';
         const orderId = res.razorpay_order_id;
-        
+
         updateRegistrationData({
           step: 'CHECKOUT',
           eventId: selectedEvent.id,
@@ -1417,11 +1417,10 @@ export default function Events({ onBack: _onBack }: Props) {
             ].map(cat => (
               <button
                 key={cat.id}
-                className={`px-3 py-1.5 text-xs font-mono font-extrabold uppercase rounded-xl transition-all whitespace-nowrap cursor-pointer ${
-                  selectedCategory === cat.id
+                className={`px-3 py-1.5 text-xs font-mono font-extrabold uppercase rounded-xl transition-all whitespace-nowrap cursor-pointer ${selectedCategory === cat.id
                     ? 'bg-cyan-500/30 text-cyan-300 border border-cyan-400/60 shadow-[0_0_15px_rgba(0,243,255,0.3)] scale-[1.02]'
                     : 'text-gray-400 hover:text-white bg-white/5 border border-white/10 hover:border-white/20'
-                }`}
+                  }`}
                 onClick={() => setSelectedCategory(cat.id)}
               >
                 {cat.label}
@@ -1517,8 +1516,8 @@ export default function Events({ onBack: _onBack }: Props) {
           <div className="flex flex-col w-full min-w-0">
             {/* 1. Hero Cover Image Card with Glass Badges */}
             <div className="mobile-hero-image-box">
-              <img 
-                src={selectedEvent.image} 
+              <img
+                src={selectedEvent.image}
                 alt={selectedEvent.placeholderAlt}
               />
               <div className="mobile-badge-bar">
@@ -1624,7 +1623,7 @@ export default function Events({ onBack: _onBack }: Props) {
                     <p className="text-xs text-gray-300 leading-relaxed m-0">
                       For event rules, coordination, or queries regarding <strong className="text-cyan-300">{selectedEvent.name}</strong>, please contact the designated Event Head directly:
                     </p>
-                    
+
                     {contact && (
                       <div className="p-3.5 rounded-xl bg-gradient-to-br from-purple-950/70 via-black/80 to-cyan-950/70 border border-cyan-400/40 space-y-2 text-left shadow-lg">
                         <div className="flex items-center justify-between">

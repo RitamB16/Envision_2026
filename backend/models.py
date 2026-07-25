@@ -51,6 +51,7 @@ class Event(Base):
 
 class Team(Base):
     __tablename__ = "teams"
+    __table_args__ = (UniqueConstraint('team_name', 'event_name', name='uix_team_event'),)
 
     team_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     team_name = Column(String, nullable=False)
@@ -58,6 +59,8 @@ class Team(Base):
     leader_id = Column(UUID(as_uuid=True), ForeignKey("participants.id", ondelete="CASCADE"), nullable=False)
 
     id = synonym("team_id")
+    name = synonym("team_name")
+    event_id = synonym("event_name")
 
 
 class Registration(Base):

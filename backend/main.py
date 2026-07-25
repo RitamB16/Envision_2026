@@ -72,9 +72,21 @@ async def startup_event():
                     conn.execute(text("DROP TABLE IF EXISTS teams CASCADE;"))
                     conn.execute(text("DROP TABLE IF EXISTS participants CASCADE;"))
                     conn.execute(text("DROP TABLE IF EXISTS users CASCADE;"))
+                else:
+                    # Ensure uix_team_event unique constraint exists on public.teams
+                    conn.execute(text("""
+                        DO $$ 
+                        BEGIN
+                            IF NOT EXISTS (
+                                SELECT 1 FROM pg_constraint WHERE conname = 'uix_team_event'
+                            ) THEN
+                                ALTER TABLE public.teams ADD CONSTRAINT uix_team_event UNIQUE (team_name, event_name);
+                            END IF;
+                        END $$;
+                    """))
             
             conn.commit()
-            print("✅ Auto-migration check completed (events max_capacity column verified).")
+            print("✅ Auto-migration check completed (teams uix_team_event & events max_capacity verified).")
     except Exception as migration_err:
         print(f"[!] Migration Check Notice: {migration_err}")
 

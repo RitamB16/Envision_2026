@@ -3,6 +3,8 @@ import uuid
 import json
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Request
+from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from database import get_db
 import models
@@ -130,11 +132,48 @@ def register_solo(
 
     price_amount = get_event_price(db, payload.event_name)
 
+    # Check if event requires a team or payload provided team_name / team_id
+    normalized_event_name = payload.event_name.lower().replace(" ", "-").strip()
+    event_obj = db.query(models.Event).filter(models.Event.id == normalized_event_name).first()
+    is_team_event = (event_obj and event_obj.requires_team) or bool(payload.team_name) or bool(payload.team_id)
+
+    bound_team_id = payload.team_id
+    if is_team_event and not bound_team_id:
+        clean_team_name = payload.team_name.strip() if payload.team_name else f"{participant.name.strip()}'s Team"
+        team = db.query(models.Team).filter(
+            func.lower(models.Team.team_name) == clean_team_name.lower(),
+            models.Team.event_name == payload.event_name
+        ).first()
+
+        if not team:
+            try:
+                team = models.Team(
+                    team_name=clean_team_name,
+                    event_name=payload.event_name,
+                    leader_id=participant.id
+                )
+                db.add(team)
+                db.flush()
+            except IntegrityError:
+                db.rollback()
+                team = db.query(models.Team).filter(
+                    func.lower(models.Team.team_name) == clean_team_name.lower(),
+                    models.Team.event_name == payload.event_name
+                ).first()
+        
+        if team:
+            bound_team_id = team.team_id
+
     if existing_reg:
+        if bound_team_id and not existing_reg.team_id:
+            existing_reg.team_id = bound_team_id
+            db.commit()
+            db.refresh(existing_reg)
         return {
             "status": "success" if existing_reg.payment_status in ("PENDING", "UNPAID") else "already_registered",
             "registration_id": str(existing_reg.reg_id),
             "order_id": existing_reg.payment_order_id,
+            "team_id": str(existing_reg.team_id) if existing_reg.team_id else (str(bound_team_id) if bound_team_id else None),
             "amount": price_amount,
             "payment_status": existing_reg.payment_status,
             "is_free": price_amount == 0
@@ -155,6 +194,7 @@ def register_solo(
         registration = models.Registration(
             participant_id=participant.id,
             event_name=payload.event_name,
+            team_id=bound_team_id,
             payment_order_id=order_id,
             payment_status=payment_status_val
         )
@@ -166,6 +206,7 @@ def register_solo(
             "status": "success",
             "registration_id": str(registration.reg_id),
             "order_id": order_id,
+            "team_id": str(registration.team_id) if registration.team_id else None,
             "amount": price_amount,
             "payment_status": payment_status_val,
             "is_free": price_amount == 0
@@ -177,10 +218,15 @@ def register_solo(
             models.Registration.event_name == payload.event_name
         ).first()
         if conflict_reg:
+            if bound_team_id and not conflict_reg.team_id:
+                conflict_reg.team_id = bound_team_id
+                db.commit()
+                db.refresh(conflict_reg)
             return {
                 "status": "success",
                 "registration_id": str(conflict_reg.reg_id),
                 "order_id": conflict_reg.payment_order_id,
+                "team_id": str(conflict_reg.team_id) if conflict_reg.team_id else (str(bound_team_id) if bound_team_id else None),
                 "amount": price_amount,
                 "payment_status": conflict_reg.payment_status,
                 "is_free": price_amount == 0
@@ -198,7 +244,8 @@ def register_team(
 ):
     """
     Endpoint 2: Accepts team details (leader + up to 2 members, max team size 3),
-    verifies capacity caps, executes inside an ATOMIC TRANSACTION to prevent orphaned data.
+    verifies capacity caps, executes inside an ATOMIC TRANSACTION to prevent orphaned data,
+    and programmatically binds team_id to all member registration rows.
     """
     leader_email = payload.leader_email.strip().lower()
     
@@ -234,6 +281,12 @@ def register_team(
                 leader.food_pref = payload.leader_food_pref
             db.flush()
 
+        # Check if leader already has a registration record for this event (Idempotent Resumption)
+        existing_leader_reg = db.query(models.Registration).filter(
+            models.Registration.participant_id == leader.id,
+            models.Registration.event_name == payload.event_name
+        ).first()
+
         # 2. Fetch or Create Teammate Participants
         teammates = []
         for member in payload.members:
@@ -263,45 +316,75 @@ def register_team(
                 db.flush()
             teammates.append(tm)
 
-        # 3. Create Teams table row
-        team = models.Team(
-            team_name=payload.team_name.strip(),
-            event_name=payload.event_name,
-            leader_id=leader.id
-        )
-        db.add(team)
-        db.flush()
+        # 3. Idempotent Team Creation / Lookup
+        clean_team_name = payload.team_name.strip()
+        team = db.query(models.Team).filter(
+            func.lower(models.Team.team_name) == clean_team_name.lower(),
+            models.Team.event_name == payload.event_name
+        ).first()
+
+        if not team:
+            team = models.Team(
+                team_name=clean_team_name,
+                event_name=payload.event_name,
+                leader_id=leader.id
+            )
+            db.add(team)
+            db.flush()
+
+        # Ensure team_id is strictly bound and non-NULL for team events
+        assert team.team_id is not None, "team_id must not be null for team events"
 
         # 4. Create Direct Order (Free or UPI)
         price_amount = get_event_price(db, payload.event_name)
         price_in_paise = price_amount * 100
         
-        if price_in_paise == 0:
-            order_id = f"ENV26-FREE-{uuid.uuid4().hex[:6].upper()}"
-            payment_status_val = "COMPLETED"
+        if existing_leader_reg:
+            order_id = existing_leader_reg.payment_order_id
+            payment_status_val = existing_leader_reg.payment_status
+            if not existing_leader_reg.team_id:
+                existing_leader_reg.team_id = team.team_id
+                db.flush()
+            leader_reg = existing_leader_reg
         else:
-            order_id = f"ENV26-ORD-{uuid.uuid4().hex[:6].upper()}"
-            payment_status_val = "PENDING"
+            if price_in_paise == 0:
+                order_id = f"ENV26-FREE-{uuid.uuid4().hex[:6].upper()}"
+                payment_status_val = "COMPLETED"
+            else:
+                order_id = f"ENV26-ORD-{uuid.uuid4().hex[:6].upper()}"
+                payment_status_val = "PENDING"
 
-        # 5. Insert registration rows for leader and teammates
-        leader_reg = models.Registration(
-            participant_id=leader.id,
-            event_name=payload.event_name,
-            team_id=team.team_id,
-            payment_order_id=order_id,
-            payment_status=payment_status_val
-        )
-        db.add(leader_reg)
-
-        for tm in teammates:
-            tm_reg = models.Registration(
-                participant_id=tm.id,
+            leader_reg = models.Registration(
+                participant_id=leader.id,
                 event_name=payload.event_name,
                 team_id=team.team_id,
                 payment_order_id=order_id,
                 payment_status=payment_status_val
             )
-            db.add(tm_reg)
+            db.add(leader_reg)
+            db.flush()
+
+        # 5. Insert or update registration rows for teammates with bound team_id
+        for tm in teammates:
+            tm_reg = db.query(models.Registration).filter(
+                models.Registration.participant_id == tm.id,
+                models.Registration.event_name == payload.event_name
+            ).first()
+
+            if tm_reg:
+                if not tm_reg.team_id:
+                    tm_reg.team_id = team.team_id
+                    db.flush()
+            else:
+                tm_reg = models.Registration(
+                    participant_id=tm.id,
+                    event_name=payload.event_name,
+                    team_id=team.team_id,
+                    payment_order_id=order_id,
+                    payment_status=payment_status_val
+                )
+                db.add(tm_reg)
+                db.flush()
 
         db.commit()
         db.refresh(leader_reg)
@@ -312,8 +395,39 @@ def register_team(
             "registration_id": str(leader_reg.reg_id),
             "order_id": order_id,
             "amount": price_amount,
+            "payment_status": leader_reg.payment_status,
             "is_free": price_amount == 0
         }
+
+    except IntegrityError as integ_err:
+        db.rollback()
+        # Fallback query for concurrency race condition handling
+        clean_team_name = payload.team_name.strip()
+        team = db.query(models.Team).filter(
+            func.lower(models.Team.team_name) == clean_team_name.lower(),
+            models.Team.event_name == payload.event_name
+        ).first()
+
+        existing_reg = db.query(models.Registration).filter(
+            models.Registration.participant_id == leader.id if 'leader' in locals() else False,
+            models.Registration.event_name == payload.event_name
+        ).first()
+
+        if existing_reg:
+            price_amount = get_event_price(db, payload.event_name)
+            return {
+                "status": "success",
+                "team_id": str(team.team_id) if team else None,
+                "registration_id": str(existing_reg.reg_id),
+                "order_id": existing_reg.payment_order_id,
+                "amount": price_amount,
+                "payment_status": existing_reg.payment_status,
+                "is_free": price_amount == 0
+            }
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Team registration failed due to database constraint: {str(integ_err)}"
+        )
 
     except HTTPException:
         db.rollback()

@@ -5,6 +5,8 @@ from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi_cache import FastAPICache
 from fastapi_cache.decorator import cache
 from limiter import limiter
+from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 import models, schemas
 from database import get_db
@@ -399,15 +401,31 @@ def register_for_event(
                 if teammate_user and teammate_user.id != current_user.id and teammate_user not in teammates_to_register:
                     teammates_to_register.append(teammate_user)
 
-        new_team = models.Team(
-            name=payload.team_name.strip(),
-            event_id=event_id,
-            leader_id=current_user.id
-        )
-        db.add(new_team)
-        db.commit()
-        db.refresh(new_team)
-        new_team_id = new_team.id
+        clean_team_name = payload.team_name.strip()
+        new_team = db.query(models.Team).filter(
+            func.lower(models.Team.team_name) == clean_team_name.lower(),
+            models.Team.event_name == event_id
+        ).first()
+
+        if not new_team:
+            try:
+                new_team = models.Team(
+                    team_name=clean_team_name,
+                    event_name=event_id,
+                    leader_id=current_user.id
+                )
+                db.add(new_team)
+                db.commit()
+                db.refresh(new_team)
+            except IntegrityError:
+                db.rollback()
+                new_team = db.query(models.Team).filter(
+                    func.lower(models.Team.team_name) == clean_team_name.lower(),
+                    models.Team.event_name == event_id
+                ).first()
+                if not new_team:
+                    raise HTTPException(status_code=500, detail="Failed to initialize or retrieve team.")
+        new_team_id = new_team.team_id
 
         registered_members = [f"{current_user.name} ({current_user.fest_id or 'Leader'})"]
         for tm in teammates_to_register:
