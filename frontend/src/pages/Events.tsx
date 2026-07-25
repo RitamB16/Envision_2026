@@ -28,7 +28,7 @@ const EVENT_RULES_LINKS: Record<string, string> = {
   syntaxx: 'https://ibb.co/Z69WbqC2',
   mindspark: 'https://ibb.co/v9M8dpD',
   bidquest: 'https://ibb.co/spH899Sy',
-  'carlsen-chess': 'https://ibb.co/GvDyX0mB',
+  'carlsen-chess': 'https://ibb.co/DgrbN57k',
   chess: 'https://ibb.co/DgrbN57k',
   lensverse: 'https://ibb.co/PzQxbTX5'
 };
