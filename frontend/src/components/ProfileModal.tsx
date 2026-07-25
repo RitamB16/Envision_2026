@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api, UserProfile, clearAuthSession } from '../utils/api';
 import StudentDashboard from './StudentDashboard';
 
@@ -21,6 +22,7 @@ interface ProfileModalProps {
 }
 
 export default function ProfileModal({ isOpen = true, user: initialUser, onClose, onLogout, onEditProfile }: ProfileModalProps) {
+  const navigate = useNavigate();
   const [showDashboard, setShowDashboard] = useState<boolean>(false);
   const [user, setUser] = useState<UserProfile | null>(() => {
     if (initialUser) {
@@ -83,10 +85,7 @@ export default function ProfileModal({ isOpen = true, user: initialUser, onClose
     }
   };
 
-  const handleSwitchAccount = () => {
-    clearAuthSession();
-    window.location.href = '/register';
-  };
+
 
   const handleEditClick = () => {
     if (onEditProfile) {
@@ -229,11 +228,14 @@ export default function ProfileModal({ isOpen = true, user: initialUser, onClose
           {/* Secondary Action Buttons */}
           <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
             <button
-              onClick={handleSwitchAccount}
+              onClick={() => {
+                if (onClose) onClose();
+                navigate('/events');
+              }}
               style={{
                 flex: 1,
-                background: 'rgba(255, 255, 255, 0.08)',
-                border: '1px solid rgba(255, 255, 255, 0.12)',
+                background: 'rgba(0, 243, 255, 0.15)',
+                border: '1px solid rgba(0, 243, 255, 0.4)',
                 borderRadius: '14px',
                 padding: '10px 12px',
                 display: 'flex',
@@ -242,13 +244,13 @@ export default function ProfileModal({ isOpen = true, user: initialUser, onClose
                 gap: '8px',
                 cursor: 'pointer',
                 fontSize: '13px',
-                fontWeight: 600,
-                color: '#ffffff',
+                fontWeight: 700,
+                color: '#00f3ff',
                 transition: 'all 0.2s ease',
               }}
-              className="flex-1 bg-white/10 hover:bg-white/15 border border-white/10 rounded-xl py-2.5 px-3 flex items-center justify-center gap-2 transition-colors text-white text-xs font-semibold cursor-pointer active:scale-[0.98]"
+              className="flex-1 bg-cyan-500/20 hover:bg-cyan-500/35 border border-cyan-400/50 rounded-xl py-2.5 px-3 flex items-center justify-center gap-2 transition-colors text-cyan-300 text-xs font-bold cursor-pointer active:scale-[0.98]"
             >
-              <span>🔄</span> Switch
+              <span>🚀</span> Tracks
             </button>
 
             <button
@@ -309,7 +311,9 @@ export default function ProfileModal({ isOpen = true, user: initialUser, onClose
             {/* Row 3: Department */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
               <span style={{ color: '#9ca3af', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Department</span>
-              <span style={{ color: '#d8b4fe', fontSize: '13px', fontWeight: 600, textAlign: 'right' }}>{user?.department || "-"}</span>
+              <span style={{ color: '#d8b4fe', fontSize: '13px', fontWeight: 600, textAlign: 'right' }}>
+                {user?.department && user.department !== "Computer Science" ? user.department : "-"}
+              </span>
             </div>
 
             {/* Row 4: Gender */}

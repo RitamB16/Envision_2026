@@ -34,7 +34,7 @@ const GALLERY_ITEMS: GalleryItem[] = [
     title: 'BIDQUEST AUCTION WINNERS',
     category: 'AUCTION',
     src: 'https://i.ibb.co/gZfJWcBB/AUTION.jpg',
-    fallbackUrl: 'https://ibb.co/7tZKp066'
+    fallbackUrl: 'https://ibb.co/rrdMD01'
   },
 
   // CODING
