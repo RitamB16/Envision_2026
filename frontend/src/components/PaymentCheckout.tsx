@@ -272,17 +272,13 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
       <div className="absolute bottom-10 right-10 w-[300px] h-[300px] bg-purple-600/15 rounded-full blur-[110px] pointer-events-none" />
 
       {/* Main Container */}
-      <div className="w-full max-w-xl bg-[#0a051c]/95 backdrop-blur-2xl border border-cyan-500/30 rounded-2xl md:rounded-3xl shadow-[0_0_50px_rgba(0,243,255,0.15)] p-4 sm:p-7 relative z-10 my-4">
+      <div className="w-full max-w-xl bg-[#0a051c]/95 backdrop-blur-2xl border border-cyan-500/30 rounded-2xl md:rounded-3xl shadow-[0_0_50px_rgba(0,243,255,0.15)] p-3.5 sm:p-7 relative z-10 my-4 box-border overflow-x-hidden">
         
         {/* Navigation Bar */}
-        <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-5">
-          <button
-            onClick={() => navigate('/events')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/15 text-xs font-mono text-cyan-300 font-bold transition-all cursor-pointer"
-          >
-            <span>&larr;</span>
-            <span>BACK TO EVENTS</span>
-          </button>
+        <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
+          <span className="text-[11px] font-mono text-cyan-400 font-extrabold uppercase tracking-wider">
+            SECURE CHECKOUT NODE
+          </span>
 
           <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-mono font-bold flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -349,42 +345,50 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
             )}
 
             {/* Clear Order Summary Card */}
-            <div className="bg-[#070318]/90 border border-cyan-500/30 rounded-xl p-4 relative overflow-hidden">
-              <div className="flex justify-between items-start mb-3 pb-3 border-b border-white/10">
-                <div>
+            <div className="bg-[#070318]/90 border border-cyan-500/30 rounded-xl p-3.5 sm:p-4 relative overflow-hidden box-border">
+              <div className="flex justify-between items-start mb-3 pb-3 border-b border-white/10 gap-2">
+                <div className="min-w-0 flex-1">
                   <span className="text-[10px] font-mono text-cyan-400 tracking-wider font-bold uppercase block">EVENT ORDER</span>
-                  <h2 className="text-xl sm:text-2xl font-black text-white font-mono uppercase mt-0.5">{eventName}</h2>
-                  <span className="text-xs text-gray-400 font-mono">{registrationType} Pass &bull; {registrationId}</span>
+                  <h2 className="text-lg sm:text-2xl font-black text-white font-mono uppercase mt-0.5 truncate">{eventName}</h2>
+                  <span className="text-[11px] text-gray-400 font-mono block truncate">
+                    {registrationType} Pass &bull; {registrationId}
+                  </span>
                 </div>
-                <div className="text-right">
+                <div className="text-right shrink-0">
                   <span className="text-[10px] font-mono text-gray-400 uppercase block">FEE</span>
-                  <span className="text-3xl font-black text-cyan-400 font-mono tracking-tight">₹{totalAmount}</span>
+                  <span className="text-2xl sm:text-3xl font-black text-cyan-400 font-mono tracking-tight">₹{totalAmount}</span>
                 </div>
               </div>
 
               {/* Participant Details Summary */}
               <div className="grid grid-cols-2 gap-2 text-xs font-mono text-gray-300">
-                <div>
+                <div className="min-w-0">
                   <span className="text-gray-500 text-[10px] block">NAME</span>
                   <strong className="text-white truncate block">{userDetails.name}</strong>
                 </div>
-                <div>
+                <div className="min-w-0">
                   <span className="text-gray-500 text-[10px] block">FEST ID</span>
-                  <strong className="text-cyan-300 block">{userDetails.festId}</strong>
+                  <strong className="text-cyan-300 truncate block">{userDetails.festId}</strong>
                 </div>
-                <div className="col-span-2 pt-1 border-t border-white/5 flex items-center justify-between">
-                  <span className="text-gray-500 text-[10px]">EMAIL: <span className="text-gray-300">{userDetails.email}</span></span>
-                  <span className="text-gray-500 text-[10px]">PHONE: <span className="text-emerald-400 font-bold">{userDetails.phone}</span></span>
+                <div className="col-span-2 pt-2 border-t border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[11px] font-mono">
+                  <div className="truncate">
+                    <span className="text-gray-500 text-[10px]">EMAIL: </span>
+                    <span className="text-gray-300">{userDetails.email}</span>
+                  </div>
+                  <div className="truncate">
+                    <span className="text-gray-500 text-[10px]">PHONE: </span>
+                    <span className="text-emerald-400 font-bold">{userDetails.phone}</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* HERO PRIMARY ACTION BUTTON (FOR 95% USERS) */}
+            {/* HERO PRIMARY ACTION BUTTON */}
             <div className="pt-1">
               <button
                 onClick={handlePayNow}
                 disabled={paymentStatus === 'PROCESSING'}
-                className="w-full py-4 px-5 rounded-xl bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 hover:from-cyan-300 hover:to-purple-500 text-black font-black text-base uppercase font-mono tracking-wider shadow-[0_0_30px_rgba(0,243,255,0.4)] transition-all transform hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-3.5 sm:py-4 px-3 sm:px-5 rounded-xl bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 hover:from-cyan-300 hover:to-purple-500 text-black font-black text-sm sm:text-base uppercase font-mono tracking-wider shadow-[0_0_30px_rgba(0,243,255,0.4)] transition-all transform hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer box-border"
               >
                 {paymentStatus === 'PROCESSING' ? (
                   <>
@@ -394,11 +398,11 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
                 ) : (
                   <>
                     <span className="text-lg">⚡</span>
-                    <span>PAY ₹{totalAmount} NOW (GPay / PhonePe / Cards)</span>
+                    <span className="truncate">PAY ₹{totalAmount} NOW (GPay / PhonePe / Cards)</span>
                   </>
                 )}
               </button>
-              <p className="text-[11px] font-mono text-center text-gray-400 mt-2">
+              <p className="text-[10.5px] font-mono text-center text-gray-400 mt-2">
                 Instant verification &bull; Supports Google Pay, PhonePe, Paytm, Cards & NetBanking
               </p>
             </div>
@@ -408,13 +412,13 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
               <button
                 type="button"
                 onClick={() => setShowAlternateUpi(!showAlternateUpi)}
-                className="w-full py-2.5 px-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-mono text-purple-300 font-bold flex items-center justify-between transition-colors cursor-pointer"
+                className="w-full py-2.5 px-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] sm:text-xs font-mono text-purple-300 font-bold flex items-center justify-between gap-2 transition-colors cursor-pointer"
               >
-                <span className="flex items-center gap-1.5">
-                  <span>📲</span>
-                  <span>Paid via QR Code or External App? Enter UTR Ref</span>
+                <span className="flex items-center gap-1.5 min-w-0 truncate">
+                  <span className="shrink-0">📲</span>
+                  <span className="truncate">Paid via QR Code or External App? Enter UTR Ref</span>
                 </span>
-                <span>{showAlternateUpi ? '▲ Hide' : '▼ Expand'}</span>
+                <span className="shrink-0">{showAlternateUpi ? '▲ Hide' : '▼ Expand'}</span>
               </button>
 
               {showAlternateUpi && (

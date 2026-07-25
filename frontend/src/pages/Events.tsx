@@ -543,7 +543,12 @@ export default function Events({ onBack: _onBack }: Props) {
             box-shadow: none !important;
           }
           .reg-container {
-            padding: 1.1rem !important;
+            padding: 0.85rem !important;
+            border-radius: 12px !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+            overflow-x: hidden !important;
           }
           .detail-grid {
             grid-template-columns: 1fr !important;
@@ -1742,7 +1747,7 @@ export default function Events({ onBack: _onBack }: Props) {
                     <input
                       type="text"
                       className="reg-input"
-                      placeholder="e.g. CyberKnights"
+                      placeholder="Team Name"
                       value={teamName}
                       onChange={e => setTeamName(e.target.value)}
                       required
@@ -1761,12 +1766,12 @@ export default function Events({ onBack: _onBack }: Props) {
                     </div>
 
                     {selectedEvent.max_team_size > 1 && (
-                      <div className="flex items-center gap-2 self-stretch sm:self-auto">
+                      <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto mt-1 sm:mt-0">
                         {teammatesCount < selectedEvent.max_team_size - 1 && (
                           <button
                             type="button"
                             onClick={() => setTeammatesCount(prev => Math.min(prev + 1, selectedEvent.max_team_size - 1))}
-                            className="flex-1 sm:flex-none px-3.5 py-2 text-xs font-mono font-extrabold bg-cyan-500/20 hover:bg-cyan-500/35 border border-cyan-400/60 text-cyan-200 rounded-xl transition-all whitespace-nowrap cursor-pointer flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(0,243,255,0.15)]"
+                            className="flex-1 sm:flex-none px-3 py-1.5 text-[11px] font-mono font-extrabold bg-cyan-500/20 hover:bg-cyan-500/35 border border-cyan-400/60 text-cyan-200 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1 shadow-[0_0_15px_rgba(0,243,255,0.15)]"
                           >
                             <span className="text-sm">+</span>
                             <span>ADD TEAMMATE {teammatesCount + 1}</span>
@@ -1776,7 +1781,7 @@ export default function Events({ onBack: _onBack }: Props) {
                           <button
                             type="button"
                             onClick={() => setTeammatesCount(prev => Math.max(prev - 1, 0))}
-                            className="flex-1 sm:flex-none px-3.5 py-2 text-xs font-mono font-extrabold bg-red-500/20 hover:bg-red-500/35 border border-red-400/60 text-red-300 rounded-xl transition-all whitespace-nowrap cursor-pointer flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(239,68,68,0.15)]"
+                            className="flex-1 sm:flex-none px-3 py-1.5 text-[11px] font-mono font-extrabold bg-red-500/20 hover:bg-red-500/35 border border-red-400/60 text-red-300 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1 shadow-[0_0_15px_rgba(239,68,68,0.15)]"
                           >
                             <span className="text-sm">-</span>
                             <span>REMOVE TEAMMATE</span>
@@ -1803,7 +1808,7 @@ export default function Events({ onBack: _onBack }: Props) {
                           <input
                             type="text"
                             className="reg-input text-xs min-h-[42px]"
-                            placeholder="e.g. Alex Hunter"
+                            placeholder="Teammate Full Name"
                             value={teammates[idx]?.name || ''}
                             onChange={e => handleTeammateDetailChange(idx, 'name', e.target.value)}
                             required
@@ -1814,7 +1819,7 @@ export default function Events({ onBack: _onBack }: Props) {
                           <input
                             type="email"
                             className="reg-input text-xs min-h-[42px]"
-                            placeholder="alex@gmail.com"
+                            placeholder="Teammate Email Address"
                             value={teammates[idx]?.email || ''}
                             onChange={e => handleTeammateDetailChange(idx, 'email', e.target.value)}
                             required
@@ -1825,7 +1830,7 @@ export default function Events({ onBack: _onBack }: Props) {
                           <input
                             type="tel"
                             className="reg-input text-xs min-h-[42px]"
-                            placeholder="10-digit Phone No"
+                            placeholder="Phone Number"
                             value={teammates[idx]?.phone || ''}
                             onChange={e => handleTeammateDetailChange(idx, 'phone', e.target.value)}
                           />
@@ -1835,7 +1840,7 @@ export default function Events({ onBack: _onBack }: Props) {
                           <input
                             type="text"
                             className="reg-input text-xs min-h-[42px]"
-                            placeholder="e.g. RKMRC Belur Math"
+                            placeholder="College / University Name"
                             value={teammates[idx]?.college || ''}
                             onChange={e => handleTeammateDetailChange(idx, 'college', e.target.value)}
                           />

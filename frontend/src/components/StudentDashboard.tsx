@@ -126,20 +126,19 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
         justifyContent: 'center',
         zIndex: 999999,
         pointerEvents: 'auto',
-        padding: '12px',
-        paddingBottom: '70px',
+        padding: '10px',
         boxSizing: 'border-box',
       }}
       onClick={onClose || (() => (window.location.href = '/'))}
-      className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/85 backdrop-blur-md p-3 pb-20 font-mono select-none overflow-y-auto"
+      className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/85 backdrop-blur-md p-2 font-mono select-none overflow-hidden"
     >
-      {/* Scrollable Cyberpunk Glass Modal */}
+      {/* Responsive Cyberpunk Glass Modal */}
       <div
         style={{
           width: '100%',
           maxWidth: '920px',
-          maxHeight: '88dvh',
-          overflowY: 'auto',
+          height: '92dvh',
+          maxHeight: '92dvh',
           backgroundColor: 'rgba(12, 7, 33, 0.96)',
           backdropFilter: 'blur(30px)',
           WebkitBackdropFilter: 'blur(30px)',
@@ -150,9 +149,11 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
           color: '#ffffff',
           zIndex: 999999,
           boxSizing: 'border-box',
-          WebkitOverflowScrolling: 'touch',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden'
         }}
-        className="w-full max-w-4xl max-h-[88dvh] overflow-y-auto custom-scrollbar bg-[#0c0721]/96 backdrop-blur-3xl border-2 border-[#00f3ff]/40 rounded-3xl shadow-[0_0_60px_rgba(0,243,255,0.3)] flex flex-col md:flex-row relative text-white font-sans transition-all duration-300"
+        className="w-full max-w-4xl h-[92dvh] max-h-[92dvh] bg-[#0c0721]/96 backdrop-blur-3xl border-2 border-[#00f3ff]/40 rounded-3xl shadow-[0_0_60px_rgba(0,243,255,0.3)] flex flex-col md:flex-row relative text-white font-sans transition-all duration-300 overflow-hidden"
         onClick={(e: ReactMouseEvent) => e.stopPropagation()}
         onPointerDown={(e: ReactMouseEvent) => e.stopPropagation()}
       >
@@ -175,11 +176,11 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
           onClick={onClose || (() => (window.location.href = '/'))}
           style={{
             position: 'absolute',
-            top: '16px',
-            right: '16px',
-            zIndex: 40,
-            width: '36px',
-            height: '36px',
+            top: '14px',
+            right: '14px',
+            zIndex: 50,
+            width: '34px',
+            height: '34px',
             borderRadius: '9999px',
             background: 'rgba(255, 255, 255, 0.1)',
             border: '1px solid rgba(255, 255, 255, 0.2)',
@@ -194,19 +195,70 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
           ✕
         </button>
 
-        {/* Left Sidebar (Profile Summary & Tabs - hidden on mobile when form is open to maximize form view) */}
+        {/* MOBILE TOP COMPACT NAVIGATION BAR (Only visible on mobile screens < 768px) */}
+        <div className="flex md:hidden flex-col p-3 bg-black/60 border-b border-white/10 relative text-left gap-2.5 shrink-0 pt-4">
+          <div className="flex items-center gap-2.5 pr-10">
+            <div className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 flex items-center justify-center text-lg shrink-0">
+              🎓
+            </div>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-sm font-extrabold text-white font-mono truncate m-0">
+                {user?.full_name || user?.name || 'Envision Explorer'}
+              </h2>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="px-2 py-0.5 rounded-full bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 text-[10px] font-mono font-bold">
+                  ID: {user?.fest_id || 'ENV-2026-001'}
+                </span>
+                <span className="text-[10px] text-emerald-400 font-mono font-bold">
+                  ✓ VERIFIED
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Compact Mobile Tab Selector Pills */}
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pt-1">
+            <button
+              onClick={() => setActiveTab('overview')}
+              className={`px-3 py-1.5 rounded-lg text-[11px] font-mono font-bold uppercase transition-all whitespace-nowrap cursor-pointer ${
+                activeTab === 'overview'
+                  ? 'bg-cyan-500/30 text-cyan-300 border border-cyan-400/60 shadow-[0_0_10px_rgba(0,243,255,0.3)]'
+                  : 'bg-white/5 text-gray-400 border border-white/10'
+              }`}
+            >
+              🎟️ TRACKS ({registrations.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('form')}
+              className={`px-3 py-1.5 rounded-lg text-[11px] font-mono font-bold uppercase transition-all whitespace-nowrap cursor-pointer ${
+                activeTab === 'form'
+                  ? 'bg-cyan-500/30 text-cyan-300 border border-cyan-400/60 shadow-[0_0_10px_rgba(0,243,255,0.3)]'
+                  : 'bg-white/5 text-gray-400 border border-white/10'
+              }`}
+            >
+              ✏️ EDIT PROFILE
+            </button>
+            <button
+              onClick={handleLogout}
+              className="px-3 py-1.5 rounded-lg text-[11px] font-mono font-bold uppercase bg-red-500/20 text-red-300 border border-red-500/40 whitespace-nowrap ml-auto cursor-pointer"
+            >
+              🚪 LOGOUT
+            </button>
+          </div>
+        </div>
+
+        {/* DESKTOP LEFT SIDEBAR (Only visible on screens >= 768px) */}
         <div
           style={{
             backgroundColor: 'rgba(0, 0, 0, 0.55)',
             padding: '20px',
             borderRight: '1px solid rgba(255, 255, 255, 0.1)',
-            display: activeTab === 'form' ? 'none' : 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
             textAlign: 'left',
             boxSizing: 'border-box',
           }}
-          className={`w-full md:w-80 border-b md:border-b-0 md:border-r border-white/10 ${activeTab === 'form' ? 'hidden md:flex' : 'flex'}`}
+          className="hidden md:flex w-80 border-r border-white/10 shrink-0"
         >
           <div>
             {/* Student Header Badge */}
@@ -307,11 +359,23 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
           </button>
         </div>
 
-        {/* Right Content Area */}
-        <div style={{ flex: 1, padding: '20px sm:28px', backgroundColor: 'rgba(8, 4, 21, 0.7)', textAlign: 'left', display: 'flex', flexDirection: 'column', overflowY: 'auto', boxSizing: 'border-box', WebkitOverflowScrolling: 'touch' }} className="p-4 sm:p-7 flex-1">
+        {/* MAIN SCROLLABLE CONTENT AREA (Full-height scrollable for 100% visibility on both mobile & desktop) */}
+        <div
+          style={{
+            flex: 1,
+            backgroundColor: 'rgba(8, 4, 21, 0.7)',
+            textAlign: 'left',
+            display: 'flex',
+            flexDirection: 'column',
+            overflowY: 'auto',
+            boxSizing: 'border-box',
+            WebkitOverflowScrolling: 'touch'
+          }}
+          className="p-3.5 sm:p-7 flex-1 overflow-y-auto custom-scrollbar"
+        >
           {activeTab === 'overview' ? (
             /* TAB 1: Registered Events & Profile Overview */
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', paddingBottom: '30px' }}>
               <div>
                 <div style={{ color: '#00f3ff', fontSize: '11px', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '4px' }}>
                   STUDENT PORTAL NODE
@@ -334,18 +398,12 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
                   </div>
                 )}
 
-                {/* REGISTERED EVENTS SECTION (PROMINENTLY DISPLAYED ON DASHBOARD) */}
+                {/* REGISTERED EVENTS SECTION */}
                 <div style={{ marginTop: '20px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <div style={{ marginBottom: '12px' }}>
                     <h3 style={{ fontSize: '13px', fontWeight: 900, color: '#00f3ff', margin: 0, fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                       🎟️ MY REGISTERED TRACKS ({registrations.length})
                     </h3>
-                    <button
-                      onClick={() => setActiveTab('form')}
-                      style={{ fontSize: '11px', color: '#38bdf8', fontFamily: 'monospace', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
-                    >
-                      Edit Profile &rarr;
-                    </button>
                   </div>
 
                   {registrations.length === 0 ? (
@@ -375,7 +433,7 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
                               gap: '8px'
                             }}
                           >
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '6px' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <span style={{ width: '8px', height: '8px', borderRadius: '9999px', backgroundColor: isPaid ? '#10b981' : '#eab308' }} />
                                 <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 900, color: '#ffffff', fontFamily: 'monospace' }}>
@@ -399,7 +457,7 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
                               </span>
                             </div>
 
-                            {/* Details Grid (No Ticket Button Needed) */}
+                            {/* Details Grid */}
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '6px', fontSize: '11px', color: '#9ca3af', fontFamily: 'monospace', paddingTop: '6px', borderTop: '1px solid rgba(255, 255, 255, 0.08)', wordBreak: 'break-word' }}>
                               <div>REG ID: <strong style={{ color: '#38bdf8' }}>{reg.id}</strong></div>
                               {reg.food_preference && (
@@ -423,7 +481,7 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
                 </div>
 
                 {/* Profile Academic Details Cards */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginTop: '18px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px', marginTop: '18px' }}>
                   <div style={{ padding: '14px', borderRadius: '14px', backgroundColor: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <span style={{ color: '#9ca3af', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>FULL NAME</span>
                     <span style={{ color: '#ffffff', fontSize: '13px', fontWeight: 800 }}>
@@ -455,10 +513,9 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
               </div>
             </div>
           ) : (
-            /* TAB 2: EDIT PROFILE FORM (OPTIMIZED FOR MOBILE & DESKTOP) */
-            <form onSubmit={handleSubmitProfile} style={{ display: 'flex', flexDirection: 'column', gap: '18px', width: '100%' }}>
+            /* TAB 2: EDIT PROFILE FORM */
+            <form onSubmit={handleSubmitProfile} style={{ display: 'flex', flexDirection: 'column', gap: '18px', width: '100%', paddingBottom: '30px' }}>
               <div>
-                {/* Mobile Navigation Header to return back */}
                 <button
                   type="button"
                   onClick={() => setActiveTab('overview')}
@@ -504,7 +561,7 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
                 )}
 
                 {/* Form Fields Grid */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginTop: '16px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '14px', marginTop: '16px' }}>
                   {/* Full Name */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <label style={{ color: '#d1d5db', fontSize: '10.5px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: 'monospace' }}>
@@ -514,7 +571,7 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
                       type="text"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      placeholder="e.g., Ritam Bera"
+                      placeholder="Full Name"
                       required
                       style={{
                         backgroundColor: 'rgba(0, 0, 0, 0.6)',
@@ -567,7 +624,7 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
                       type="text"
                       value={department}
                       onChange={(e) => setDepartment(e.target.value)}
-                      placeholder="e.g., Computer Science"
+                      placeholder="Department / Major"
                       required
                       style={{
                         backgroundColor: 'rgba(0, 0, 0, 0.6)',
@@ -592,7 +649,7 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
                       type="text"
                       value={college}
                       onChange={(e) => setCollege(e.target.value)}
-                      placeholder="e.g., RKMRC Belur Math"
+                      placeholder="College / University Name"
                       required
                       style={{
                         backgroundColor: 'rgba(0, 0, 0, 0.6)',
