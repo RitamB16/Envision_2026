@@ -28,10 +28,9 @@ const EVENT_RULES_LINKS: Record<string, string> = {
   syntaxx: 'https://ibb.co/Z69WbqC2',
   mindspark: 'https://ibb.co/v9M8dpD',
   bidquest: 'https://ibb.co/spH899Sy',
-  'carlsen-chess': 'https://ibb.co/spH899Sy',
-  chess: 'https://ibb.co/spH899Sy',
-  lensverse: 'https://ibb.co/MxCRd9hg',
-  techtalk: 'https://ibb.co/Z69WbqC2'
+  'carlsen-chess': 'https://ibb.co/GvDyX0mB',
+  chess: 'https://ibb.co/GvDyX0mB',
+  lensverse: 'https://ibb.co/MxCRd9hg'
 };
 
 const EVENT_DESCRIPTIONS: Record<string, string> = {
@@ -1587,19 +1586,16 @@ export default function Events({ onBack: _onBack }: Props) {
                     <li>Team formations must fall within the range parameters specified ({selectedEvent.requires_team ? `Max ${selectedEvent.max_team_size} members` : 'Individual'}).</li>
                   </ul>
 
-                  {EVENT_RULES_LINKS[selectedEvent.id.toLowerCase()] && (
+                  {EVENT_RULES_LINKS[selectedEvent.id.toLowerCase()] && selectedEvent.id.toLowerCase() !== 'techtalk' && (
                     <div className="pt-3 border-t border-cyan-500/25 mt-3">
-                      <span className="text-[10px] font-mono text-cyan-400 uppercase font-bold block mb-1.5">
-                        OFFICIAL RULES POSTER / DOCUMENT:
-                      </span>
                       <a
                         href={EVENT_RULES_LINKS[selectedEvent.id.toLowerCase()]}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-pink-500/20 hover:from-cyan-500/35 hover:to-purple-500/35 border border-cyan-400/50 text-cyan-200 font-mono text-xs font-bold transition-all shadow-[0_0_15px_rgba(0,243,255,0.2)] active:scale-95 cursor-pointer no-underline"
+                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-pink-500/20 hover:from-cyan-500/35 hover:to-purple-500/35 border border-cyan-400/50 text-cyan-200 font-mono text-xs font-bold transition-all shadow-[0_0_15px_rgba(0,243,255,0.2)] active:scale-95 cursor-pointer no-underline"
                       >
                         <span>📜</span>
-                        <span>VIEW {selectedEvent.name} RULES POSTER &rarr;</span>
+                        <span>VIEW RULES</span>
                       </a>
                     </div>
                   )}
