@@ -308,26 +308,15 @@ export default function Events({ onBack: _onBack }: Props) {
     setMagicInviteUrl(null);
 
     try {
-      // 1. Auto-login fallback if user session token is missing
-      if (!localStorage.getItem('access_token') && email) {
-        try {
-          const authRes = await api.post<any>('/auth/instant-login', {
-            email: email.trim().toLowerCase(),
-            name: fullName.trim()
-          });
-          if (authRes && authRes.access_token) {
-            localStorage.setItem('access_token', authRes.access_token);
-            if (authRes.user) {
-              localStorage.setItem('user_role', authRes.user.role);
-              localStorage.setItem('fest_id', authRes.user.fest_id);
-              localStorage.setItem('user_name', authRes.user.name);
-              localStorage.setItem('user_email', authRes.user.email);
-            }
-            localStorage.setItem('envision_user_signedup', 'true');
-          }
-        } catch (authErr) {
-          console.warn("Instant login fallback notice:", authErr);
-        }
+      // 1. Mandatory Sign-In Check
+      const hasUserSession = !!(localStorage.getItem('access_token') || localStorage.getItem('user_email'));
+      if (!hasUserSession) {
+        setRegErrorMsg("🔐 You must be signed in to register for an event and track your history. Please sign in to continue.");
+        setIsSubmitting(false);
+        setTimeout(() => {
+          navigate('/login', { state: { returnToEvent: selectedEvent.id } });
+        }, 1200);
+        return;
       }
 
       let res: any;
@@ -413,7 +402,8 @@ export default function Events({ onBack: _onBack }: Props) {
 
         setRegSuccessMsg(`🎉 REGISTRATION CONFIRMED FOR ${selectedEvent.name.toUpperCase()}!`);
         setTimeout(() => {
-          navigate('/profile');
+          setStep('EVENTS');
+          navigate('/events');
         }, 1500);
       } else {
         const regId = res.registration_id || res.team_id || 'REG-PENDING';

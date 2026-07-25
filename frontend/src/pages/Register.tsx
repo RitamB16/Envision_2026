@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useGoogleLogin } from '@react-oauth/google';
 import PageLayout from './PageLayout';
@@ -12,9 +12,6 @@ interface Props {
 export default function Register({ onBack, onRegisterSuccess }: Props) {
   const [searchParams] = useSearchParams();
   const inviteToken = searchParams.get('invite_token');
-
-  const [instantEmail, setInstantEmail] = useState('');
-  const [instantName, setInstantName] = useState('');
 
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -79,53 +76,6 @@ export default function Register({ onBack, onRegisterSuccess }: Props) {
       setErrorMsg('Google Sign-In was cancelled or failed.');
     },
   });
-
-  const handleInstantSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMsg(null);
-
-    if (!instantEmail.trim()) {
-      setErrorMsg('Please enter a valid Email address.');
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/auth/instant-login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          email: instantEmail.trim(),
-          name: instantName.trim() || undefined,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || `Instant sign-in failed (Status ${response.status})`);
-      }
-
-      const data = await response.json();
-      setAuthSession(data.access_token, data.user);
-      await processTeamInviteIfPresent();
-
-      setIsSuccess(true);
-      onRegisterSuccess();
-
-      setTimeout(() => {
-        onBack();
-      }, 1200);
-    } catch (err: any) {
-      console.error('Instant Sign-In Error:', err);
-      setErrorMsg(err.message || 'Failed to sign in instantly.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   return (
     <PageLayout title="REGISTER / INSTANT SIGN IN" isWide={true}>
@@ -497,10 +447,10 @@ export default function Register({ onBack, onRegisterSuccess }: Props) {
 
             <div className="w-full text-center mb-5">
               <h3 className="text-base font-black text-white tracking-widest uppercase font-mono bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-white to-purple-400">
-                FAST PASS INSTANT SIGN IN
+                SIGN IN TO ENVISION '26
               </h3>
               <p className="text-xs text-gray-300 mt-1 font-mono">
-                No passwords required. Choose your instant sign-in option:
+                Sign in with your Google account to track your registrations & passes:
               </p>
             </div>
 
@@ -511,10 +461,10 @@ export default function Register({ onBack, onRegisterSuccess }: Props) {
               </div>
             )}
 
-            {/* Option 1: Custom Cyberpunk Google Sign In / Sign Up Button */}
+            {/* Custom Cyberpunk Google Sign In / Sign Up Button */}
             <button
               onClick={() => loginWithGoogle()}
-              className="cyber-google-btn mb-2"
+              className="cyber-google-btn my-4"
               disabled={isLoading}
             >
               <div className="google-icon-capsule">
@@ -525,44 +475,8 @@ export default function Register({ onBack, onRegisterSuccess }: Props) {
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
                 </svg>
               </div>
-              <span>GOOGLE ONE-CLICK SIGN IN</span>
+              <span>CONTINUE WITH GOOGLE ACCOUNT</span>
             </button>
-
-            <div className="divider-container">
-              <div className="divider-line"></div>
-              <span className="divider-text">OR DIRECT FAST PASS SIGN IN</span>
-              <div className="divider-line"></div>
-            </div>
-
-            {/* Option 2: Direct Fast Pass Instant Sign In Form */}
-            <form onSubmit={handleInstantSignIn} className="w-full">
-              <div className="form-group">
-                <label className="form-label">Full Name (Optional)</label>
-                <input 
-                  type="text" 
-                  className="form-input" 
-                  placeholder="e.g. Alex Hunter"
-                  value={instantName}
-                  onChange={(e) => setInstantName(e.target.value)}
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Email Address *</label>
-                <input 
-                  type="email" 
-                  className="form-input" 
-                  placeholder="your.email@gmail.com"
-                  value={instantEmail}
-                  onChange={(e) => setInstantEmail(e.target.value)}
-                  required
-                />
-              </div>
-
-              <button type="submit" className="cyber-instant-btn mt-2" disabled={isLoading}>
-                ⚡ INSTANT ACCESS TO TECHFEST
-              </button>
-            </form>
 
             {/* Error Notification Banner */}
             {errorMsg && (

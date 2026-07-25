@@ -31,7 +31,7 @@ export default function ProfileModal({ isOpen = true, user: initialUser, onClose
         fest_id: initialUser.fest_id,
         role: 'PARTICIPANT',
         is_approved: true,
-        department: initialUser.department || 'Computer Science',
+        department: initialUser.department || '',
         college: initialUser.college || '',
         gender: initialUser.gender || 'Male',
         profile_picture: initialUser.profile_picture,
@@ -50,7 +50,7 @@ export default function ProfileModal({ isOpen = true, user: initialUser, onClose
         fest_id: fest_id || 'ENV-2026-001',
         role: role,
         is_approved: true,
-        department: 'Computer Science',
+        department: '',
       };
     }
     return null;
@@ -309,7 +309,7 @@ export default function ProfileModal({ isOpen = true, user: initialUser, onClose
             {/* Row 3: Department */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
               <span style={{ color: '#9ca3af', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Department</span>
-              <span style={{ color: '#d8b4fe', fontSize: '13px', fontWeight: 600, textAlign: 'right' }}>{user?.department || "Computer Science"}</span>
+              <span style={{ color: '#d8b4fe', fontSize: '13px', fontWeight: 600, textAlign: 'right' }}>{user?.department || "-"}</span>
             </div>
 
             {/* Row 4: Gender */}

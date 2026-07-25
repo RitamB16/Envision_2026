@@ -28,7 +28,7 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
         fest_id: fest_id || 'ENV-2026-001',
         role: role,
         is_approved: true,
-        department: 'Computer Science',
+        department: '',
       };
     }
     return null;
@@ -38,7 +38,7 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
   const [fullName, setFullName] = useState<string>('');
   const [gender, setGender] = useState<string>('Male');
   const [college, setCollege] = useState<string>('');
-  const [department, setDepartment] = useState<string>('Computer Science');
+  const [department, setDepartment] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -52,7 +52,7 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
         setFullName(data.full_name || data.name || '');
         setGender(data.gender || 'Male');
         setCollege(data.college || '');
-        setDepartment(data.department || 'Computer Science');
+        setDepartment(data.department || '');
       } catch (err) {
         console.error('Failed to fetch user profile:', err);
       }
@@ -288,6 +288,33 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
             {/* Navigation Tabs */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <button
+                onClick={() => {
+                  if (onClose) onClose();
+                  navigate('/events');
+                }}
+                style={{
+                  width: '100%',
+                  padding: '12px 14px',
+                  borderRadius: '12px',
+                  fontSize: '12px',
+                  fontWeight: 800,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  backgroundColor: 'rgba(0, 243, 255, 0.25)',
+                  color: '#00f3ff',
+                  border: '1px solid rgba(0, 243, 255, 0.6)',
+                  boxShadow: '0 0 15px rgba(0, 243, 255, 0.2)'
+                }}
+              >
+                <span>🚀</span> EXPLORE TRACKS PAGE &rarr;
+              </button>
+
+              <button
                 onClick={() => setActiveTab('overview')}
                 style={{
                   width: '100%',
@@ -302,7 +329,7 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '10px',
-                  backgroundColor: activeTab === 'overview' ? 'rgba(0, 243, 255, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                  backgroundColor: activeTab === 'overview' ? 'rgba(0, 243, 255, 0.15)' : 'rgba(255, 255, 255, 0.05)',
                   color: activeTab === 'overview' ? '#00f3ff' : '#d1d5db',
                   border: activeTab === 'overview' ? '1px solid rgba(0, 243, 255, 0.5)' : '1px solid rgba(255, 255, 255, 0.1)',
                 }}
@@ -325,12 +352,12 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '10px',
-                  backgroundColor: activeTab === 'form' ? 'rgba(0, 243, 255, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                  backgroundColor: activeTab === 'form' ? 'rgba(0, 243, 255, 0.15)' : 'rgba(255, 255, 255, 0.05)',
                   color: activeTab === 'form' ? '#00f3ff' : '#d1d5db',
                   border: activeTab === 'form' ? '1px solid rgba(0, 243, 255, 0.5)' : '1px solid rgba(255, 255, 255, 0.1)',
                 }}
               >
-                <span>✏️</span> Edit Profile
+                <span>✏️</span> Edit Profile Details
               </button>
             </div>
           </div>
@@ -490,7 +517,9 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
                                     state: {
                                       registrationId: reg.id,
                                       eventName,
-                                      priceAmount: reg.event?.price_amount || 49
+                                      baseFee: reg.event?.price_amount || 49,
+                                      priceAmount: reg.event?.price_amount || 49,
+                                      amount: reg.event?.price_amount || 49
                                     }
                                   });
                                 }}

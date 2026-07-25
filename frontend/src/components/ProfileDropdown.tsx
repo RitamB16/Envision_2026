@@ -19,7 +19,7 @@ export default function ProfileDropdown() {
         fest_id: fest_id || 'ENV-2026-001',
         role: role,
         is_approved: true,
-        department: 'Computer Science',
+        department: '',
       };
     }
     return null;

@@ -160,10 +160,27 @@ def get_user_registrations(
     """Fetch all event registrations for the authenticated user."""
     seed_events_if_empty(db)
 
-    registrations = db.query(models.EventRegistration).filter(
-        models.EventRegistration.user_id == current_user.id,
-        models.EventRegistration.status != "CANCELLED"
+    # Fetch direct registrations by ID or matching email
+    user_email_lower = current_user.email.strip().lower() if current_user.email else ""
+    
+    registrations = db.query(models.Registration).filter(
+        (models.Registration.participant_id == current_user.id) |
+        (models.Registration.participant.has(models.User.email == user_email_lower)),
+        models.Registration.payment_status != "CANCELLED"
     ).all()
+
+    # Also fetch team registrations where current_user is the team leader
+    user_teams = db.query(models.Team).filter(models.Team.leader_id == current_user.id).all()
+    team_ids = [t.team_id for t in user_teams]
+    if team_ids:
+        team_regs = db.query(models.Registration).filter(
+            models.Registration.team_id.in_(team_ids),
+            models.Registration.payment_status != "CANCELLED"
+        ).all()
+        registrations.extend(team_regs)
+
+    # Deduplicate registrations by reg_id
+    registrations = list({r.reg_id: r for r in registrations}.values())
 
     registered_event_ids = {r.event_id for r in registrations}
 

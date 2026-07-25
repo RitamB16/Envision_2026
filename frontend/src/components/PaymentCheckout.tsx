@@ -40,8 +40,26 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
 
   const registrationId = props.registrationId || params.registrationId || stateData.registrationId || regContextState.registrationId || 'REG-PENDING';
   const eventName = props.eventName || stateData.eventName || regContextState.eventName || 'ENVISION FEST EVENT';
-  const registrationType = props.registrationType || stateData.registrationType || (regContextState.teamName ? 'Team' : 'Individual');
-  const baseFee = props.baseFee || stateData.baseFee || regContextState.amount || 39;
+  const [fetchedPrice, setFetchedPrice] = useState<number | null>(null);
+
+  const rawFee = props.baseFee || stateData.baseFee || stateData.priceAmount || stateData.amount || stateData.price || regContextState.amount || fetchedPrice || 49;
+  const numericFee = typeof rawFee === 'number' ? rawFee : parseInt(String(rawFee).replace(/\D/g, '')) || 49;
+  const totalAmount = numericFee;
+
+  // Dynamic order price lookup from backend
+  useEffect(() => {
+    if (registrationId && registrationId !== 'REG-PENDING') {
+      api.post<any>('/payments/create-order', { registration_id: registrationId })
+        .then(res => {
+          if (res && res.amount) {
+            setFetchedPrice(res.amount);
+          }
+        })
+        .catch(err => {
+          console.warn("Could not fetch order price dynamically:", err);
+        });
+    }
+  }, [registrationId]);
 
   // Dynamic participant contact phone lookup
   const [realPhone, setRealPhone] = useState<string>(
@@ -58,9 +76,6 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [copied, setCopied] = useState<boolean>(false);
   const [countdown, setCountdown] = useState<number>(3);
-
-  const numericFee = typeof baseFee === 'number' ? baseFee : parseInt(String(baseFee).replace(/\D/g, '')) || 39;
-  const totalAmount = numericFee;
 
   // Sanitized NPCI-compliant UPI parameters
   const cleanTargetVpa = (RAZORPAY_UPI_ID || '8336048128@oksbi').trim();
@@ -103,15 +118,14 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
         setCountdown((prev) => {
           if (prev <= 1) {
             clearInterval(timer);
-            navigate('/profile', {
+            navigate('/events', {
               state: {
                 justRegisteredEvent: eventName,
                 registrationId,
                 totalAmount,
-                paymentStatus: 'COMPLETED',
+                paymentStatus: 'PENDING_VERIFICATION',
                 payment_id: txnId,
-                txnId
-              }
+              },
             });
             return 0;
           }
@@ -260,22 +274,21 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
                 />
               </div>
               <p className="text-[10.5px] text-center text-cyan-300 font-mono animate-pulse m-0 pt-1">
-                Redirecting to dashboard in <strong className="text-white">{countdown}</strong>s...
+                Redirecting to tracks page in <strong className="text-white">{countdown}</strong>s...
               </p>
             </div>
 
             <button
-              onClick={() => navigate('/profile', { state: { justRegisteredEvent: eventName, registrationId, payment_id: txnId } })}
+              onClick={() => navigate('/events', { state: { justRegisteredEvent: eventName, registrationId, payment_id: txnId } })}
               className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 via-cyan-500 to-emerald-400 text-black font-black uppercase font-mono text-xs sm:text-sm tracking-wider shadow-[0_0_25px_rgba(245,158,11,0.3)] hover:scale-[1.01] transition-transform cursor-pointer"
             >
-              VIEW DASHBOARD (STATUS: PENDING VERIFICATION) &rarr;
+              RETURN TO TRACKS PAGE &rarr;
             </button>
           </div>
         )}
-
         {/* ================= MAIN DIRECT UPI UX ================= */}
         {paymentStatus !== 'SUCCESS' && (
-          <div className="space-y-4">
+          <div className="space-y-5">
 
             {/* Error Banner */}
             {paymentStatus === 'FAILED' && errorMessage && (
@@ -288,98 +301,88 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
               </div>
             )}
 
-            {/* Event Order Summary Card */}
-            <div className="bg-[#070318]/90 border border-cyan-500/30 rounded-xl p-3.5 sm:p-4 relative overflow-hidden box-border">
-              <div className="flex justify-between items-start mb-3 pb-3 border-b border-white/10 gap-2">
+            {/* Clean Order Header */}
+            <div className="bg-[#070318]/90 border border-cyan-500/30 rounded-xl p-4 sm:p-5 space-y-3 box-border">
+              <div className="flex justify-between items-center pb-3 border-b border-white/10 gap-3">
                 <div className="min-w-0 flex-1">
-                  <span className="text-[10px] font-mono text-cyan-400 tracking-wider font-bold uppercase block">EVENT ORDER</span>
-                  <h2 className="text-lg sm:text-2xl font-black text-white font-mono uppercase mt-0.5 truncate">{eventName}</h2>
-                  <span className="text-[11px] text-gray-400 font-mono block truncate">
-                    {registrationType} Pass &bull; {registrationId}
+                  <span className="text-[10px] font-mono text-cyan-400 tracking-wider font-extrabold uppercase block mb-1">
+                    REGISTRATION CHECKOUT
                   </span>
+                  <h2 className="text-xl sm:text-2xl font-black text-white font-mono uppercase truncate m-0">
+                    {eventName}
+                  </h2>
                 </div>
-                <div className="text-right shrink-0">
-                  <span className="text-[10px] font-mono text-gray-400 uppercase block">FEE</span>
-                  <span className="text-2xl sm:text-3xl font-black text-cyan-400 font-mono tracking-tight">₹{totalAmount}</span>
+                <div className="text-right shrink-0 bg-cyan-500/10 px-3.5 py-2 rounded-xl border border-cyan-500/30">
+                  <span className="text-[9px] font-mono text-gray-400 uppercase block leading-none mb-1">FEE DUE</span>
+                  <span className="text-xl sm:text-2xl font-black text-cyan-400 font-mono tracking-tight leading-none">₹{totalAmount}</span>
                 </div>
               </div>
 
-              {/* Participant Details Summary */}
-              <div className="grid grid-cols-2 gap-2 text-xs font-mono text-gray-300">
-                <div className="min-w-0">
-                  <span className="text-gray-500 text-[10px] block">NAME</span>
-                  <strong className="text-white truncate block">{userDetails.name}</strong>
+              {/* Participant Quick Meta Tag */}
+              <div className="flex items-center justify-between text-xs font-mono text-gray-300 pt-1">
+                <div className="truncate">
+                  <span className="text-gray-500 text-[10px] uppercase">PARTICIPANT: </span>
+                  <strong className="text-white">{userDetails.name}</strong>
                 </div>
-                <div className="min-w-0">
-                  <span className="text-gray-500 text-[10px] block">FEST ID</span>
-                  <strong className="text-cyan-300 truncate block">{userDetails.festId}</strong>
-                </div>
-                <div className="col-span-2 pt-2 border-t border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[11px] font-mono">
-                  <div className="truncate">
-                    <span className="text-gray-500 text-[10px]">EMAIL: </span>
-                    <span className="text-gray-300">{userDetails.email}</span>
-                  </div>
-                  <div className="truncate">
-                    <span className="text-gray-500 text-[10px]">PHONE: </span>
-                    <span className="text-emerald-400 font-bold">{userDetails.phone}</span>
-                  </div>
+                <div className="shrink-0">
+                  <span className="text-gray-500 text-[10px] uppercase">FEST ID: </span>
+                  <strong className="text-cyan-300">{userDetails.festId}</strong>
                 </div>
               </div>
             </div>
 
-            {/* STEP 1: UPI PAYMENT DEEP LINK & QR CODE CARD */}
-            <div className="p-4 rounded-xl bg-[#060214] border border-cyan-500/30 space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-mono text-cyan-300 font-extrabold uppercase tracking-wider flex items-center gap-1.5">
-                  <span>📱</span> STEP 1: MAKE UPI PAYMENT (₹{totalAmount})
-                </span>
-                <span className="text-[10px] font-mono text-gray-400 bg-white/5 px-2 py-0.5 rounded border border-white/10">
-                  OFFICIAL FEST VPA
-                </span>
+            {/* DYNAMIC QR CODE & COPY VPA CARD */}
+            <div className="bg-[#060214] border border-cyan-500/30 rounded-xl p-4 sm:p-5 space-y-4 box-border">
+              <div className="text-center sm:text-left">
+                <h3 className="text-xs font-mono text-cyan-300 font-extrabold uppercase tracking-wider m-0 flex items-center justify-center sm:justify-start gap-1.5">
+                  <span>📱</span> SCAN QR CODE OR COPY UPI ID
+                </h3>
               </div>
 
-              {/* Dynamic QR Code & Copyable VPA ID */}
-
-              {/* DESKTOP / GENERAL VIEW: QR Code & Copyable VPA ID */}
-              <div className="flex flex-col sm:flex-row items-center gap-3 bg-[#0a051d] p-3 rounded-lg border border-cyan-500/20">
+              <div className="flex flex-col sm:flex-row items-center gap-4 bg-[#0a051d] p-3.5 sm:p-4 rounded-xl border border-cyan-500/20 box-border">
                 <img
                   src={qrCodeUrl}
                   alt="UPI QR Code"
-                  className="w-28 h-28 sm:w-32 sm:h-32 rounded-lg bg-white/5 p-1 object-contain flex-shrink-0 border border-cyan-400/30 shadow-[0_0_15px_rgba(0,243,255,0.2)]"
+                  className="w-32 h-32 sm:w-36 sm:h-36 rounded-xl bg-white/5 p-1.5 object-contain shrink-0 border border-cyan-400/40 shadow-[0_0_20px_rgba(0,243,255,0.2)]"
                 />
-                <div className="flex-1 min-w-0 text-center sm:text-left space-y-2 w-full">
-                  <div className="text-[11px] text-gray-400 font-mono">Scan QR Code or copy VPA ID:</div>
+                <div className="flex-1 min-w-0 text-center sm:text-left space-y-3 w-full">
+                  <span className="text-[11px] text-gray-400 font-mono block">
+                    Official Fest Receiver VPA:
+                  </span>
+                  
+                  {/* Sleek Copy Bar */}
                   <div className="flex items-center justify-center sm:justify-start gap-2">
-                    <span className="text-xs sm:text-sm font-mono font-extrabold text-cyan-300 bg-cyan-950/60 border border-cyan-500/40 px-2.5 py-1.5 rounded-md truncate">
+                    <span className="text-xs sm:text-sm font-mono font-extrabold text-cyan-300 bg-cyan-950/70 border border-cyan-500/40 px-3 py-2 rounded-lg truncate select-all">
                       {cleanTargetVpa}
                     </span>
                     <button
                       type="button"
                       onClick={handleCopyUPI}
-                      className="px-3 py-1.5 rounded-md bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/40 text-cyan-300 text-[11px] font-mono font-bold transition-colors cursor-pointer shrink-0"
+                      className="px-3.5 py-2 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/40 text-cyan-300 text-xs font-mono font-bold transition-all cursor-pointer shrink-0 active:scale-95"
                     >
                       {copied ? '✓ COPIED!' : 'COPY VPA'}
                     </button>
                   </div>
-                  <p className="text-[10px] text-gray-400 font-mono leading-tight">
-                    Payee: <strong className="text-gray-200">Envision'26 TechFest</strong>
+
+                  <p className="text-[10.5px] text-gray-400 font-mono m-0 pt-0.5">
+                    Amount: <strong className="text-cyan-300 font-bold">₹{totalAmount}</strong> &bull; Payee: <strong className="text-gray-200">Envision TechFest</strong>
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* STEP 2: SECURE 12-DIGIT UTR INPUT & VERIFICATION */}
-            <div className="p-4 rounded-xl bg-[#060214] border border-purple-500/30 space-y-3">
+            {/* 12-DIGIT UTR INPUT & VERIFICATION CARD */}
+            <div className="bg-[#060214] border border-purple-500/30 rounded-xl p-4 sm:p-5 space-y-3 box-border">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-mono text-purple-300 font-extrabold uppercase tracking-wider flex items-center gap-1.5">
-                  <span>🔑</span> STEP 2: ENTER 12-DIGIT UPI UTR / REF NO.
+                  <span>🔑</span> ENTER 12-DIGIT UPI UTR / REF NO.
                 </label>
                 <span className={`text-[10.5px] font-mono font-bold ${utrLength === 12 ? 'text-emerald-400' : 'text-amber-400'}`}>
                   {utrLength === 12 ? '✓ 12/12 DIGITS VALID' : `${utrLength} / 12 digits`}
                 </span>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <input
                   type="text"
                   inputMode="numeric"
@@ -391,48 +394,47 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
                   onPaste={handlePasteUtr}
                   onKeyDown={handleKeyDownUtr}
                   placeholder="e.g. 420185938210"
-                  className="w-full bg-[#0a051d] border border-purple-500/40 focus:border-cyan-400 disabled:opacity-50 rounded-lg p-3 text-cyan-200 font-mono text-sm sm:text-base tracking-widest placeholder:text-gray-600 outline-none transition-colors box-border"
+                  className="w-full bg-[#0a051d] border border-purple-500/40 focus:border-cyan-400 disabled:opacity-50 rounded-xl p-3 sm:p-3.5 text-cyan-200 font-mono text-sm sm:text-base tracking-widest placeholder:text-gray-600 outline-none transition-colors box-border"
                 />
                 
-                {/* Real-time Inline Helper Validation Feedback */}
-                <p className="text-[10.5px] font-mono leading-tight transition-colors">
+                <p className="text-[10.5px] font-mono leading-tight m-0 pt-0.5">
                   {utrLength === 12 ? (
                     <span className="text-emerald-400 font-bold">
-                      ✓ Ready! Click below to verify and unlock your event pass.
+                      ✓ Ready! Click below to submit UTR for manual bank verification.
                     </span>
                   ) : utrLength > 0 ? (
                     <span className="text-amber-300">
-                      ⚠️ Enter all 12 digits from your payment receipt ({12 - utrLength} digits remaining).
+                      ⚠️ Enter all 12 digits from your receipt ({12 - utrLength} digits remaining).
                     </span>
                   ) : (
                     <span className="text-gray-400">
-                      Found on your UPI receipt as <strong className="text-gray-200">UPI Ref No / UTR / RRN</strong> (12 digits).
+                      Found on payment receipt as <strong className="text-gray-200">UPI Ref No / UTR / RRN</strong> (12 digits).
                     </span>
                   )}
                 </p>
               </div>
 
-              {/* Submit Button with Throttling & Locking */}
+              {/* Submit Button */}
               <button
                 type="button"
                 onClick={handleVerifyUTR}
                 disabled={paymentStatus === 'PROCESSING' || utrLength !== 12}
-                className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white font-black text-xs sm:text-sm uppercase font-mono tracking-wider shadow-[0_0_20px_rgba(168,85,247,0.3)] transition-all transform active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer box-border"
+                className="w-full mt-2 py-3.5 px-4 rounded-xl bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white font-black text-xs sm:text-sm uppercase font-mono tracking-wider shadow-[0_0_20px_rgba(168,85,247,0.3)] transition-all transform active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer box-border"
               >
                 {paymentStatus === 'PROCESSING' ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>VERIFYING UTR REFERENCE...</span>
+                    <span>SUBMITTING UTR REFERENCE...</span>
                   </>
                 ) : (
-                  <span>VERIFY & UNLOCK EVENT PASS &rarr;</span>
+                  <span>SUBMIT UTR FOR VERIFICATION &rarr;</span>
                 )}
               </button>
             </div>
 
             {/* Portal Footer */}
-            <p className="text-[10px] text-center text-gray-500 font-mono">
-              Envision'26 TechFest &bull; Official SSL Encrypted Payment Portal
+            <p className="text-[10px] text-center text-gray-500 font-mono m-0 pt-1">
+              Envision'26 TechFest &bull; Official Encrypted Payment Verification Node
             </p>
           </div>
         )}
