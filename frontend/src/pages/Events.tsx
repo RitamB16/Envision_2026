@@ -934,7 +934,7 @@ export default function Events({ onBack: _onBack }: Props) {
           max-width: 100vw;
           overflow-x: hidden;
           box-sizing: border-box;
-          padding: 85px 14px 40px 14px;
+          padding: 12px 14px 40px 14px;
           margin: 0 auto;
         }
 
@@ -1325,19 +1325,27 @@ export default function Events({ onBack: _onBack }: Props) {
       {/* State Router View: Grid */}
       {view === 'grid' && (
         <>
-          {/* Category Filter Pills Bar */}
-          <div className="flex overflow-x-auto p-1.5 rounded-xl bg-black/60 border border-white/10 gap-2 mb-2 scrollbar-hide w-full box-border">
-            {['ALL', 'SEMINAR', 'CODING', 'QUIZ', 'AUCTION', 'PHOTOGRAPHY', 'CHESS'].map(cat => (
+          {/* Category Filter Pills Bar (Flex wrap on mobile for 100% category visibility without right-edge truncation) */}
+          <div className="flex flex-wrap sm:flex-nowrap items-center gap-1.5 sm:gap-2 p-2 rounded-2xl bg-[#09041a]/80 border border-cyan-500/25 mb-4 w-full box-border shadow-lg">
+            {[
+              { id: 'ALL', label: '🏆 ALL' },
+              { id: 'SEMINAR', label: '🎤 SEMINAR' },
+              { id: 'CODING', label: '💻 CODING' },
+              { id: 'QUIZ', label: '🧠 QUIZ' },
+              { id: 'AUCTION', label: '🔨 AUCTION' },
+              { id: 'PHOTOGRAPHY', label: '📷 PHOTO' },
+              { id: 'CHESS', label: '♟️ CHESS' },
+            ].map(cat => (
               <button
-                key={cat}
-                className={`px-3.5 py-1.5 text-xs font-extrabold uppercase rounded-lg transition-all whitespace-nowrap shrink-0 cursor-pointer ${
-                  selectedCategory === cat
-                    ? 'bg-cyan-500/25 text-cyan-300 border border-cyan-400/50 shadow-[0_0_15px_rgba(0,243,255,0.25)]'
-                    : 'text-gray-400 hover:text-white bg-white/5 border border-transparent'
+                key={cat.id}
+                className={`px-3 py-1.5 text-xs font-mono font-extrabold uppercase rounded-xl transition-all whitespace-nowrap cursor-pointer ${
+                  selectedCategory === cat.id
+                    ? 'bg-cyan-500/30 text-cyan-300 border border-cyan-400/60 shadow-[0_0_15px_rgba(0,243,255,0.3)] scale-[1.02]'
+                    : 'text-gray-400 hover:text-white bg-white/5 border border-white/10 hover:border-white/20'
                 }`}
-                onClick={() => setSelectedCategory(cat)}
+                onClick={() => setSelectedCategory(cat.id)}
               >
-                {cat}
+                {cat.label}
               </button>
             ))}
           </div>
@@ -1424,10 +1432,6 @@ export default function Events({ onBack: _onBack }: Props) {
       {/* State Router View: Detail */}
       {view === 'detail' && selectedEvent && (
         <div className="mobile-detail-wrapper">
-          <button className="mobile-back-btn" onClick={() => setSearchParams({})}>
-            ← BACK TO EVENTS
-          </button>
-
           <div className="flex flex-col w-full min-w-0">
             {/* 1. Hero Cover Image Card with Glass Badges */}
             <div className="mobile-hero-image-box">
@@ -1544,10 +1548,6 @@ export default function Events({ onBack: _onBack }: Props) {
       {/* State Router View: Register */}
       {view === 'register' && selectedEvent && (
         <div className="reg-container">
-          <button className="back-nav-btn" onClick={() => setSearchParams({})}>
-            BACK TO EVENTS
-          </button>
-
           <div className="reg-header">
             <h2 className="reg-title">{selectedEvent.name} REGISTRATION</h2>
             <div className="reg-subtitle">

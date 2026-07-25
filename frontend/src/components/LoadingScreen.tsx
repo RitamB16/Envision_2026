@@ -39,15 +39,26 @@ const LoadingScreen: React.FC<Props> = ({ onStart }) => {
           justify-content: center;
           align-items: center;
           gap: 1.8rem;
+          padding: 1.5rem;
+          box-sizing: border-box;
+          text-align: center;
         }
         .blinking-logo-title {
-          font-family: 'Orbitron', sans-serif;
-          font-size: 2.2rem;
+          font-family: 'Orbitron', 'Outfit', sans-serif;
+          font-size: clamp(1.6rem, 7.5vw, 3rem);
           font-weight: 900;
-          letter-spacing: 0.3em;
-          color: #00f3ff;
-          text-shadow: 0 0 20px rgba(0, 243, 255, 0.6);
-          animation: cyberBlink 1.2s infinite ease-in-out alternate;
+          letter-spacing: clamp(0.1em, 2vw, 0.25em);
+          text-align: center;
+          width: 100%;
+          max-width: 95vw;
+          background: linear-gradient(135deg, #ffffff 0%, #00f3ff 50%, #38bdf8 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          filter: drop-shadow(0 0 22px rgba(0, 243, 255, 0.75));
+          animation: cyberBlink 1.4s infinite ease-in-out alternate;
+          margin: 0 auto;
+          line-height: 1.2;
+          word-break: keep-all;
         }
         .dots-row {
           display: flex;
@@ -66,19 +77,20 @@ const LoadingScreen: React.FC<Props> = ({ onStart }) => {
 
         .progress-text {
           font-family: monospace;
-          font-size: 0.85rem;
+          font-size: clamp(0.75rem, 3vw, 0.9rem);
           color: #a855f7;
           letter-spacing: 0.2em;
+          text-align: center;
           animation: pulseGlow 1.5s infinite ease-in-out;
         }
 
         @keyframes cyberBlink {
-          0% { opacity: 0.3; transform: scale(0.98); }
-          100% { opacity: 1; transform: scale(1.02); text-shadow: 0 0 30px rgba(0, 243, 255, 0.9); }
+          0% { opacity: 0.5; transform: scale(0.98); }
+          100% { opacity: 1; transform: scale(1.02); filter: drop-shadow(0 0 35px rgba(0, 243, 255, 0.95)); }
         }
 
         @keyframes pulseGlow {
-          0%, 100% { opacity: 0.4; }
+          0%, 100% { opacity: 0.5; }
           50% { opacity: 1; }
         }
 

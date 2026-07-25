@@ -69,12 +69,9 @@ function AppContent() {
       navLockRef.current = { id: null, time: 0 };
     } else {
       const pathId = location.pathname.substring(1);
-      // Only override if the car is NOT currently traveling or arriving to prevent breaking active transitions
-      if (carState !== 'TRAVELING' && carState !== 'ARRIVED') {
-        setActiveTargetId(pathId);
-        setCameraMode('FOLLOW');
-        setCarState('PATROLLING');
-      }
+      setActiveTargetId(pathId);
+      setCarState('ARRIVED');
+      setCameraMode('PAGE');
       navLockRef.current = { id: pathId, time: Date.now() };
     }
   }, [location.pathname, introFinished]);
@@ -102,9 +99,9 @@ function AppContent() {
     setIsWiping(true);
     setTimeout(() => {
       navigate('/register');
-      setCameraMode('FOLLOW');
-      setCarState('PATROLLING'); // Resumes/keeps GTR patrolling!
-      setActiveTargetId('register'); // Mark that we navigated to register
+      setCameraMode('PAGE');
+      setCarState('ARRIVED'); // Car stops when register page opens
+      setActiveTargetId('register');
       setTimeout(() => {
         setIsWiping(false);
       }, 100);
@@ -133,13 +130,13 @@ function AppContent() {
     // If already on this exact page, do nothing
     if (location.pathname === dest.path) return;
 
-    // Smoothly transition and open destination page instantly
+    // Smoothly transition and open destination page instantly with car parked
     setActiveTargetId(id);
     setIsWiping(true);
     setTimeout(() => {
       navigate(dest.path);
-      setCameraMode('FOLLOW');
-      setCarState('PATROLLING');
+      setCameraMode('PAGE');
+      setCarState('ARRIVED'); // Car stops when destination page opens
       setTimeout(() => {
         setIsWiping(false);
       }, 100);
@@ -152,41 +149,39 @@ function AppContent() {
     setCarState('ARRIVED');
     setCameraMode('CINEMATIC');
 
-    // Play cinematic beat for 1.7s (held for a clear beat of ~1.5-2s), then wipe and route
+    // Play cinematic beat for 1.7s, then wipe and route
     setTimeout(() => {
       setIsWiping(true);
       setTimeout(() => {
         const dest = destinations.find(d => d.id === activeTargetId);
         if (dest) navigate(dest.path);
 
-        setCameraMode('FOLLOW');
-        setCarState('PATROLLING'); // GTR keeps driving in the background!
+        setCameraMode('PAGE');
+        setCarState('ARRIVED'); // Car stays stopped while page is active
 
         // Reset ref lock once page is rendered
         navLockRef.current = { id: activeTargetId, time: Date.now() };
 
-        // Brief delay before sliding the wipe-overlay back out so the page renders under it
         setTimeout(() => {
           setIsWiping(false);
         }, 100);
-      }, 1000); // 1s wipe hold
-    }, 1700); // 1.7s cinematic beat
+      }, 1000);
+    }, 1700);
   };
 
   const handleBackToCity = () => {
     setIsWiping(true);
     setTimeout(() => {
-      // Snaps elements to patrol loop immediately while screen is black
+      // Car resumes patrol loop and camera refocuses on car when returning home
       navigate('/');
-      setCarState('RETURNING');
+      setCarState('PATROLLING');
       setActiveTargetId(null);
       setCameraMode('FOLLOW');
 
-      // Brief delay before sliding back out to ensure first frame renders in snapped position
       setTimeout(() => {
         setIsWiping(false);
       }, 100);
-    }, 1000); // 1s wipe hold
+    }, 1000);
   };
 
   const isPageActive = location.pathname !== '/';

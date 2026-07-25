@@ -1,5 +1,5 @@
 import { useState, useEffect, FormEvent, MouseEvent as ReactMouseEvent } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { api, UserProfile, EventRegistration, clearAuthSession } from '../utils/api';
 
 interface StudentDashboardProps {
@@ -8,7 +8,6 @@ interface StudentDashboardProps {
 
 export default function StudentDashboard({ onClose }: StudentDashboardProps) {
   const location = useLocation();
-  const navigate = useNavigate();
   const stateData = (location.state as any) || {};
   const justRegisteredEvent = stateData.justRegisteredEvent;
 
@@ -109,7 +108,7 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
   };
 
   return (
-    // 1. In-Place Glassmorphism Overlay Container (3D Safe) with Explicit Inline Styles
+    // Glassmorphism Overlay Container
     <div
       style={{
         position: 'fixed',
@@ -127,19 +126,19 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
         justifyContent: 'center',
         zIndex: 999999,
         pointerEvents: 'auto',
-        padding: '16px',
-        paddingBottom: '80px',
+        padding: '12px',
+        paddingBottom: '70px',
         boxSizing: 'border-box',
       }}
       onClick={onClose || (() => (window.location.href = '/'))}
-      className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/85 backdrop-blur-md p-4 pb-20 font-mono select-none overflow-y-auto"
+      className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/85 backdrop-blur-md p-3 pb-20 font-mono select-none overflow-y-auto"
     >
-      {/* Scrollable Cyberpunk Glass Container */}
+      {/* Scrollable Cyberpunk Glass Modal */}
       <div
         style={{
           width: '100%',
           maxWidth: '920px',
-          maxHeight: '85dvh',
+          maxHeight: '88dvh',
           overflowY: 'auto',
           backgroundColor: 'rgba(12, 7, 33, 0.96)',
           backdropFilter: 'blur(30px)',
@@ -151,9 +150,9 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
           color: '#ffffff',
           zIndex: 999999,
           boxSizing: 'border-box',
-          paddingBottom: '40px',
+          WebkitOverflowScrolling: 'touch',
         }}
-        className="w-full max-w-4xl max-h-[85dvh] overflow-y-auto custom-scrollbar bg-[#0c0721]/96 backdrop-blur-3xl border-2 border-[#00f3ff]/40 rounded-3xl shadow-[0_0_60px_rgba(0,243,255,0.3)] flex flex-col md:flex-row relative text-white font-sans transition-all duration-300 pb-10"
+        className="w-full max-w-4xl max-h-[88dvh] overflow-y-auto custom-scrollbar bg-[#0c0721]/96 backdrop-blur-3xl border-2 border-[#00f3ff]/40 rounded-3xl shadow-[0_0_60px_rgba(0,243,255,0.3)] flex flex-col md:flex-row relative text-white font-sans transition-all duration-300"
         onClick={(e: ReactMouseEvent) => e.stopPropagation()}
         onPointerDown={(e: ReactMouseEvent) => e.stopPropagation()}
       >
@@ -195,31 +194,31 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
           ✕
         </button>
 
-        {/* 2. Left Column (Profile Summary & Navigation - 1/3 width on desktop, 100% on mobile) */}
+        {/* Left Sidebar (Profile Summary & Tabs - hidden on mobile when form is open to maximize form view) */}
         <div
           style={{
             backgroundColor: 'rgba(0, 0, 0, 0.55)',
-            padding: '24px',
+            padding: '20px',
             borderRight: '1px solid rgba(255, 255, 255, 0.1)',
-            display: 'flex',
+            display: activeTab === 'form' ? 'none' : 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
             textAlign: 'left',
             boxSizing: 'border-box',
           }}
-          className="w-full md:w-80 border-b md:border-b-0 md:border-r border-white/10"
+          className={`w-full md:w-80 border-b md:border-b-0 md:border-r border-white/10 ${activeTab === 'form' ? 'hidden md:flex' : 'flex'}`}
         >
           <div>
             {/* Student Header Badge */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', paddingBottom: '20px', borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
-              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: 'rgba(0, 243, 255, 0.15)', border: '1px solid rgba(0, 243, 255, 0.4)', color: '#00f3ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', marginBottom: '12px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', paddingBottom: '16px', borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
+              <div style={{ width: '52px', height: '52px', borderRadius: '16px', backgroundColor: 'rgba(0, 243, 255, 0.15)', border: '1px solid rgba(0, 243, 255, 0.4)', color: '#00f3ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', marginBottom: '10px' }}>
                 🎓
               </div>
 
               <h2 style={{ fontSize: '16px', fontWeight: 800, color: '#ffffff', margin: 0, fontFamily: 'monospace' }}>
                 {user?.full_name || user?.name || 'Envision Explorer'}
               </h2>
-              <p style={{ fontSize: '12px', color: '#38bdf8', margin: '4px 0 10px 0', fontFamily: 'monospace' }}>
+              <p style={{ fontSize: '12px', color: '#38bdf8', margin: '4px 0 8px 0', fontFamily: 'monospace' }}>
                 {user?.email || 'registered@user'}
               </p>
               <div style={{ padding: '4px 12px', borderRadius: '9999px', backgroundColor: 'rgba(0, 243, 255, 0.15)', border: '1px solid rgba(0, 243, 255, 0.4)', color: '#00f3ff', fontSize: '11px', fontWeight: 700, fontFamily: 'monospace' }}>
@@ -228,17 +227,17 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
             </div>
 
             {/* Status Indicator */}
-            <div style={{ margin: '20px 0', padding: '12px', borderRadius: '14px', backgroundColor: 'rgba(6, 78, 59, 0.5)', border: '1px solid rgba(16, 185, 129, 0.4)', color: '#6ee7b7', fontSize: '12px', fontFamily: 'monospace', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ margin: '16px 0', padding: '10px 12px', borderRadius: '12px', backgroundColor: 'rgba(6, 78, 59, 0.5)', border: '1px solid rgba(16, 185, 129, 0.4)', color: '#6ee7b7', fontSize: '11px', fontFamily: 'monospace', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ fontWeight: 800 }}>✓ STATUS: ALL EVENTS UNLOCKED</span>
             </div>
 
             {/* Navigation Tabs */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <button
                 onClick={() => setActiveTab('overview')}
                 style={{
                   width: '100%',
-                  padding: '12px 16px',
+                  padding: '12px 14px',
                   borderRadius: '12px',
                   fontSize: '12px',
                   fontWeight: 700,
@@ -254,14 +253,14 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
                   border: activeTab === 'overview' ? '1px solid rgba(0, 243, 255, 0.5)' : '1px solid rgba(255, 255, 255, 0.1)',
                 }}
               >
-                <span>📊</span> Overview
+                <span>🎟️</span> Registered Events ({registrations.length})
               </button>
 
               <button
                 onClick={() => setActiveTab('form')}
                 style={{
                   width: '100%',
-                  padding: '12px 16px',
+                  padding: '12px 14px',
                   borderRadius: '12px',
                   fontSize: '12px',
                   fontWeight: 700,
@@ -277,7 +276,7 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
                   border: activeTab === 'form' ? '1px solid rgba(0, 243, 255, 0.5)' : '1px solid rgba(255, 255, 255, 0.1)',
                 }}
               >
-                <span>✏️</span> Complete Profile
+                <span>✏️</span> Edit Profile
               </button>
             </div>
           </div>
@@ -286,9 +285,9 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
           <button
             onClick={handleLogout}
             style={{
-              marginTop: '24px',
+              marginTop: '20px',
               width: '100%',
-              padding: '12px 16px',
+              padding: '12px 14px',
               borderRadius: '12px',
               backgroundColor: 'rgba(220, 38, 38, 0.2)',
               border: '1px solid rgba(239, 68, 68, 0.4)',
@@ -308,51 +307,53 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
           </button>
         </div>
 
-        {/* 3. Right Column (Dynamic Views & Form - 2/3 width) */}
-        <div style={{ flex: 1, padding: '28px', paddingBottom: '44px', backgroundColor: 'rgba(8, 4, 21, 0.7)', textAlign: 'left', display: 'flex', flexDirection: 'column', overflowY: 'auto', boxSizing: 'border-box' }}>
+        {/* Right Content Area */}
+        <div style={{ flex: 1, padding: '20px sm:28px', backgroundColor: 'rgba(8, 4, 21, 0.7)', textAlign: 'left', display: 'flex', flexDirection: 'column', overflowY: 'auto', boxSizing: 'border-box', WebkitOverflowScrolling: 'touch' }} className="p-4 sm:p-7 flex-1">
           {activeTab === 'overview' ? (
-            /* State 1: Overview */
-            <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%', justifyContent: 'space-between', gap: '20px' }}>
+            /* TAB 1: Registered Events & Profile Overview */
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div>
                 <div style={{ color: '#00f3ff', fontSize: '11px', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '4px' }}>
                   STUDENT PORTAL NODE
                 </div>
-                <h1 style={{ fontSize: '24px', fontWeight: 900, color: '#ffffff', margin: 0, fontFamily: 'monospace' }}>
+                <h1 style={{ fontSize: '22px', fontWeight: 900, color: '#ffffff', margin: 0, fontFamily: 'monospace' }}>
                   WELCOME TO ENVISION '26
                 </h1>
-                <p style={{ fontSize: '13px', color: '#d1d5db', marginTop: '8px', fontFamily: 'monospace', lineHeight: '1.5' }}>
-                  Your student pass is active. Access your fest credentials, track unlocked event workshops, or complete your academic profile below.
+                <p style={{ fontSize: '12px', color: '#d1d5db', marginTop: '6px', fontFamily: 'monospace', lineHeight: '1.5' }}>
+                  Your student profile and registered tracks are live below.
                 </p>
-                {/* Just Registered Success Alert Banner */}
+
+                {/* Success Alert Banner */}
                 {justRegisteredEvent && (
-                  <div style={{ marginTop: '16px', padding: '16px', borderRadius: '16px', backgroundColor: 'rgba(6, 78, 59, 0.65)', border: '1px solid rgba(16, 185, 129, 0.5)', color: '#6ee7b7', fontSize: '13px', fontFamily: 'monospace', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', boxShadow: '0 0 25px rgba(16, 185, 129, 0.3)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <span style={{ fontSize: '20px' }}>🎉</span>
-                      <div>
-                        <strong style={{ display: 'block', color: '#ffffff' }}>PAYMENT CONFIRMED!</strong>
-                        <span>Successfully registered for <strong style={{ color: '#00f3ff' }}>{justRegisteredEvent}</strong>. Your ticket pass is active below.</span>
-                      </div>
+                  <div style={{ marginTop: '14px', padding: '14px', borderRadius: '14px', backgroundColor: 'rgba(6, 78, 59, 0.65)', border: '1px solid rgba(16, 185, 129, 0.5)', color: '#6ee7b7', fontSize: '12px', fontFamily: 'monospace', display: 'flex', alignItems: 'center', gap: '10px', boxShadow: '0 0 20px rgba(16, 185, 129, 0.3)' }}>
+                    <span style={{ fontSize: '18px' }}>🎉</span>
+                    <div>
+                      <strong style={{ display: 'block', color: '#ffffff' }}>PAYMENT CONFIRMED!</strong>
+                      <span>Successfully registered for <strong style={{ color: '#00f3ff' }}>{justRegisteredEvent}</strong>.</span>
                     </div>
                   </div>
                 )}
 
-                {/* Registered Events Catalog Section */}
-                <div style={{ marginTop: '24px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-                    <h3 style={{ fontSize: '14px', fontWeight: 900, color: '#00f3ff', margin: 0, fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                      🎟️ MY REGISTERED TRACKS & EVENT PASSES
+                {/* REGISTERED EVENTS SECTION (PROMINENTLY DISPLAYED ON DASHBOARD) */}
+                <div style={{ marginTop: '20px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                    <h3 style={{ fontSize: '13px', fontWeight: 900, color: '#00f3ff', margin: 0, fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                      🎟️ MY REGISTERED TRACKS ({registrations.length})
                     </h3>
-                    <span style={{ fontSize: '11px', color: '#9ca3af', fontFamily: 'monospace' }}>
-                      {registrations.length} TRACKS REGISTERED
-                    </span>
+                    <button
+                      onClick={() => setActiveTab('form')}
+                      style={{ fontSize: '11px', color: '#38bdf8', fontFamily: 'monospace', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                    >
+                      Edit Profile &rarr;
+                    </button>
                   </div>
 
                   {registrations.length === 0 ? (
-                    <div style={{ padding: '24px', borderRadius: '16px', backgroundColor: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.1)', textAlign: 'center', color: '#9ca3af', fontSize: '12px', fontFamily: 'monospace' }}>
+                    <div style={{ padding: '20px', borderRadius: '14px', backgroundColor: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.1)', textAlign: 'center', color: '#9ca3af', fontSize: '12px', fontFamily: 'monospace' }}>
                       No registered events found yet. Explore tracks on the <a href="/events" style={{ color: '#00f3ff', textDecoration: 'underline' }}>Events Page</a>.
                     </div>
                   ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                       {registrations.map((reg, idx) => {
                         const eventName = reg.event?.name || reg.event_id?.toUpperCase() || 'ENVISION EVENT';
                         const isTechTalk = reg.event_id === 'techtalk' || eventName.includes('TECH TALK');
@@ -365,26 +366,26 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
                           <div
                             key={`reg-${reg.id || idx}-${idx}`}
                             style={{
-                              padding: '16px',
-                              borderRadius: '16px',
+                              padding: '14px',
+                              borderRadius: '14px',
                               backgroundColor: 'rgba(14, 7, 38, 0.85)',
                               border: isPaid ? '1px solid rgba(0, 243, 255, 0.3)' : '1px solid rgba(234, 179, 8, 0.4)',
                               display: 'flex',
                               flexDirection: 'column',
-                              gap: '10px'
+                              gap: '8px'
                             }}
                           >
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <span style={{ width: '10px', height: '10px', borderRadius: '9999px', backgroundColor: isPaid ? '#10b981' : '#eab308' }} />
-                                <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 900, color: '#ffffff', fontFamily: 'monospace' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ width: '8px', height: '8px', borderRadius: '9999px', backgroundColor: isPaid ? '#10b981' : '#eab308' }} />
+                                <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 900, color: '#ffffff', fontFamily: 'monospace' }}>
                                   {eventName}
                                 </h4>
                               </div>
 
                               <span
                                 style={{
-                                  padding: '4px 10px',
+                                  padding: '3px 8px',
                                   borderRadius: '9999px',
                                   backgroundColor: isPaid ? 'rgba(16, 185, 129, 0.2)' : 'rgba(234, 179, 8, 0.2)',
                                   border: isPaid ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid rgba(234, 179, 8, 0.4)',
@@ -398,7 +399,8 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
                               </span>
                             </div>
 
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px', fontSize: '11px', color: '#9ca3af', fontFamily: 'monospace', paddingTop: '8px', borderTop: '1px solid rgba(255, 255, 255, 0.08)', wordBreak: 'break-word' }}>
+                            {/* Details Grid (No Ticket Button Needed) */}
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '6px', fontSize: '11px', color: '#9ca3af', fontFamily: 'monospace', paddingTop: '6px', borderTop: '1px solid rgba(255, 255, 255, 0.08)', wordBreak: 'break-word' }}>
                               <div>REG ID: <strong style={{ color: '#38bdf8' }}>{reg.id}</strong></div>
                               {reg.food_preference && (
                                 <div>FOOD PREF: <strong style={{ color: '#f472b6' }}>{reg.food_preference}</strong></div>
@@ -413,25 +415,6 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
                                 <div style={{ gridColumn: '1 / -1' }}>TEAM MEMBERS: <strong style={{ color: '#a7f3d0' }}>{reg.team_members}</strong></div>
                               )}
                             </div>
-
-                            <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '6px' }}>
-                              <button
-                                onClick={() => navigate(`/tickets/${reg.id}`)}
-                                style={{
-                                  padding: '8px 16px',
-                                  borderRadius: '10px',
-                                  backgroundColor: 'rgba(0, 243, 255, 0.15)',
-                                  border: '1px solid rgba(0, 243, 255, 0.4)',
-                                  color: '#00f3ff',
-                                  fontSize: '11px',
-                                  fontWeight: 800,
-                                  fontFamily: 'monospace',
-                                  cursor: 'pointer',
-                                }}
-                              >
-                                VIEW TICKET PASS ↗
-                              </button>
-                            </div>
                           </div>
                         );
                       })}
@@ -439,135 +422,133 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
                   )}
                 </div>
 
-                {/* Info Cards Grid */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginTop: '20px' }}>
-                  <div style={{ padding: '16px', borderRadius: '16px', backgroundColor: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <span style={{ color: '#9ca3af', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>FULL NAME</span>
-                    <span style={{ color: '#ffffff', fontSize: '14px', fontWeight: 800 }}>
+                {/* Profile Academic Details Cards */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginTop: '18px' }}>
+                  <div style={{ padding: '14px', borderRadius: '14px', backgroundColor: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <span style={{ color: '#9ca3af', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>FULL NAME</span>
+                    <span style={{ color: '#ffffff', fontSize: '13px', fontWeight: 800 }}>
                       {user?.full_name || user?.name || 'Not Specified'}
                     </span>
                   </div>
 
-                  <div style={{ padding: '16px', borderRadius: '16px', backgroundColor: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <span style={{ color: '#9ca3af', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>COLLEGE / UNIV</span>
-                    <span style={{ color: '#38bdf8', fontSize: '14px', fontWeight: 800 }}>
+                  <div style={{ padding: '14px', borderRadius: '14px', backgroundColor: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <span style={{ color: '#9ca3af', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>COLLEGE / UNIV</span>
+                    <span style={{ color: '#38bdf8', fontSize: '13px', fontWeight: 800 }}>
                       {user?.college || 'Calcutta University'}
                     </span>
                   </div>
 
-                  <div style={{ padding: '16px', borderRadius: '16px', backgroundColor: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <span style={{ color: '#9ca3af', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>DEPARTMENT</span>
-                    <span style={{ color: '#d8b4fe', fontSize: '14px', fontWeight: 800 }}>
+                  <div style={{ padding: '14px', borderRadius: '14px', backgroundColor: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <span style={{ color: '#9ca3af', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>DEPARTMENT</span>
+                    <span style={{ color: '#d8b4fe', fontSize: '13px', fontWeight: 800 }}>
                       {user?.department || 'Computer Science'}
                     </span>
                   </div>
 
-                  <div style={{ padding: '16px', borderRadius: '16px', backgroundColor: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <span style={{ color: '#9ca3af', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>GENDER</span>
-                    <span style={{ color: '#e5e7eb', fontSize: '14px', fontWeight: 800 }}>
+                  <div style={{ padding: '14px', borderRadius: '14px', backgroundColor: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <span style={{ color: '#9ca3af', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>GENDER</span>
+                    <span style={{ color: '#e5e7eb', fontSize: '13px', fontWeight: 800 }}>
                       {user?.gender || 'Male'}
                     </span>
                   </div>
                 </div>
               </div>
-
-              {/* Action Banner */}
-              <div style={{ marginTop: '28px', padding: '20px', borderRadius: '16px', background: 'linear-gradient(90deg, rgba(8, 51, 68, 0.6) 0%, rgba(88, 28, 135, 0.6) 100%)', border: '1px solid rgba(0, 243, 255, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
-                <div>
-                  <h4 style={{ margin: 0, fontSize: '12px', fontWeight: 800, color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Academic Details Incomplete?</h4>
-                  <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#d1d5db' }}>
-                    Update your college and department details to print your official fest badge.
-                  </p>
-                </div>
-                <button
-                  onClick={() => setActiveTab('form')}
-                  style={{
-                    whiteSpace: 'nowrap',
-                    padding: '10px 20px',
-                    borderRadius: '12px',
-                    backgroundColor: '#00f3ff',
-                    color: '#000000',
-                    fontWeight: 900,
-                    fontSize: '12px',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.08em',
-                    border: 'none',
-                    cursor: 'pointer',
-                    boxShadow: '0 0 15px rgba(0, 243, 255, 0.4)',
-                  }}
-                >
-                  Edit Profile →
-                </button>
-              </div>
             </div>
           ) : (
-            /* State 2: Complete Profile (The Form) */
-            <form onSubmit={handleSubmitProfile} style={{ display: 'flex', flexDirection: 'column', minHeight: '100%', justifyContent: 'space-between', gap: '24px', paddingBottom: '24px' }}>
+            /* TAB 2: EDIT PROFILE FORM (OPTIMIZED FOR MOBILE & DESKTOP) */
+            <form onSubmit={handleSubmitProfile} style={{ display: 'flex', flexDirection: 'column', gap: '18px', width: '100%' }}>
               <div>
+                {/* Mobile Navigation Header to return back */}
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('overview')}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: '8px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    color: '#00f3ff',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    marginBottom: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    width: 'fit-content'
+                  }}
+                >
+                  <span>&larr;</span> BACK TO REGISTERED EVENTS
+                </button>
+
                 <div style={{ color: '#00f3ff', fontSize: '11px', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '4px' }}>
-                  ACADEMIC REGISTRATION
+                  STUDENT CREDENTIALS
                 </div>
-                <h1 style={{ fontSize: '22px', fontWeight: 900, color: '#ffffff', margin: 0, fontFamily: 'monospace' }}>
-                  COMPLETE YOUR PROFILE
+                <h1 style={{ fontSize: '20px', fontWeight: 900, color: '#ffffff', margin: 0, fontFamily: 'monospace' }}>
+                  EDIT PROFILE DETAILS
                 </h1>
                 <p style={{ fontSize: '12px', color: '#9ca3af', marginTop: '4px', fontFamily: 'monospace' }}>
-                  Provide your complete academic details for festival credentials and participation certificates.
+                  Update your full name, college, and department for event passes.
                 </p>
 
                 {/* Notifications */}
                 {successMessage && (
-                  <div style={{ marginTop: '16px', padding: '12px', borderRadius: '12px', backgroundColor: 'rgba(6, 78, 59, 0.7)', border: '1px solid rgba(16, 185, 129, 0.4)', color: '#6ee7b7', fontSize: '12px' }}>
+                  <div style={{ marginTop: '12px', padding: '10px 14px', borderRadius: '10px', backgroundColor: 'rgba(6, 78, 59, 0.8)', border: '1px solid rgba(16, 185, 129, 0.5)', color: '#6ee7b7', fontSize: '12px', fontFamily: 'monospace' }}>
                     {successMessage}
                   </div>
                 )}
                 {errorMessage && (
-                  <div style={{ marginTop: '16px', padding: '12px', borderRadius: '12px', backgroundColor: 'rgba(127, 29, 29, 0.7)', border: '1px solid rgba(239, 68, 68, 0.4)', color: '#fca5a5', fontSize: '12px' }}>
+                  <div style={{ marginTop: '12px', padding: '10px 14px', borderRadius: '10px', backgroundColor: 'rgba(127, 29, 29, 0.8)', border: '1px solid rgba(239, 68, 68, 0.5)', color: '#fca5a5', fontSize: '12px', fontFamily: 'monospace' }}>
                     {errorMessage}
                   </div>
                 )}
 
                 {/* Form Fields Grid */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginTop: '20px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginTop: '16px' }}>
                   {/* Full Name */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <label style={{ color: '#d1d5db', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      FULL NAME
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ color: '#d1d5db', fontSize: '10.5px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: 'monospace' }}>
+                      FULL NAME *
                     </label>
                     <input
                       type="text"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      placeholder="e.g., Alex Mercer"
+                      placeholder="e.g., Ritam Bera"
                       required
                       style={{
-                        backgroundColor: 'rgba(0, 0, 0, 0.4)',
-                        border: '1px solid rgba(255, 255, 255, 0.15)',
-                        borderRadius: '12px',
-                        padding: '10px 14px',
+                        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                        border: '1px solid rgba(0, 243, 255, 0.3)',
+                        borderRadius: '10px',
+                        padding: '12px 14px',
                         color: '#ffffff',
                         outline: 'none',
                         fontSize: '13px',
+                        minHeight: '44px',
+                        boxSizing: 'border-box'
                       }}
                     />
                   </div>
 
                   {/* Gender Dropdown */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <label style={{ color: '#d1d5db', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      GENDER
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ color: '#d1d5db', fontSize: '10.5px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: 'monospace' }}>
+                      GENDER *
                     </label>
                     <select
                       value={gender}
                       onChange={(e) => setGender(e.target.value)}
                       style={{
-                        backgroundColor: '#120a26',
-                        border: '1px solid rgba(255, 255, 255, 0.15)',
-                        borderRadius: '12px',
-                        padding: '10px 14px',
+                        backgroundColor: '#0a051d',
+                        border: '1px solid rgba(0, 243, 255, 0.3)',
+                        borderRadius: '10px',
+                        padding: '12px 14px',
                         color: '#ffffff',
                         outline: 'none',
                         fontSize: '13px',
                         cursor: 'pointer',
+                        minHeight: '44px',
+                        boxSizing: 'border-box'
                       }}
                     >
                       <option value="Male">Male</option>
@@ -578,9 +559,9 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
                   </div>
 
                   {/* Department */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <label style={{ color: '#d1d5db', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      DEPARTMENT / MAJOR
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ color: '#d1d5db', fontSize: '10.5px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: 'monospace' }}>
+                      DEPARTMENT / MAJOR *
                     </label>
                     <input
                       type="text"
@@ -589,50 +570,54 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
                       placeholder="e.g., Computer Science"
                       required
                       style={{
-                        backgroundColor: 'rgba(0, 0, 0, 0.4)',
-                        border: '1px solid rgba(255, 255, 255, 0.15)',
-                        borderRadius: '12px',
-                        padding: '10px 14px',
+                        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                        border: '1px solid rgba(0, 243, 255, 0.3)',
+                        borderRadius: '10px',
+                        padding: '12px 14px',
                         color: '#ffffff',
                         outline: 'none',
                         fontSize: '13px',
+                        minHeight: '44px',
+                        boxSizing: 'border-box'
                       }}
                     />
                   </div>
 
                   {/* College / University */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <label style={{ color: '#d1d5db', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      COLLEGE / UNIVERSITY
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ color: '#d1d5db', fontSize: '10.5px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: 'monospace' }}>
+                      COLLEGE / UNIVERSITY *
                     </label>
                     <input
                       type="text"
                       value={college}
                       onChange={(e) => setCollege(e.target.value)}
-                      placeholder="e.g., Calcutta University"
+                      placeholder="e.g., RKMRC Belur Math"
                       required
                       style={{
-                        backgroundColor: 'rgba(0, 0, 0, 0.4)',
-                        border: '1px solid rgba(255, 255, 255, 0.15)',
-                        borderRadius: '12px',
-                        padding: '10px 14px',
+                        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                        border: '1px solid rgba(0, 243, 255, 0.3)',
+                        borderRadius: '10px',
+                        padding: '12px 14px',
                         color: '#ffffff',
                         outline: 'none',
                         fontSize: '13px',
+                        minHeight: '44px',
+                        boxSizing: 'border-box'
                       }}
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Form Buttons */}
-              <div style={{ marginTop: '24px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px', paddingTop: '16px', borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
+              {/* Form Action Buttons */}
+              <div style={{ marginTop: '16px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '10px', paddingTop: '14px', borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
                 <button
                   type="button"
                   onClick={() => setActiveTab('overview')}
                   style={{
-                    padding: '10px 20px',
-                    borderRadius: '12px',
+                    padding: '12px 20px',
+                    borderRadius: '10px',
                     backgroundColor: 'rgba(255, 255, 255, 0.08)',
                     border: '1px solid rgba(255, 255, 255, 0.15)',
                     color: '#d1d5db',
@@ -649,8 +634,8 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
                   type="submit"
                   disabled={isLoading}
                   style={{
-                    padding: '10px 24px',
-                    borderRadius: '12px',
+                    padding: '12px 24px',
+                    borderRadius: '10px',
                     background: 'linear-gradient(90deg, #06b6d4 0%, #9333ea 100%)',
                     color: '#ffffff',
                     fontWeight: 800,

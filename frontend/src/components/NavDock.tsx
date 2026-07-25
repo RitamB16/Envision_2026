@@ -748,22 +748,26 @@ const NavDock: React.FC<Props> = ({ onNavigate, activeTargetId, carState, isPage
           }
 
           .drawer-close-btn {
-            background: transparent;
-            border: none;
-            color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 6px;
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
-            border: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.2s ease;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
           }
 
-          .drawer-close-btn:hover {
+          .drawer-close-btn:hover, .drawer-close-btn:active {
             color: #ff0055;
             border-color: #ff0055;
+            background: rgba(255, 0, 85, 0.15);
+            box-shadow: 0 0 14px rgba(255, 0, 85, 0.4);
+            transform: scale(1.05);
           }
 
           .drawer-menu-list {
@@ -895,14 +899,16 @@ const NavDock: React.FC<Props> = ({ onNavigate, activeTargetId, carState, isPage
               {/* Desktop placeholder (empty space) */}
               <div className="desktop-only" style={{ width: 44 }} />
               
-              {/* Mobile Hamburger menu icon */}
-              <button 
-                onClick={() => setIsDrawerOpen(true)}
-                className="icon-nav-btn mobile-only hud-interactive"
-                title="Open Menu"
-              >
-                <HamburgerIcon />
-              </button>
+              {/* Mobile Hamburger menu icon - hidden when mobile side drawer is open */}
+              {!isDrawerOpen && (
+                <button 
+                  onClick={() => setIsDrawerOpen(true)}
+                  className="icon-nav-btn mobile-only hud-interactive"
+                  title="Open Menu"
+                >
+                  <HamburgerIcon />
+                </button>
+              )}
             </>
           )}
         </div>
