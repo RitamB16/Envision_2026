@@ -14,7 +14,39 @@ interface GalleryItem {
 }
 
 const GALLERY_ITEMS: GalleryItem[] = [
-  // AUCTION
+  // WELCOME CEREMONY (ON TOP)
+  {
+    id: 'welcome-ceremony-1',
+    title: 'WELCOME CEREMONY',
+    category: 'NORMAL',
+    src: 'https://i.ibb.co/r2zwFJqm/WELCOME-CEREMONY.jpg',
+    fallbackUrl: 'https://ibb.co/r2zwFJqm'
+  },
+
+  // CODING (SYNTAXX)
+  {
+    id: 'coding-1',
+    title: 'SYNTAXX CODING EVENT',
+    category: 'CODING',
+    src: 'https://i.ibb.co/gZMnKtZ4/CODING.jpg',
+    fallbackUrl: 'https://ibb.co/whNvmphc'
+  },
+  {
+    id: 'coding-2',
+    title: 'SYNTAXX CODING COMPETITION',
+    category: 'CODING',
+    src: 'https://i.ibb.co/dwSqRRWJ/CODING-1.jpg',
+    fallbackUrl: 'https://ibb.co/dwSqRRWJ'
+  },
+  {
+    id: 'coding-3',
+    title: 'SYNTAXX HACKATHON PARTICIPANTS',
+    category: 'CODING',
+    src: 'https://i.ibb.co/GQR8YmPm/CODING-2.jpg',
+    fallbackUrl: 'https://ibb.co/GQR8YmPm'
+  },
+
+  // AUCTION (BIDQUEST)
   {
     id: 'auction-1',
     title: 'BIDQUEST AUCTION STAGE',
@@ -31,53 +63,69 @@ const GALLERY_ITEMS: GalleryItem[] = [
   },
   {
     id: 'auction-3',
-    title: 'BIDQUEST AUCTION WINNERS',
+    title: 'BIDQUEST AUCTION HOSTS',
     category: 'AUCTION',
-    src: 'https://ibb.co/rrdMD01/AUTION.jpg',
+    src: 'https://i.ibb.co/rrdMD01/AUTION.jpg',
     fallbackUrl: 'https://ibb.co/rrdMD01'
   },
-
-  // CODING
   {
-    id: 'coding-1',
-    title: 'SYNTAXX CODING HACKATHON',
-    category: 'CODING',
-    src: 'https://i.ibb.co/gZMnKtZ4/CODING.jpg',
-    fallbackUrl: 'https://ibb.co/whNvmphc'
+    id: 'auction-4',
+    title: 'BIDQUEST AUCTION PREPARATION',
+    category: 'AUCTION',
+    src: 'https://i.ibb.co/FdSYrNm/NORMAL3.jpg',
+    fallbackUrl: 'https://ibb.co/CSk9cNm'
   },
 
-  // NORMAL
+  // QUIZ (MINDSPARK)
   {
-    id: 'normal-1',
-    title: 'FESTIVAL AMBIENCE & CAMPUS',
+    id: 'quiz-1',
+    title: 'MINDSPARK TRIVIA ROUND',
+    category: 'QUIZ',
+    src: 'https://i.ibb.co/8LWKP7wZ/QUIZ.jpg',
+    fallbackUrl: 'https://ibb.co/r26yX1xW'
+  },
+  {
+    id: 'quiz-2',
+    title: 'MINDSPARK FINAL CHAMPIONS',
+    category: 'QUIZ',
+    src: 'https://i.ibb.co/20fCcQMS/QUIZ1.jpg',
+    fallbackUrl: 'https://ibb.co/ZRkFcPgS'
+  },
+  {
+    id: 'quiz-final-round-1',
+    title: 'QUIZ FINAL ROUND',
+    category: 'QUIZ',
+    src: 'https://i.ibb.co/fYzQjSnh/NORMAL2.jpg',
+    fallbackUrl: 'https://ibb.co/jvPHn5Wc'
+  },
+
+  // SPEECH
+  {
+    id: 'speech-1',
+    title: 'INSPIRATIONAL KEYNOTE ADDRESS',
+    category: 'SPEECH',
+    src: 'https://i.ibb.co/xKXYvk10/SPEECH-BG-SIR.jpg',
+    fallbackUrl: 'https://ibb.co/bjQFh0sZ'
+  },
+
+  // EVENTS & DEBATE (NORMAL)
+  {
+    id: 'debate-1',
+    title: 'DEBATE COMPETITION',
     category: 'NORMAL',
     src: 'https://i.ibb.co/m51Vw4YV/NORMAL.jpg',
     fallbackUrl: 'https://ibb.co/ZztpPxwp'
   },
   {
-    id: 'normal-2',
-    title: 'CAMPUS CORRIDORS & LIGHTS',
+    id: 'debate-2',
+    title: 'EVENT JUDGES',
     category: 'NORMAL',
     src: 'https://i.ibb.co/ZR5VWvHg/NORMAL1.jpg',
     fallbackUrl: 'https://ibb.co/rKYm4qbp'
   },
   {
-    id: 'normal-3',
-    title: 'STUDENT CELEBRATIONS',
-    category: 'NORMAL',
-    src: 'https://i.ibb.co/fYzQjSnh/NORMAL2.jpg',
-    fallbackUrl: 'https://ibb.co/jvPHn5Wc'
-  },
-  {
-    id: 'normal-4',
-    title: 'CAMPUS DECORATIONS',
-    category: 'NORMAL',
-    src: 'https://i.ibb.co/FdSYrNm/NORMAL3.jpg',
-    fallbackUrl: 'https://ibb.co/CSk9cNm'
-  },
-  {
-    id: 'normal-5',
-    title: 'EVENING TECH VIBES',
+    id: 'debate-3',
+    title: 'DEBATE COMPETITION ROUND 2',
     category: 'NORMAL',
     src: 'https://i.ibb.co/5XSwmCpH/NORMAL4.jpg',
     fallbackUrl: 'https://ibb.co/SDMGbHYC'
@@ -97,43 +145,13 @@ const GALLERY_ITEMS: GalleryItem[] = [
     category: 'ENDING PIC',
     src: 'https://i.ibb.co/YFNZGJGY/ENDING-PIC-1.jpg',
     fallbackUrl: 'https://ibb.co/tTHX5n5k'
-  },
-
-  // QUIZ
-  {
-    id: 'quiz-1',
-    title: 'MINDSPARK TRIVIA ROUND',
-    category: 'QUIZ',
-    src: 'https://i.ibb.co/8LWKP7wZ/QUIZ.jpg',
-    fallbackUrl: 'https://ibb.co/RkxvQDKw'
-  },
-  {
-    id: 'quiz-2',
-    title: 'MINDSPARK FINAL CHAMPIONS',
-    category: 'QUIZ',
-    src: 'https://i.ibb.co/20fCcQMS/QUIZ1.jpg',
-    fallbackUrl: 'https://ibb.co/ZRkFcPgS'
-  },
-
-  // SPEECH
-  {
-    id: 'speech-1',
-    title: 'INSPIRATIONAL KEYNOTE ADDRESS',
-    category: 'SPEECH',
-    src: 'https://i.ibb.co/xKXYvk10/SPEECH-BG-SIR.jpg',
-    fallbackUrl: 'https://ibb.co/bjQFh0sZ'
   }
 ];
 
-const CATEGORIES = ['ALL', 'AUCTION', 'CODING', 'QUIZ', 'SPEECH', 'NORMAL', 'ENDING PIC'] as const;
-
 export default function Gallery({ onBack }: Props) {
-  const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [activeModalIdx, setActiveModalIdx] = useState<number | null>(null);
 
-  const filteredItems = selectedCategory === 'ALL'
-    ? GALLERY_ITEMS
-    : GALLERY_ITEMS.filter(item => item.category === selectedCategory);
+  const filteredItems = GALLERY_ITEMS;
 
   const activeItem = activeModalIdx !== null ? filteredItems[activeModalIdx] : null;
 
@@ -377,17 +395,12 @@ export default function Gallery({ onBack }: Props) {
       `}</style>
 
       <div className="gallery-container">
-        {/* Category Filter Tabs */}
-        <div className="category-tab-bar">
-          {CATEGORIES.map(cat => (
-            <button
-              key={cat}
-              className={`category-tab-btn ${selectedCategory === cat ? 'active' : ''}`}
-              onClick={() => setSelectedCategory(cat)}
-            >
-              {cat === 'ENDING PIC' ? 'HIGHLIGHTS' : cat}
-            </button>
-          ))}
+        {/* Sleek Top Header Label */}
+        <div className="relative pt-2 pb-8 flex flex-col items-center justify-center text-center space-y-2">
+          <h1 className="text-3xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-200 to-purple-300 font-mono tracking-widest uppercase drop-shadow-[0_0_25px_rgba(0,243,255,0.4)]">
+            GALLERY
+          </h1>
+          <div className="w-24 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent rounded-full shadow-[0_0_15px_rgba(0,243,255,0.6)] mt-2"></div>
         </div>
 
         {/* 4:3 Aspect Ratio Photo Grid */}
