@@ -24,6 +24,26 @@ interface EventData {
   Time: string;
 }
 
+const EVENT_RULES_LINKS: Record<string, string> = {
+  syntaxx: 'https://ibb.co/Z69WbqC2',
+  mindspark: 'https://ibb.co/v9M8dpD',
+  bidquest: 'https://ibb.co/spH899Sy',
+  'carlsen-chess': 'https://ibb.co/spH899Sy',
+  chess: 'https://ibb.co/spH899Sy',
+  lensverse: 'https://ibb.co/MxCRd9hg',
+  techtalk: 'https://ibb.co/Z69WbqC2'
+};
+
+const EVENT_DESCRIPTIONS: Record<string, string> = {
+  bidquest: 'This is a cricket auction event where you step into the shoes of an IPL franchise owner. Manage your virtual purse, outbid your rivals, and use your cricket IQ to strategically assemble a championship-winning squad.',
+  syntaxx: 'This is a coding competition where you put your programming and problem-solving skills to the test. Tackle challenging algorithmic problems, write clean and efficient code, and race against the clock to claim victory.',
+  mindspark: 'This is a quiz event featuring a wide variety of questions across multiple domains. Put your general knowledge, quick thinking, and intellect to the test, race against the clock, and outsmart your opponents to claim ultimate victory.',
+  'carlsen-chess': 'This is a chess competition where you put your tactical brilliance and strategic thinking to the test. Outthink your opponents move by move, master the board, and checkmate your way to the championship.',
+  chess: 'This is a chess competition where you put your tactical brilliance and strategic thinking to the test. Outthink your opponents move by move, master the board, and checkmate your way to the championship.',
+  lensverse: 'This is an online photography competition where you capture stunning moments, express your unique vision, and showcase your creative eye through the lens to win recognition.',
+  techtalk: 'Join top industry visionaries and tech pioneers for an inspiring keynote seminar exploring AI breakthroughs, future tech stacks, and career pathways in modern software engineering.'
+};
+
 const EVENTS_DATA: EventData[] = [
   {
     id: 'techtalk',
@@ -1145,17 +1165,21 @@ export default function Events({ onBack: _onBack }: Props) {
         }
 
         .mobile-tab-content-box {
-          background: rgba(0, 0, 0, 0.5);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          border-radius: 12px;
+          background: rgba(0, 0, 0, 0.65);
+          border: 1px solid rgba(0, 243, 255, 0.25);
+          border-radius: 14px;
           padding: 16px;
           color: #d4d4d8;
           font-size: 0.82rem;
-          line-height: 1.6;
+          line-height: 1.65;
           text-align: left;
           margin-bottom: 20px;
           width: 100%;
+          max-height: 380px;
+          overflow-y: auto;
           box-sizing: border-box;
+          -webkit-overflow-scrolling: touch;
+          box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
         }
 
         .mobile-cta-btn {
@@ -1457,12 +1481,15 @@ export default function Events({ onBack: _onBack }: Props) {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-gray-300 leading-relaxed font-sans">
               <div className="flex flex-col gap-2.5 p-3.5 rounded-xl bg-white/[0.02] border border-white/5">
-                <p><strong className="text-purple-400">1. Verification:</strong> Valid college student photo ID is strictly required at venue entry points.</p>
-                <p><strong className="text-purple-400">2. Decorum:</strong> Any form of cheating, malicious code injection, or misconduct results in instant expulsion.</p>
+                <p><strong className="text-purple-400">1. Reporting Time:</strong> All participants must report to the campus by 9:30 AM on the event day. Late reporting may result in disqualification.</p>
+                <p><strong className="text-purple-400">2. On-Spot Registration:</strong> On-spot registration is available after online registration closes, strictly subject to seat availability.</p>
+                <p><strong className="text-purple-400">3. Verification & ID:</strong> Valid college student photo ID is strictly required at venue entry points.</p>
+                <p><strong className="text-purple-400">4. Non-Refundable:</strong> All paid event registration slots are non-refundable and non-transferable.</p>
               </div>
               <div className="flex flex-col gap-2.5 p-3.5 rounded-xl bg-white/[0.02] border border-white/5">
-                <p><strong className="text-purple-400">3. Non-Refundable:</strong> All paid event registration slots are non-refundable and non-transferable.</p>
-                <p><strong className="text-purple-400">4. Certificates:</strong> Certificates of participation will be issued only to participants who complete their track.</p>
+                <p><strong className="text-purple-400">5. Lunch Provision:</strong> Lunch is provided only to participants who registered for at least one event during online registration.</p>
+                <p><strong className="text-purple-400">6. Seminar & Lunch Exclusions:</strong> Any participant may register for the seminar (Tech Talk). However, lunch will be provided only to participants registered for at least one other event; seminar-only participants are not eligible for lunch.</p>
+                <p><strong className="text-purple-400">7. Event Head Communication:</strong> Each event has a designated Event Head; participants must contact only the respective Event Head for any event-related queries or issues. Please do not contact the Event Head of another event regarding matters unrelated to their event.</p>
               </div>
             </div>
           </div>
@@ -1547,17 +1574,36 @@ export default function Events({ onBack: _onBack }: Props) {
             {/* 5. Tab Content Box */}
             <div className="mobile-tab-content-box">
               {activeTab === 'details' && (
-                <p>
-                  This section covers the core timeline structure, setup protocols, and target deliverables for the {selectedEvent.name} technical track. Learn key strategies, align workspace dependencies, and prepare to interact with team coaches.
+                <p className="text-xs text-gray-200 leading-relaxed font-sans m-0">
+                  {EVENT_DESCRIPTIONS[selectedEvent.id.toLowerCase()] || selectedEvent.notes || `Welcome to ${selectedEvent.name}. Get ready to showcase your skills.`}
                 </p>
               )}
               {activeTab === 'rules' && (
-                <ul className="list-disc pl-5 space-y-1.5">
-                  <li>All participants must adhere to general techfest decorum.</li>
-                  <li>Submissions must be finalized before the strict schedule timeline bounds.</li>
-                  <li>Code snippets or presentation files must be original work.</li>
-                  <li>Team formations must fall within the range parameters specified ({selectedEvent.requires_team ? `Max ${selectedEvent.max_team_size} members` : 'Individual'}).</li>
-                </ul>
+                <div className="space-y-3">
+                  <ul className="list-disc pl-5 space-y-1.5 text-xs text-gray-200">
+                    <li>All participants must adhere to general techfest decorum.</li>
+                    <li>Submissions must be finalized before the strict schedule timeline bounds.</li>
+                    <li>Code snippets or presentation files must be original work.</li>
+                    <li>Team formations must fall within the range parameters specified ({selectedEvent.requires_team ? `Max ${selectedEvent.max_team_size} members` : 'Individual'}).</li>
+                  </ul>
+
+                  {EVENT_RULES_LINKS[selectedEvent.id.toLowerCase()] && (
+                    <div className="pt-3 border-t border-cyan-500/25 mt-3">
+                      <span className="text-[10px] font-mono text-cyan-400 uppercase font-bold block mb-1.5">
+                        OFFICIAL RULES POSTER / DOCUMENT:
+                      </span>
+                      <a
+                        href={EVENT_RULES_LINKS[selectedEvent.id.toLowerCase()]}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-pink-500/20 hover:from-cyan-500/35 hover:to-purple-500/35 border border-cyan-400/50 text-cyan-200 font-mono text-xs font-bold transition-all shadow-[0_0_15px_rgba(0,243,255,0.2)] active:scale-95 cursor-pointer no-underline"
+                      >
+                        <span>📜</span>
+                        <span>VIEW {selectedEvent.name} RULES POSTER &rarr;</span>
+                      </a>
+                    </div>
+                  )}
+                </div>
               )}
               {activeTab === 'contact' && (
                 <p>
@@ -1565,12 +1611,18 @@ export default function Events({ onBack: _onBack }: Props) {
                 </p>
               )}
               {activeTab === 'terms' && (
-                <ul className="list-disc pl-5 space-y-1.5">
-                  <li>All event registration fees are strictly non-refundable and non-transferable.</li>
-                  <li>Participants must produce valid College Student Photo ID cards at venue registration desks.</li>
-                  <li>Plagiarism, malicious exploits, or misconduct result in instant forfeiture and track expulsion.</li>
-                  <li>Organizers reserve the right to revise schedule timelines or disqualification parameters if required.</li>
-                </ul>
+                <ol className="list-decimal pl-4 sm:pl-5 space-y-2.5 text-[11.5px] sm:text-xs text-gray-200 font-sans leading-relaxed">
+                  <li className="pl-1"><strong className="text-purple-300">Non-Refundable Policy:</strong> All event registration fees are strictly non-refundable and non-transferable.</li>
+                  <li className="pl-1"><strong className="text-purple-300">ID Verification:</strong> Participants must produce valid College Student Photo ID cards at venue registration desks.</li>
+                  <li className="pl-1"><strong className="text-purple-300">Decorum & Conduct:</strong> Plagiarism, malicious exploits, or misconduct result in instant forfeiture and track expulsion.</li>
+                  <li className="pl-1"><strong className="text-purple-300">Schedule Amendments:</strong> Organizers reserve the right to revise schedule timelines or disqualification parameters if required.</li>
+                  <li className="pl-1"><strong className="text-purple-300">On-Spot Registration:</strong> On-spot registration is available after online registration closes, subject to seat availability.</li>
+                  <li className="pl-1"><strong className="text-purple-300">Lunch Eligibility:</strong> Lunch is provided only to participants who registered for at least one event during online registration.</li>
+                  <li className="pl-1"><strong className="text-purple-300">Event Head Protocol:</strong> Each event has a designated Event Head; participants must contact only the respective Event Head for any event-related queries or issues.</li>
+                  <li className="pl-1"><strong className="text-purple-300">No Cross-Event Contact:</strong> Please do not contact the Event Head of another event regarding matters unrelated to their event.</li>
+                  <li className="pl-1"><strong className="text-purple-300">Reporting Time:</strong> All participants must report to the campus by 9:30 AM on the event day. Late reporting may result in disqualification from the event.</li>
+                  <li className="pl-1"><strong className="text-purple-300">Seminar & Lunch Rule:</strong> Any participant may register for the seminar. Lunch will be provided only to participants registered for at least one other event; seminar-only participants are not eligible for lunch.</li>
+                </ol>
               )}
             </div>
 
