@@ -926,12 +926,12 @@ const NavDock: React.FC<Props> = ({ onNavigate, activeTargetId, carState, isPage
 
         {/* Top Right: Glassmorphic ProfileDropdown (if signed up) or prominent "SIGN IN" button (if not signed up) */}
         <div className="flex items-center justify-end gap-3 hud-interactive relative" style={{ pointerEvents: 'auto', zIndex: 9999 }}>
-          {isSignedUp ? (
+          {(isSignedUp || !!(typeof window !== 'undefined' && (localStorage.getItem('access_token') || localStorage.getItem('user_email')))) ? (
             <ProfileDropdown />
           ) : (
             <button 
               onClick={() => onNavigate('register')}
-              className="signup-pill-btn hud-interactive"
+              className="signup-pill-btn hud-interactive cursor-pointer"
               disabled={isNavDisabled}
             >
               SIGN IN

@@ -96,16 +96,16 @@ function AppContent() {
     const now = Date.now();
     navLockRef.current = { id: 'register', time: now };
 
+    setActiveTargetId('register');
     setIsWiping(true);
     setTimeout(() => {
       navigate('/register');
       setCameraMode('PAGE');
-      setCarState('ARRIVED'); // Car stops when register page opens
-      setActiveTargetId('register');
+      setCarState('ARRIVED');
       setTimeout(() => {
         setIsWiping(false);
       }, 100);
-    }, 1000);
+    }, 250);
   };
 
   const handleNavigate = (id: string) => {
