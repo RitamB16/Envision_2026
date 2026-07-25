@@ -81,7 +81,7 @@ const CameraRig = ({ activeTargetId, introFinished, cameraMode }: Props) => {
       initIntroPosNeeded.current = true;
     }
 
-    if (cameraMode === 'CINEMATIC' && activeTargetId !== null) {
+    if ((cameraMode === 'CINEMATIC' || cameraMode === 'PAGE') && activeTargetId !== null) {
       const dest = destinations.find(d => d.id === activeTargetId);
       if (dest) {
         const mx = dest.cameraOffset[0];
@@ -92,7 +92,7 @@ const CameraRig = ({ activeTargetId, introFinished, cameraMode }: Props) => {
           x: mx,
           y: my,
           z: mz,
-          duration: 1.5,
+          duration: 1.2,
           ease: 'power3.inOut'
         });
         
@@ -100,7 +100,7 @@ const CameraRig = ({ activeTargetId, introFinished, cameraMode }: Props) => {
           x: dest.lookAt[0],
           y: isMobile ? (dest.lookAt[1] + 1.0) : dest.lookAt[1],
           z: dest.lookAt[2],
-          duration: 1.5,
+          duration: 1.2,
           ease: 'power3.inOut'
         });
       }
