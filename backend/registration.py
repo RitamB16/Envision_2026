@@ -122,20 +122,25 @@ def register_solo(
             db.commit()
             db.refresh(participant)
 
-    # Check if already registered successfully (SUCCESS or COMPLETED)
+    # Check for pre-existing registration record for this participant and event (Idempotent Resumption)
     existing_reg = db.query(models.Registration).filter(
         models.Registration.participant_id == participant.id,
-        models.Registration.event_name == payload.event_name,
-        models.Registration.payment_status.in_(["SUCCESS", "COMPLETED"])
+        models.Registration.event_name == payload.event_name
     ).first()
+
+    price_amount = get_event_price(db, payload.event_name)
+
     if existing_reg:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"You are already registered for {payload.event_name}."
-        )
+        return {
+            "status": "success" if existing_reg.payment_status in ("PENDING", "UNPAID") else "already_registered",
+            "registration_id": str(existing_reg.reg_id),
+            "order_id": existing_reg.payment_order_id,
+            "amount": price_amount,
+            "payment_status": existing_reg.payment_status,
+            "is_free": price_amount == 0
+        }
 
     # Create Direct Order (Free or UPI)
-    price_amount = get_event_price(db, payload.event_name)
     price_in_paise = price_amount * 100
     
     if price_in_paise == 0:
@@ -145,24 +150,45 @@ def register_solo(
         order_id = f"ENV26-ORD-{uuid.uuid4().hex[:6].upper()}"
         payment_status_val = "PENDING"
 
-    # Insert registration record
-    registration = models.Registration(
-        participant_id=participant.id,
-        event_name=payload.event_name,
-        payment_order_id=order_id,
-        payment_status=payment_status_val
-    )
-    db.add(registration)
-    db.commit()
-    db.refresh(registration)
+    # Insert registration record with SQL IntegrityError Concurrency Catching
+    try:
+        registration = models.Registration(
+            participant_id=participant.id,
+            event_name=payload.event_name,
+            payment_order_id=order_id,
+            payment_status=payment_status_val
+        )
+        db.add(registration)
+        db.commit()
+        db.refresh(registration)
 
-    return {
-        "status": "success",
-        "registration_id": str(registration.reg_id),
-        "order_id": order_id,
-        "amount": price_amount,
-        "is_free": price_amount == 0
-    }
+        return {
+            "status": "success",
+            "registration_id": str(registration.reg_id),
+            "order_id": order_id,
+            "amount": price_amount,
+            "payment_status": payment_status_val,
+            "is_free": price_amount == 0
+        }
+    except Exception as err:
+        db.rollback()
+        conflict_reg = db.query(models.Registration).filter(
+            models.Registration.participant_id == participant.id,
+            models.Registration.event_name == payload.event_name
+        ).first()
+        if conflict_reg:
+            return {
+                "status": "success",
+                "registration_id": str(conflict_reg.reg_id),
+                "order_id": conflict_reg.payment_order_id,
+                "amount": price_amount,
+                "payment_status": conflict_reg.payment_status,
+                "is_free": price_amount == 0
+            }
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to register due to database concurrency conflict."
+        )
 
 
 @router.post("/register/team")

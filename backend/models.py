@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import Column, String, Boolean, DateTime, Integer, ForeignKey
+from sqlalchemy import Column, String, Boolean, DateTime, Integer, ForeignKey, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import synonym, relationship, foreign
 from database import Base
@@ -62,6 +62,7 @@ class Team(Base):
 
 class Registration(Base):
     __tablename__ = "registrations"
+    __table_args__ = (UniqueConstraint('participant_id', 'event_name', name='uix_participant_event'),)
 
     reg_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     participant_id = Column(UUID(as_uuid=True), ForeignKey("participants.id", ondelete="CASCADE"), nullable=False)

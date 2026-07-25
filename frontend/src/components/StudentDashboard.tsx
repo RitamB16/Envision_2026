@@ -1,5 +1,5 @@
 import { useState, useEffect, FormEvent, MouseEvent as ReactMouseEvent } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { api, UserProfile, EventRegistration, clearAuthSession } from '../utils/api';
 import { formatISTTimestamp } from '../utils/timeUtils';
 
@@ -8,6 +8,7 @@ interface StudentDashboardProps {
 }
 
 export default function StudentDashboard({ onClose }: StudentDashboardProps) {
+  const navigate = useNavigate();
   const location = useLocation();
   const stateData = (location.state as any) || {};
   const justRegisteredEvent = stateData.justRegisteredEvent;
@@ -478,6 +479,60 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
                                 <div style={{ gridColumn: '1 / -1' }}>TEAM MEMBERS: <strong style={{ color: '#a7f3d0' }}>{reg.team_members}</strong></div>
                               )}
                             </div>
+
+                            {/* Dynamic Action Button & State Mapping */}
+                            {reg.payment_status === 'PENDING' || reg.payment_status === 'UNPAID' ? (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (onClose) onClose();
+                                  navigate('/checkout', {
+                                    state: {
+                                      registrationId: reg.id,
+                                      eventName,
+                                      priceAmount: reg.event?.price_amount || 49
+                                    }
+                                  });
+                                }}
+                                style={{
+                                  marginTop: '8px',
+                                  padding: '8px 12px',
+                                  borderRadius: '8px',
+                                  backgroundColor: 'rgba(0, 243, 255, 0.15)',
+                                  border: '1px solid rgba(0, 243, 255, 0.4)',
+                                  color: '#00f3ff',
+                                  fontSize: '11px',
+                                  fontWeight: 900,
+                                  fontFamily: 'monospace',
+                                  cursor: 'pointer',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.05em',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: '6px'
+                                }}
+                              >
+                                ⚡ COMPLETE PAYMENT & SUBMIT UTR &rarr;
+                              </button>
+                            ) : isPendingVerification ? (
+                              <div
+                                style={{
+                                  marginTop: '8px',
+                                  padding: '7px 10px',
+                                  borderRadius: '8px',
+                                  backgroundColor: 'rgba(245, 158, 11, 0.12)',
+                                  border: '1px solid rgba(245, 158, 11, 0.35)',
+                                  color: '#fbbf24',
+                                  fontSize: '10.5px',
+                                  fontWeight: 800,
+                                  fontFamily: 'monospace',
+                                  textAlign: 'center'
+                                }}
+                              >
+                                ⏳ MANUAL BANK AUDIT IN PROGRESS (WITHIN 2 HOURS)
+                              </div>
+                            ) : null}
                           </div>
                         );
                       })}
