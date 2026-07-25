@@ -139,10 +139,10 @@ def register_solo(
     price_in_paise = price_amount * 100
     
     if price_in_paise == 0:
-        order_id = f"free_order_{uuid.uuid4().hex[:12]}"
+        order_id = f"ENV26-FREE-{uuid.uuid4().hex[:6].upper()}"
         payment_status_val = "COMPLETED"
     else:
-        order_id = f"upi_order_{uuid.uuid4().hex[:12]}"
+        order_id = f"ENV26-ORD-{uuid.uuid4().hex[:6].upper()}"
         payment_status_val = "PENDING"
 
     # Insert registration record
@@ -251,10 +251,10 @@ def register_team(
         price_in_paise = price_amount * 100
         
         if price_in_paise == 0:
-            order_id = f"free_order_{uuid.uuid4().hex[:12]}"
+            order_id = f"ENV26-FREE-{uuid.uuid4().hex[:6].upper()}"
             payment_status_val = "COMPLETED"
         else:
-            order_id = f"upi_order_{uuid.uuid4().hex[:12]}"
+            order_id = f"ENV26-ORD-{uuid.uuid4().hex[:6].upper()}"
             payment_status_val = "PENDING"
 
         # 5. Insert registration rows for leader and teammates

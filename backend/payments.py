@@ -152,7 +152,7 @@ def create_upi_order(
     event = db.query(models.Event).filter(models.Event.id == reg.event_name).first()
     price_amount = event.price_amount if event else 49
 
-    order_id = reg.payment_order_id or f"upi_order_{uuid.uuid4().hex[:10]}"
+    order_id = reg.payment_order_id or f"ENV26-ORD-{uuid.uuid4().hex[:6].upper()}"
     if not reg.payment_order_id:
         reg.payment_order_id = order_id
         db.commit()

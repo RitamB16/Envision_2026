@@ -16,20 +16,22 @@ from limiter import limiter
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 def generate_fest_id(db: Session) -> str:
-    """Generates an auto-incrementing Fest ID in format ENV-2026-001, ENV-2026-002, etc."""
+    """Generates a short, clean Envision-themed Fest ID in format ENV26-001, ENV26-002, etc."""
     users = db.query(User).filter(User.fest_id.isnot(None)).all()
     max_num = 0
     for u in users:
-        if u.fest_id and "ENV-2026-" in u.fest_id.upper():
-            suffix = u.fest_id.upper().split("ENV-2026-")[-1]
-            if suffix.isdigit():
-                max_num = max(max_num, int(suffix))
+        if u.fest_id:
+            fid_upper = u.fest_id.upper()
+            if "ENV26-" in fid_upper or "ENV-2026-" in fid_upper:
+                suffix = fid_upper.replace("ENV-2026-", "").replace("ENV26-", "")
+                if suffix.isdigit():
+                    max_num = max(max_num, int(suffix))
     next_num = max_num + 1
-    return f"ENV-2026-{next_num:03d}"
+    return f"ENV26-{next_num:03d}"
 
 def ensure_valid_fest_id(user: User, db: Session) -> bool:
     """Checks if a user has a valid Fest ID, and generates one if they don't."""
-    if not user.fest_id or not user.fest_id.startswith("ENV-2026-") or not user.fest_id.replace("ENV-2026-", "").isdigit():
+    if not user.fest_id or not (user.fest_id.startswith("ENV26-") or user.fest_id.startswith("ENV-2026-")):
         user.fest_id = generate_fest_id(db)
         return True
     return False

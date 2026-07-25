@@ -1,6 +1,7 @@
 import { useState, useEffect, FormEvent, MouseEvent as ReactMouseEvent } from 'react';
 import { useLocation } from 'react-router-dom';
 import { api, UserProfile, EventRegistration, clearAuthSession } from '../utils/api';
+import { formatISTTimestamp } from '../utils/timeUtils';
 
 interface StudentDashboardProps {
   onClose?: () => void;
@@ -463,6 +464,7 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
                             {/* Details Grid */}
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '6px', fontSize: '11px', color: '#9ca3af', fontFamily: 'monospace', paddingTop: '6px', borderTop: '1px solid rgba(255, 255, 255, 0.08)', wordBreak: 'break-word' }}>
                               <div>REG ID: <strong style={{ color: '#38bdf8' }}>{reg.id}</strong></div>
+                              <div>TIME (IST): <strong style={{ color: '#a7f3d0' }}>{formatISTTimestamp((reg as any).created_at || (reg as any).timestamp)}</strong></div>
                               {reg.food_preference && (
                                 <div>FOOD PREF: <strong style={{ color: '#f472b6' }}>{reg.food_preference}</strong></div>
                               )}

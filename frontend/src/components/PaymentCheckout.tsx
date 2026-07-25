@@ -2,6 +2,7 @@ import { useState, useEffect, ClipboardEvent, KeyboardEvent } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { api, RAZORPAY_UPI_ID } from '../utils/api';
 import { useRegistrationContext } from '../context/RegistrationContext';
+import { formatISTTimestamp } from '../utils/timeUtils';
 
 export type PaymentStatus = 'IDLE' | 'PROCESSING' | 'SUCCESS' | 'FAILED';
 
@@ -245,7 +246,11 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
                   ⏳ PENDING MANUAL BANK AUDIT
                 </span>
               </div>
-              <p className="text-[11px] text-gray-300 font-sans leading-relaxed border-t border-white/10 pt-2 m-0">
+              <div className="flex items-center justify-between text-[11px] text-gray-400 font-mono border-b border-white/5 pb-1">
+                <span>SUBMITTED TIME:</span>
+                <strong className="text-cyan-300">{formatISTTimestamp()}</strong>
+              </div>
+              <p className="text-[11px] text-gray-300 font-sans leading-relaxed pt-1 m-0">
                 Your registration is currently in <strong>PENDING_VERIFICATION</strong>. Our accounts team manually verifies your 12-digit UTR against official bank statements within <strong>2 hours</strong> before granting final approval.
               </p>
               <div className="w-full bg-gray-800 rounded-full h-1.5 overflow-hidden mt-2">
@@ -333,16 +338,7 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
                 </span>
               </div>
 
-              {/* MOBILE VIEW: Prominent 1-Tap UPI Intent Link Button */}
-              <div className="block md:hidden">
-                <a
-                  href={upiDeepLink}
-                  className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 hover:from-cyan-300 hover:to-purple-500 text-black font-black text-xs sm:text-sm uppercase font-mono tracking-wider shadow-[0_0_25px_rgba(0,243,255,0.3)] transition-all flex items-center justify-center gap-2 cursor-pointer no-underline box-border text-center"
-                >
-                  <span className="text-lg">⚡</span>
-                  <span className="truncate">OPEN UPI APP & PAY (GPay / PhonePe / Paytm)</span>
-                </a>
-              </div>
+              {/* Dynamic QR Code & Copyable VPA ID */}
 
               {/* DESKTOP / GENERAL VIEW: QR Code & Copyable VPA ID */}
               <div className="flex flex-col sm:flex-row items-center gap-3 bg-[#0a051d] p-3 rounded-lg border border-cyan-500/20">
