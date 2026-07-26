@@ -8,7 +8,7 @@ interface Props {
 interface GalleryItem {
   id: string;
   title: string;
-  category: 'AUCTION' | 'CODING' | 'NORMAL' | 'ENDING PIC' | 'QUIZ' | 'SPEECH';
+  category: 'AUCTION' | 'CODING' | 'DEBATE' | 'ENDING PIC' | 'QUIZ' | 'SPEECH' | 'NORMAL' | 'WELCOME';
   src: string;
   fallbackUrl: string;
 }
@@ -18,7 +18,7 @@ const GALLERY_ITEMS: GalleryItem[] = [
   {
     id: 'welcome-ceremony-1',
     title: 'WELCOME CEREMONY',
-    category: 'NORMAL',
+    category: 'WELCOME',
     src: 'https://i.ibb.co/r2zwFJqm/WELCOME-CEREMONY.jpg',
     fallbackUrl: 'https://ibb.co/r2zwFJqm'
   },
@@ -112,21 +112,21 @@ const GALLERY_ITEMS: GalleryItem[] = [
   {
     id: 'debate-1',
     title: 'DEBATE COMPETITION',
-    category: 'NORMAL',
+    category: 'DEBATE',
     src: 'https://i.ibb.co/m51Vw4YV/NORMAL.jpg',
     fallbackUrl: 'https://ibb.co/ZztpPxwp'
   },
   {
     id: 'debate-2',
     title: 'EVENT JUDGES',
-    category: 'NORMAL',
+    category: 'DEBATE',
     src: 'https://i.ibb.co/ZR5VWvHg/NORMAL1.jpg',
     fallbackUrl: 'https://ibb.co/rKYm4qbp'
   },
   {
     id: 'debate-3',
     title: 'DEBATE COMPETITION ROUND 2',
-    category: 'NORMAL',
+    category: 'DEBATE',
     src: 'https://i.ibb.co/5XSwmCpH/NORMAL4.jpg',
     fallbackUrl: 'https://ibb.co/SDMGbHYC'
   },
