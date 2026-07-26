@@ -257,42 +257,47 @@ def admin_approve_utr(
     # Auto-enroll in Tech Talk & dispatch confirmation email upon successful payment approval
     if is_approval:
         from registration import auto_enroll_techtalk
-        from email_utils import dispatch_registration_approval_email, normalize_event_id
+        from email_utils import dispatch_registration_approval_email, dispatch_techtalk_confirmation_email, normalize_event_id
 
-        auto_enroll_techtalk(db, reg.participant_id)
-
-        recipients = []
-        participant_user = db.query(models.User).filter(models.User.id == reg.participant_id).first()
-        if participant_user and participant_user.email:
-            recipients.append(participant_user.email)
-
+        target_regs = [reg]
         if reg.team_id:
             team_regs = db.query(models.Registration).filter(models.Registration.team_id == reg.team_id).all()
-            for tm_reg in team_regs:
-                auto_enroll_techtalk(db, tm_reg.participant_id)
-                tm_user = db.query(models.User).filter(models.User.id == tm_reg.participant_id).first()
-                if tm_user and tm_user.email and tm_user.email not in recipients:
-                    recipients.append(tm_user.email)
+            if team_regs:
+                target_regs = team_regs
 
-        participant_name = (participant_user.full_name or participant_user.name) if participant_user else "Participant"
-        fest_id = participant_user.fest_id if (participant_user and participant_user.fest_id) else "ENV-2026-001"
-        canonical_event_id = normalize_event_id(reg.event_name)
         utr_val = getattr(reg, "utr_number", None) or getattr(reg, "payment_order_id", None) or "VERIFIED"
+        canonical_event_id = normalize_event_id(reg.event_name)
+        clean_ev = reg.event_name.lower().replace(" ", "-").strip()
 
-        dispatch_registration_approval_email(
-            to_emails=recipients,
-            participant_name=participant_name,
-            fest_id=fest_id,
-            registration_id=str(reg.reg_id),
-            event_name=reg.event_name,
-            event_id=canonical_event_id,
-            utr_number=utr_val
-        )
+        for member_reg in target_regs:
+            member_reg.payment_status = target_status
+            auto_enroll_techtalk(db, member_reg.participant_id)
 
-        reg.email_sent = True
-        if reg.team_id:
-            for tm_reg in db.query(models.Registration).filter(models.Registration.team_id == reg.team_id).all():
-                tm_reg.email_sent = True
+            tm_user = db.query(models.User).filter(models.User.id == member_reg.participant_id).first()
+            if tm_user and tm_user.email:
+                tm_name = (tm_user.full_name or tm_user.name) or "Participant"
+                tm_fest_id = tm_user.fest_id or "ENV-2026-001"
+
+                if clean_ev in ("techtalk", "tech-talk"):
+                    sent_ok = dispatch_techtalk_confirmation_email(
+                        to_email=tm_user.email,
+                        participant_name=tm_name,
+                        fest_id=tm_fest_id,
+                        registration_id=str(member_reg.reg_id)
+                    )
+                else:
+                    sent_ok = dispatch_registration_approval_email(
+                        to_emails=[tm_user.email],
+                        participant_name=tm_name,
+                        fest_id=tm_fest_id,
+                        registration_id=str(member_reg.reg_id),
+                        event_name=member_reg.event_name,
+                        event_id=canonical_event_id,
+                        utr_number=utr_val
+                    )
+                if sent_ok:
+                    member_reg.email_sent = True
+
         db.commit()
 
     return {

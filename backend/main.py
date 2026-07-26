@@ -24,26 +24,45 @@ app = FastAPI(title=settings.PROJECT_NAME)
 
 async def keep_alive_ping():
     """
-    Keep-Alive Task: Pings the backend service every 10 minutes (600 seconds)
-    to prevent Render free tier from spinning down after 15 minutes of inactivity.
+    Keep-Alive Task: Pings the backend service every 3 minutes (180 seconds)
+    to prevent Render/cloud hosts from sleeping after inactivity.
+    Ensures 24/7 uptime for instant 30-second email sweeping!
     """
-    await asyncio.sleep(30)
-    render_url = os.getenv("RENDER_EXTERNAL_URL") or "https://envision-2026.onrender.com"
-    ping_url = f"{render_url.rstrip('/')}/ping"
+    await asyncio.sleep(15)
+    
+    urls_to_ping = [
+        os.getenv("RENDER_EXTERNAL_URL"),
+        os.getenv("BACKEND_URL"),
+        "https://envision-2026.onrender.com/ping",
+        "https://envision26.rkmrc.org/ping"
+    ]
+    
+    # Filter valid non-empty URLs
+    valid_urls = []
+    for u in urls_to_ping:
+        if u:
+            url_str = u if u.endswith("/ping") else f"{u.rstrip('/')}/ping"
+            if url_str not in valid_urls and url_str.startswith("http"):
+                valid_urls.append(url_str)
+
+    if not valid_urls:
+        valid_urls = ["http://127.0.0.1:8000/ping"]
 
     while True:
-        try:
-            def do_ping():
-                req = urllib.request.Request(ping_url, headers={"User-Agent": "Render-KeepAlive/1.0"})
-                with urllib.request.urlopen(req, timeout=10) as resp:
-                    return resp.getcode()
-            
-            status_code = await asyncio.to_thread(do_ping)
-            print(f"[Keep-Alive] Pinged {ping_url} -> Status {status_code}")
-        except Exception as e:
-            print(f"[Keep-Alive Notice] {e}")
-        
-        await asyncio.sleep(600)  # Ping every 10 minutes
+        for ping_url in valid_urls:
+            try:
+                def do_ping(target):
+                    req = urllib.request.Request(target, headers={"User-Agent": "Envision26-KeepAlive/2.0"})
+                    with urllib.request.urlopen(req, timeout=10) as resp:
+                        return resp.getcode()
+                
+                status_code = await asyncio.to_thread(do_ping, ping_url)
+                print(f"[Keep-Alive Active] Pinged {ping_url} -> Status {status_code}")
+                break  # Successful ping, break inner loop
+            except Exception as e:
+                print(f"[Keep-Alive Notice] Could not ping {ping_url}: {e}")
+
+        await asyncio.sleep(180)  # Ping every 3 minutes (180 seconds) to guarantee 24/7 server uptime
 
 
 @app.on_event("startup")
