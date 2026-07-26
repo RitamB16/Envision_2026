@@ -1,6 +1,4 @@
-import os
 import uuid
-import json
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy import func
@@ -14,24 +12,54 @@ from config import settings
 router = APIRouter(tags=["registration"])
 
 
+def normalize_event_id(name: str) -> str:
+    """Normalizes any event title variant to its canonical database Event ID."""
+    if not name:
+        return ""
+    clean = name.lower().replace("-", " ").strip()
+    if "chess" in clean or "carlsen" in clean:
+        return "carlsen-chess"
+    if "syntax" in clean or "coding" in clean:
+        return "syntaxx"
+    if "bid" in clean or "auction" in clean:
+        return "bidquest"
+    if "quiz" in clean or "mindspark" in clean:
+        return "mindspark"
+    if "lens" in clean or "photo" in clean:
+        return "lensverse"
+    if "talk" in clean or "seminar" in clean:
+        return "techtalk"
+    return clean.replace(" ", "-")
+
+
+CANONICAL_PRICES: dict = {
+    "techtalk": 0,
+    "syntaxx": 39,
+    "mindspark": 49,
+    "bidquest": 149,
+    "lensverse": 49,
+    "carlsen-chess": 49
+}
+
+CANONICAL_CAPACITIES: dict = {
+    "techtalk": 1000,
+    "syntaxx": 50,
+    "mindspark": 50,
+    "bidquest": 70,
+    "lensverse": 200,
+    "carlsen-chess": 50
+}
+
+
 def get_event_price(db: Session, event_name: str) -> int:
-    normalized = event_name.lower().replace(" ", "-").strip()
-    event = db.query(models.Event).filter(models.Event.id == normalized).first()
-    if event:
+    canonical_id = normalize_event_id(event_name)
+    event = db.query(models.Event).filter(
+        (models.Event.id == canonical_id) |
+        (models.Event.name.ilike(event_name))
+    ).first()
+    if event and event.price_amount is not None:
         return event.price_amount
-    
-    # Standard pricing mapping
-    prices = {
-        "techtalk": 0,
-        "tech talk": 0,
-        "syntaxx": 39,
-        "mindspark": 49,
-        "bidquest": 149,
-        "lensverse": 49,
-        "carlsen-chess": 49,
-        "carlsen chess": 49
-    }
-    return prices.get(event_name.lower().strip(), prices.get(normalized, 39))
+    return CANONICAL_PRICES.get(canonical_id, 49)
 
 
 def generate_env_id(db: Session) -> str:
@@ -39,30 +67,18 @@ def generate_env_id(db: Session) -> str:
     return f"ENV-2026-{count:03d}"
 
 
-EVENT_CAPACITY_LIMITS = {
-    "techtalk": 1000,
-    "tech talk": 1000,
-    "syntaxx": 50,
-    "mindspark": 50,
-    "bidquest": 70,
-    "lensverse": 200,
-    "carlsen-chess": 50,
-    "carlsen chess": 50,
-    "chess": 50
-}
-
 def check_event_capacity(db: Session, event_name: str):
     """
     Checks event capacity BEFORE generating a Razorpay order.
     Counts active registrations safely across SUCCESS, COMPLETED, and PENDING statuses.
     """
-    normalized = event_name.lower().replace(" ", "-").strip()
-    event = db.query(models.Event).filter(models.Event.id == normalized).first()
+    canonical_id = normalize_event_id(event_name)
+    event = db.query(models.Event).filter(models.Event.id == canonical_id).first()
     
     if event and hasattr(event, "max_capacity") and event.max_capacity is not None:
         max_cap = event.max_capacity
     else:
-        max_cap = EVENT_CAPACITY_LIMITS.get(event_name.lower().strip(), EVENT_CAPACITY_LIMITS.get(normalized, 100))
+        max_cap = CANONICAL_CAPACITIES.get(canonical_id, 100)
 
     # Unlimited capacity for Tech Talk
     if max_cap >= 999999 or max_cap == 0:
@@ -70,7 +86,7 @@ def check_event_capacity(db: Session, event_name: str):
 
     # Count active rows including COMPLETED, SUCCESS, and PENDING
     active_count = db.query(models.Registration).filter(
-        models.Registration.event_name == event_name,
+        models.Registration.event_name.ilike(event_name),
         models.Registration.payment_status.in_(["SUCCESS", "COMPLETED", "PENDING"])
     ).count()
 

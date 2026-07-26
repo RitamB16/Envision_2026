@@ -10,6 +10,7 @@ from database import get_db
 import models
 from security import get_current_user
 from limiter import limiter
+from registration import normalize_event_id
 
 router = APIRouter(prefix="/payments", tags=["payments"])
 
@@ -121,6 +122,16 @@ def verify_upi_payment(
     }
 
 
+def find_event_by_registration_name(db: Session, reg_event_name: str) -> Optional[models.Event]:
+    if not reg_event_name:
+        return None
+    canonical_id = normalize_event_id(reg_event_name)
+    return db.query(models.Event).filter(
+        (models.Event.id == canonical_id) |
+        (models.Event.name.ilike(reg_event_name))
+    ).first()
+
+
 @router.post("/create-order")
 @limiter.limit("10/minute")
 def create_upi_order(
@@ -149,25 +160,7 @@ def create_upi_order(
             detail="Registration is already paid and completed."
         )
 
-    event = db.query(models.Event).filter(
-        (models.Event.id == reg.event_name) |
-        (models.Event.id == getattr(reg, "event_id", "")) |
-        (models.Event.name.ilike(reg.event_name))
-    ).first()
-
-    if not event and reg.event_name:
-        reg_name_lower = reg.event_name.lower()
-        if "syntax" in reg_name_lower:
-            event = db.query(models.Event).filter(models.Event.id == "syntaxx").first()
-        elif "chess" in reg_name_lower or "carlsen" in reg_name_lower:
-            event = db.query(models.Event).filter(models.Event.id == "carlsen-chess").first()
-        elif "quiz" in reg_name_lower or "mindspark" in reg_name_lower:
-            event = db.query(models.Event).filter(models.Event.id == "mindspark").first()
-        elif "bid" in reg_name_lower or "auction" in reg_name_lower:
-            event = db.query(models.Event).filter(models.Event.id == "bidquest").first()
-        elif "photo" in reg_name_lower or "lens" in reg_name_lower:
-            event = db.query(models.Event).filter(models.Event.id == "lensverse").first()
-
+    event = find_event_by_registration_name(db, reg.event_name)
     price_amount = event.price_amount if (event and event.price_amount) else (reg.amount or 49)
     event_display_name = event.name if event else reg.event_name
 
@@ -208,24 +201,7 @@ def get_registration_details_for_checkout(
             detail="Registration record not found."
         )
 
-    event = db.query(models.Event).filter(
-        (models.Event.id == reg.event_name) |
-        (models.Event.name.ilike(reg.event_name))
-    ).first()
-
-    if not event and reg.event_name:
-        reg_name_lower = reg.event_name.lower()
-        if "syntax" in reg_name_lower:
-            event = db.query(models.Event).filter(models.Event.id == "syntaxx").first()
-        elif "chess" in reg_name_lower or "carlsen" in reg_name_lower:
-            event = db.query(models.Event).filter(models.Event.id == "carlsen-chess").first()
-        elif "quiz" in reg_name_lower or "mindspark" in reg_name_lower:
-            event = db.query(models.Event).filter(models.Event.id == "mindspark").first()
-        elif "bid" in reg_name_lower or "auction" in reg_name_lower:
-            event = db.query(models.Event).filter(models.Event.id == "bidquest").first()
-        elif "photo" in reg_name_lower or "lens" in reg_name_lower:
-            event = db.query(models.Event).filter(models.Event.id == "lensverse").first()
-
+    event = find_event_by_registration_name(db, reg.event_name)
     price_amount = event.price_amount if (event and event.price_amount) else (reg.amount or 49)
     event_display_name = event.name if event else reg.event_name
 

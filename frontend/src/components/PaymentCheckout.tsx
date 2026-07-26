@@ -96,10 +96,32 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
     fetchDatabaseDetails();
   }, [registrationId, eventName, stateData.eventId]);
 
+  const CANONICAL_PRICES: Record<string, number> = {
+    'carlsen-chess': 49,
+    'syntaxx': 39,
+    'bidquest': 149,
+    'mindspark': 49,
+    'lensverse': 49,
+    'techtalk': 0
+  };
+
+  const getCanonicalEventId = (name: string): string => {
+    const clean = (name || '').toLowerCase().replace(/-/g, ' ').trim();
+    if (clean.includes('chess') || clean.includes('carlsen')) return 'carlsen-chess';
+    if (clean.includes('syntax') || clean.includes('coding')) return 'syntaxx';
+    if (clean.includes('bid') || clean.includes('auction')) return 'bidquest';
+    if (clean.includes('quiz') || clean.includes('mindspark')) return 'mindspark';
+    if (clean.includes('lens') || clean.includes('photo')) return 'lensverse';
+    return 'carlsen-chess';
+  };
+
+  const canonicalId = getCanonicalEventId(eventName || stateData.eventName || '');
+  const initialFallbackFee = CANONICAL_PRICES[canonicalId] ?? 49;
+
   const rawFee = (fetchedPrice !== null && fetchedPrice !== undefined)
     ? fetchedPrice
-    : (props.baseFee || stateData.baseFee || stateData.priceAmount || stateData.amount || stateData.price || regContextState.amount || 49);
-  const numericFee = typeof rawFee === 'number' ? rawFee : parseInt(String(rawFee).replace(/\D/g, '')) || 49;
+    : (props.baseFee || stateData.baseFee || stateData.priceAmount || stateData.amount || stateData.price || initialFallbackFee);
+  const numericFee = typeof rawFee === 'number' ? rawFee : parseInt(String(rawFee).replace(/\D/g, '')) || initialFallbackFee;
   const totalAmount = numericFee;
 
   const [realPhone, setRealPhone] = useState<string>(

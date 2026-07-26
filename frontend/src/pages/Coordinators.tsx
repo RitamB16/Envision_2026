@@ -109,8 +109,8 @@ const OTHER_SECTIONS: CategorySection[] = [
         name: 'RITAM BERA',
         role: 'ADMIN / FEST ORGANISER',
         phone: '+91 7718219011',
-        photoUrl: 'https://ibb.co/VWVFdpf8',
-        imgId: 'VWVFdpf8'
+        photoUrl: 'https://ibb.co/wFs4FqFD',
+        imgId: 'wFs4FqFD'
       },
       {
         name: 'JYOTIPRABA PAL',
@@ -165,13 +165,6 @@ const OTHER_SECTIONS: CategorySection[] = [
     },
     members: [
       {
-        name: 'RAJESH TIKADAR',
-        role: 'PHOTOGRAPHY COORDINATOR',
-        phone: '+91 9733811590',
-        photoUrl: 'https://ibb.co/RTGQxj84',
-        imgId: 'RTGQxj84'
-      },
-      {
         name: 'SOUVIK ROY',
         role: 'PHOTOGRAPHY COORDINATOR',
         phone: '+91 8942909735',
@@ -179,11 +172,25 @@ const OTHER_SECTIONS: CategorySection[] = [
         imgId: 'b5nHSfKT'
       },
       {
+        name: 'RAJESH TIKADAR',
+        role: 'PHOTOGRAPHY COORDINATOR',
+        phone: '+91 9733811590',
+        photoUrl: 'https://ibb.co/RTGQxj84',
+        imgId: 'RTGQxj84'
+      },
+      {
         name: 'SABUJSOM DAS',
         role: 'PHOTOGRAPHY COORDINATOR',
         phone: '+91 7679856455',
         photoUrl: 'https://ibb.co/spQ29RGp',
         imgId: 'spQ29RGp'
+      },
+      {
+        name: 'Subhadeep Samai',
+        role: 'PHOTOGRAPHY COORDINATOR',
+        phone: '+91 9832217168',
+        photoUrl: 'https://ibb.co/D05KZSc',
+        imgId: 'D05KZSc'
       }
     ]
   },
@@ -306,8 +313,8 @@ const OTHER_SECTIONS: CategorySection[] = [
         name: 'RITAM BERA',
         role: 'CODING COORDINATOR',
         phone: '+91 7718219011',
-        photoUrl: 'https://ibb.co/VWVFdpf8',
-        imgId: 'VWVFdpf8'
+        photoUrl: 'https://ibb.co/wFs4FqFD',
+        imgId: 'wFs4FqFD'
       },
       {
         name: 'JEET BHATTACHARJEE',
