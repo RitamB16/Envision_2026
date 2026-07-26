@@ -168,7 +168,7 @@ const EVENTS_DATA: EventData[] = [
   },
   {
     id: 'carlsen-chess',
-    name: 'CARLSEN CHESS',
+    name: 'CARLSEN CLASSIC',
     category: 'CHESS',
     price: '₹49',
     requires_team: false,
@@ -176,7 +176,7 @@ const EVENTS_DATA: EventData[] = [
     has_food: true,
     notes: 'Individual Event',
     image: '/images/events/chess.jpg',
-    placeholderAlt: 'Carlsen Chess Compition',
+    placeholderAlt: 'Carlsen Classic Competition',
     benefits: 'Participation certificate, Winning Cash prize worth ₹499',
     date: '6th August',
     venue: 'Mumukshananda Auditorium, RKMRC',
@@ -277,7 +277,6 @@ export default function Events({ onBack: _onBack }: Props) {
   const [tilt, setTilt] = useState<{ rx: number; ry: number }>({ rx: 0, ry: 0 });
   const [hoveredCardId, setHoveredCardId] = useState<string | null>(null);
   const [isNavigating, setIsNavigating] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
 
   // Form State for Registration
   const [fullName, setFullName] = useState<string>(() => localStorage.getItem('user_name') || '');
@@ -1478,28 +1477,25 @@ export default function Events({ onBack: _onBack }: Props) {
       {/* State Router View: Grid */}
       {view === 'grid' && (
         <>
-          {/* Category Filter Pills Bar (Flex wrap on mobile for 100% category visibility without right-edge truncation) */}
-          <div className="flex flex-wrap sm:flex-nowrap items-center gap-1.5 sm:gap-2 p-2 rounded-2xl bg-[#09041a]/80 border border-cyan-500/25 mb-4 w-full box-border shadow-lg">
-            {[
-              { id: 'ALL', label: '🏆 ALL' },
-              { id: 'SEMINAR', label: '🎤 SEMINAR' },
-              { id: 'CODING', label: '💻 CODING' },
-              { id: 'QUIZ', label: '🧠 QUIZ' },
-              { id: 'AUCTION', label: '🔨 AUCTION' },
-              { id: 'PHOTOGRAPHY', label: '📷 PHOTO' },
-              { id: 'CHESS', label: '♟️ CHESS' },
-            ].map(cat => (
-              <button
-                key={cat.id}
-                className={`px-3 py-1.5 text-xs font-mono font-extrabold uppercase rounded-xl transition-all whitespace-nowrap cursor-pointer ${selectedCategory === cat.id
-                  ? 'bg-cyan-500/30 text-cyan-300 border border-cyan-400/60 shadow-[0_0_15px_rgba(0,243,255,0.3)] scale-[1.02]'
-                  : 'text-gray-400 hover:text-white bg-white/5 border border-white/10 hover:border-white/20'
-                  }`}
-                onClick={() => setSelectedCategory(cat.id)}
-              >
-                {cat.label}
-              </button>
-            ))}
+          {/* Official Events Section Header Label */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-cyan-950/40 via-purple-950/40 to-slate-950/60 border border-cyan-500/30 mb-6 w-full box-border shadow-[0_0_25px_rgba(0,243,255,0.12)] backdrop-blur-md">
+            <div className="flex items-center gap-3 text-left">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/25 via-purple-500/25 to-pink-500/25 border border-cyan-400/50 flex items-center justify-center text-xl shrink-0 shadow-[0_0_15px_rgba(0,243,255,0.3)]">
+                🏆
+              </div>
+              <div>
+                <h2 className="text-lg sm:text-xl font-black font-mono tracking-widest uppercase m-0 flex items-center gap-2">
+                  <span className="bg-gradient-to-r from-cyan-300 via-purple-200 to-pink-400 bg-clip-text text-transparent">OFFICIAL FESTIVAL TRACKS</span>
+                </h2>
+                <p className="text-[11px] sm:text-xs text-cyan-200/70 font-mono tracking-wide m-0 mt-0.5">
+                  ENVISION '26 COMPETITIONS & KEYNOTE SEMINARS
+                </p>
+              </div>
+            </div>
+            <div className="self-start sm:self-center px-3.5 py-1.5 rounded-full bg-cyan-500/15 border border-cyan-400/40 text-cyan-300 font-mono text-xs font-black tracking-wider flex items-center gap-2 shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+              <span>6 OFFICIAL TRACKS</span>
+            </div>
           </div>
 
           {isLoading && (
@@ -1515,10 +1511,7 @@ export default function Events({ onBack: _onBack }: Props) {
           )}
 
           <div className="events-grid">
-            {(selectedCategory === 'ALL'
-              ? eventsList
-              : eventsList.filter(e => e.category.toUpperCase() === selectedCategory)
-            ).map(event => (
+            {eventsList.map(event => (
               <div key={event.id} className="cyber-card-wrapper">
                 <div
                   className={`cyber-card ${hoveredCardId === event.id ? 'hovered' : ''}`}
@@ -1563,6 +1556,37 @@ export default function Events({ onBack: _onBack }: Props) {
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Download Official Envision '26 Festival Brochure Banner */}
+          <div className="mt-8 mb-6 p-6 sm:p-7 rounded-2xl bg-gradient-to-br from-slate-950/90 via-purple-950/50 to-cyan-950/80 border-2 border-cyan-400/50 text-center space-y-4 shadow-[0_0_35px_rgba(0,243,255,0.2)] relative overflow-hidden backdrop-blur-xl">
+            {/* Ambient Glow & Accent Bar */}
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-cyan-500/10 via-purple-500/10 to-transparent pointer-events-none"></div>
+
+            <div className="space-y-2 relative z-10">
+              <span className="text-[11px] font-mono font-extrabold text-cyan-300 uppercase tracking-widest inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/15 border border-cyan-400/40">
+                <span></span> OFFICIAL FESTIVAL BROCHURE & GUIDE
+              </span>
+              <h3 className="text-lg sm:text-xl font-black text-white font-mono uppercase tracking-wide m-0">
+                DOWNLOAD THE ENVISION '26 OFFICIAL BROCHURE
+              </h3>
+              <p className="text-xs sm:text-sm text-gray-300 font-sans max-w-xl mx-auto m-0 leading-relaxed">
+                Explore complete event guidelines, detailed schedules, venue blueprints, prize pools, and campus rules in the official PDF brochure.
+              </p>
+            </div>
+
+            <div className="pt-2 relative z-10 flex justify-center">
+              <a
+                href="https://drive.google.com/file/d/18zngC1fwb-heQlqg14H6lDjgBvioxfeJ/view?usp=drivesdk"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full sm:w-auto min-w-[260px] px-8 py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 via-purple-600 to-pink-500 hover:from-cyan-400 hover:via-purple-500 hover:to-pink-400 text-white font-mono text-xs sm:text-sm font-black transition-all transform hover:scale-[1.03] active:scale-95 shadow-[0_0_25px_rgba(0,243,255,0.4)] hover:shadow-[0_0_35px_rgba(168,85,247,0.6)] flex items-center justify-center gap-3 no-underline cursor-pointer border border-cyan-300/40"
+              >
+                <span className="text-lg">📖</span>
+                <span className="tracking-widest uppercase">VIEW OFFICIAL BROCHURE</span>
+                <span className="text-sm">&rarr;</span>
+              </a>
+            </div>
           </div>
 
           {/* Global Festival Terms & Conditions Section */}

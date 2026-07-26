@@ -109,7 +109,7 @@ DEFAULT_EVENTS = [
     },
     {
         "id": "carlsen-chess",
-        "name": "CARLSEN CHESS",
+        "name": "CARLSEN CLASSIC",
         "category": "CHESS",
         "price": "₹49",
         "price_amount": 49,
