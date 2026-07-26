@@ -252,17 +252,43 @@ def admin_approve_utr(
 
     db.commit()
 
-    # Auto-enroll in Tech Talk upon successful payment confirmation
+    # Auto-enroll in Tech Talk & dispatch confirmation email upon successful payment approval
     if target_status == "PAID":
         from registration import auto_enroll_techtalk
+        from email_utils import dispatch_registration_approval_email, normalize_event_id
+
         auto_enroll_techtalk(db, reg.participant_id)
+
+        recipients = []
+        participant_user = db.query(models.User).filter(models.User.id == reg.participant_id).first()
+        if participant_user and participant_user.email:
+            recipients.append(participant_user.email)
+
         if reg.team_id:
-            for tm_reg in db.query(models.Registration).filter(models.Registration.team_id == reg.team_id).all():
+            team_regs = db.query(models.Registration).filter(models.Registration.team_id == reg.team_id).all()
+            for tm_reg in team_regs:
                 auto_enroll_techtalk(db, tm_reg.participant_id)
+                tm_user = db.query(models.User).filter(models.User.id == tm_reg.participant_id).first()
+                if tm_user and tm_user.email and tm_user.email not in recipients:
+                    recipients.append(tm_user.email)
+
+        participant_name = participant_user.full_name or participant_user.name if participant_user else "Participant"
+        fest_id = participant_user.fest_id if (participant_user and participant_user.fest_id) else "ENV-2026-001"
+        canonical_event_id = normalize_event_id(reg.event_name)
+
+        dispatch_registration_approval_email(
+            to_emails=recipients,
+            participant_name=participant_name,
+            fest_id=fest_id,
+            registration_id=str(reg.reg_id),
+            event_name=reg.event_name,
+            event_id=canonical_event_id,
+            utr_number=reg.utr_number
+        )
 
     return {
         "status": "success",
-        "message": f"Registration '{reg.reg_id}' status updated to {target_status} after manual bank audit.",
+        "message": f"Registration '{reg.reg_id}' status updated to {target_status} after manual bank audit. Confirmation emails dispatched.",
         "registration_id": str(reg.reg_id),
         "payment_status": target_status
     }
