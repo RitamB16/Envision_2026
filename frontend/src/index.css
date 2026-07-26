@@ -500,11 +500,11 @@ h1, h2, h3, h4, .brand-font {
 /* Mobile backdrop-filter fill-rate optimizations */
 @media (max-width: 768px) {
   .glass-panel {
-    background: rgba(10, 8, 22, 0.94) !important;
-    backdrop-filter: blur(8px) !important;
-    -webkit-backdrop-filter: blur(8px) !important;
+    background: rgba(10, 8, 22, 0.55) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
     padding: 1.1rem 0.85rem !important;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.75), 
                 inset 0 0 0 1px rgba(255, 255, 255, 0.08) !important;
     border-radius: 16px !important;
@@ -512,9 +512,9 @@ h1, h2, h3, h4, .brand-font {
     box-sizing: border-box !important;
   }
   .page-container {
-    background: rgba(3, 1, 15, 0.92) !important;
-    backdrop-filter: blur(4px) !important;
-    -webkit-backdrop-filter: blur(4px) !important;
+    background: rgba(3, 1, 15, 0.45) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
     padding: 75px 10px 120px 10px !important;
     align-items: flex-start !important;
     width: 100vw !important;

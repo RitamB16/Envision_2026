@@ -772,9 +772,9 @@ export default function Events({ onBack: _onBack }: Props) {
           overflow: hidden;
         }
 
-        .cyber-card.hovered {
+        .cyber-card.hovered, .cyber-card:active, .cyber-card:focus-within, .cyber-card-wrapper:active .cyber-card {
           border-color: #00f3ff;
-          box-shadow: 0 0 35px rgba(0, 243, 255, 0.3), inset 0 0 20px rgba(0, 243, 255, 0.1);
+          box-shadow: 0 0 35px rgba(0, 243, 255, 0.4), inset 0 0 20px rgba(0, 243, 255, 0.15);
         }
 
         .cyber-card-banner {
@@ -795,7 +795,7 @@ export default function Events({ onBack: _onBack }: Props) {
           transition: transform 0.4s ease;
         }
 
-        .cyber-card.hovered .cyber-card-img {
+        .cyber-card.hovered .cyber-card-img, .cyber-card:active .cyber-card-img, .cyber-card-wrapper:active .cyber-card-img {
           transform: scale(1.08);
         }
 
@@ -1512,7 +1512,12 @@ export default function Events({ onBack: _onBack }: Props) {
 
           <div className="events-grid">
             {eventsList.map(event => (
-              <div key={event.id} className="cyber-card-wrapper">
+              <div
+                key={event.id}
+                className="cyber-card-wrapper"
+                onTouchStart={() => setHoveredCardId(event.id)}
+                onTouchEnd={() => setTimeout(() => setHoveredCardId(null), 800)}
+              >
                 <div
                   className={`cyber-card ${hoveredCardId === event.id ? 'hovered' : ''}`}
                   onMouseMove={e => handleMouseMove(e, event.id)}
