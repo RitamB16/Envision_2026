@@ -1479,17 +1479,13 @@ export default function Events({ onBack: _onBack }: Props) {
         <>
           {/* Top EVENTS Section Header Label */}
           <div className="flex flex-col items-center justify-center text-center p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-cyan-950/40 via-purple-950/40 to-slate-950/60 border border-cyan-500/30 mb-8 sm:mb-10 w-full box-border shadow-[0_0_25px_rgba(0,243,255,0.15)] backdrop-blur-md">
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 sm:gap-3 text-center">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/25 via-purple-500/25 to-pink-500/25 border border-cyan-400/50 flex items-center justify-center text-xl shrink-0 shadow-[0_0_15px_rgba(0,243,255,0.3)]">
-              </div>
-              <div>
-                <h2 className="text-xl sm:text-2xl font-black font-mono tracking-widest uppercase m-0 flex items-center justify-center gap-2 text-center">
-                  <span className="bg-gradient-to-r from-cyan-300 via-purple-200 to-pink-400 bg-clip-text text-transparent">EVENTS</span>
-                </h2>
-                <p className="text-[11px] sm:text-xs text-cyan-200/70 font-mono tracking-wide m-0 mt-0.5 text-center">
-                  ENVISION '26 COMPETITIONS & KEYNOTE SEMINARS
-                </p>
-              </div>
+            <div className="flex flex-col items-center justify-center gap-1.5 text-center">
+              <h2 className="text-xl sm:text-2xl font-black font-mono tracking-widest uppercase m-0 text-center">
+                <span className="bg-gradient-to-r from-cyan-300 via-purple-200 to-pink-400 bg-clip-text text-transparent">EVENTS</span>
+              </h2>
+              <p className="text-[11px] sm:text-xs text-cyan-200/70 font-mono tracking-wide m-0 text-center">
+                ENVISION '26 COMPETITIONS & KEYNOTE SEMINARS
+              </p>
             </div>
           </div>
 
@@ -1559,7 +1555,7 @@ export default function Events({ onBack: _onBack }: Props) {
           </div>
 
           {/* Download Official Envision '26 Festival Brochure Banner */}
-          <div className="mt-12 mb-12 p-6 sm:p-7 rounded-2xl bg-gradient-to-br from-slate-950/90 via-purple-950/50 to-cyan-950/80 border-2 border-cyan-400/50 text-center space-y-4 shadow-[0_0_35px_rgba(0,243,255,0.2)] relative overflow-hidden backdrop-blur-xl">
+          <div className="mt-10 mb-8 sm:mt-14 sm:mb-10 p-6 sm:p-7 rounded-2xl bg-gradient-to-br from-slate-950/90 via-purple-950/50 to-cyan-950/80 border-2 border-cyan-400/50 text-center space-y-4 shadow-[0_0_35px_rgba(0,243,255,0.2)] relative overflow-hidden backdrop-blur-xl">
             {/* Ambient Glow */}
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-cyan-500/10 via-purple-500/10 to-transparent pointer-events-none"></div>
 
@@ -1588,7 +1584,7 @@ export default function Events({ onBack: _onBack }: Props) {
           </div>
 
           {/* Global Festival Terms & Conditions Section */}
-          <div className="mt-12 p-6 rounded-2xl bg-black/45 border border-purple-500/30 text-left backdrop-blur-md shadow-2xl">
+          <div className="mt-8 sm:mt-10 p-6 rounded-2xl bg-black/45 border border-purple-500/30 text-left backdrop-blur-md shadow-2xl">
             <h3 className="text-sm font-black text-cyan-300 uppercase tracking-widest font-mono mb-4 flex items-center gap-2">
               <span>📜</span> ENVISION '26 TECHFEST TERMS & CONDITIONS
             </h3>

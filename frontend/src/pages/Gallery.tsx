@@ -19,8 +19,8 @@ const GALLERY_ITEMS: GalleryItem[] = [
     id: 'welcome-ceremony-1',
     title: 'WELCOME CEREMONY',
     category: 'WELCOME',
-    src: 'https://i.ibb.co/MyQTKBx5/WELCOME-CEREMONY.jpg',
-    fallbackUrl: 'https://ibb.co/MyQTKBx5'
+    src: 'https://i.ibb.co/PvPFrL0N/WELCOME-CEREMONY.jpg',
+    fallbackUrl: 'https://ibb.co/PvPFrL0N'
   },
 
   // CODING (SYNTAXX)
@@ -65,8 +65,8 @@ const GALLERY_ITEMS: GalleryItem[] = [
     id: 'auction-3',
     title: 'BIDQUEST AUCTION HOSTS',
     category: 'AUCTION',
-    src: 'https://i.ibb.co/RpZXvZGn/AUTION.jpg',
-    fallbackUrl: 'https://ibb.co/RpZXvZGn'
+    src: 'https://i.ibb.co/hn548Zx/AUTION.jpg',
+    fallbackUrl: 'https://ibb.co/hn548Zx'
   },
   {
     id: 'auction-4',

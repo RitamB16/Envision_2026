@@ -109,8 +109,8 @@ const OTHER_SECTIONS: CategorySection[] = [
         name: 'RITAM BERA',
         role: 'ADMIN / FEST ORGANISER',
         phone: '+91 7718219011',
-        photoUrl: 'https://ibb.co/wFs4FqFD',
-        imgId: 'wFs4FqFD'
+        photoUrl: 'https://ibb.co/23pzMWsQ',
+        imgId: '23pzMWsQ'
       },
       {
         name: 'JYOTIPRABA PAL',
@@ -313,8 +313,8 @@ const OTHER_SECTIONS: CategorySection[] = [
         name: 'RITAM BERA',
         role: 'CODING COORDINATOR',
         phone: '+91 7718219011',
-        photoUrl: 'https://ibb.co/wFs4FqFD',
-        imgId: 'wFs4FqFD'
+        photoUrl: 'https://ibb.co/23pzMWsQ',
+        imgId: '23pzMWsQ'
       },
       {
         name: 'JEET BHATTACHARJEE',
