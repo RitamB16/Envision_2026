@@ -43,62 +43,78 @@ EVENT_RULES_LINKS = {
 }
 
 
-def send_email_in_background(to_emails: List[str], subject: str, html_content: str, text_content: str):
+def send_email_smtp(to_emails: List[str], subject: str, html_content: str, text_content: str) -> bool:
     """
-    Spawns a daemon thread to send SMTP email asynchronously with dual-port fallback (SSL 465 / TLS 587).
+    Sends SMTP email synchronously with dual-port fallback (TLS 587 / SSL 465).
+    Returns True if email was successfully delivered to all recipients, False otherwise.
     """
-    def _worker():
-        smtp_user = settings.SMTP_USER
-        smtp_password = settings.SMTP_PASSWORD
-        if not smtp_user or not smtp_password:
-            print("[Email Warning] SMTP_USER or SMTP_PASSWORD not configured in settings. Skipping email dispatch.")
-            return
+    smtp_user = settings.SMTP_USER
+    smtp_password = settings.SMTP_PASSWORD
+    if not smtp_user or not smtp_password:
+        print("[Email Error] SMTP_USER or SMTP_PASSWORD not configured in settings. Skipping email dispatch.")
+        return False
 
-        print(f"[Email Dispatcher] Starting email dispatch for {len(to_emails)} recipient(s): {to_emails}")
+    print(f"[Email Dispatcher] Dispatching email to {len(to_emails)} recipient(s): {to_emails}")
 
-        for to_email in to_emails:
-            if not to_email or "@" not in to_email:
-                print(f"[Email Warning] Skipping invalid email recipient: '{to_email}'")
-                continue
+    all_success = True
+    for to_email in to_emails:
+        if not to_email or "@" not in to_email:
+            print(f"[Email Warning] Skipping invalid recipient: '{to_email}'")
+            all_success = False
+            continue
 
-            msg = MIMEMultipart("alternative")
-            msg["Subject"] = subject
-            msg["From"] = f"Envision 2026 TechFest <{smtp_user}>"
-            msg["Reply-To"] = smtp_user
-            msg["To"] = to_email
-            msg["X-Mailer"] = "Envision26-Mailer"
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = subject
+        msg["From"] = f"Envision 2026 TechFest <{smtp_user}>"
+        msg["Reply-To"] = smtp_user
+        msg["To"] = to_email
+        msg["X-Mailer"] = "Envision26-Mailer"
 
-            part1 = MIMEText(text_content, "plain", "utf-8")
-            part2 = MIMEText(html_content, "html", "utf-8")
-            msg.attach(part1)
-            msg.attach(part2)
+        part1 = MIMEText(text_content, "plain", "utf-8")
+        part2 = MIMEText(html_content, "html", "utf-8")
+        msg.attach(part1)
+        msg.attach(part2)
 
-            sent = False
-            # Attempt 1: TLS Port 587
+        sent = False
+        # Attempt 1: TLS Port 587
+        try:
+            with smtplib.SMTP("smtp.gmail.com", 587, timeout=12) as server:
+                server.ehlo()
+                server.starttls()
+                server.ehlo()
+                server.login(smtp_user, smtp_password)
+                server.sendmail(smtp_user, to_email, msg.as_string())
+            print(f"[Email Success via TLS 587] Email sent to {to_email}")
+            sent = True
+        except Exception as e1:
+            print(f"[Email TLS 587 Warning] {e1}. Retrying with SSL 465...")
+
+        # Attempt 2: SSL Port 465
+        if not sent:
             try:
-                with smtplib.SMTP("smtp.gmail.com", 587, timeout=12) as server:
-                    server.ehlo()
-                    server.starttls()
-                    server.ehlo()
+                with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=12) as server:
                     server.login(smtp_user, smtp_password)
                     server.sendmail(smtp_user, to_email, msg.as_string())
-                print(f"[Email Success via TLS 587] Registration confirmation email sent to {to_email}")
+                print(f"[Email Success via SSL 465] Email sent to {to_email}")
                 sent = True
-            except Exception as e1:
-                print(f"[Email TLS 587 Exception] {e1}. Retrying with SSL 465...")
+            except Exception as e2:
+                print(f"[Email SSL 465 Error] Failed to send email to {to_email}: {e2}")
 
-            # Attempt 2: SSL Port 465
-            if not sent:
-                try:
-                    with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=12) as server:
-                        server.login(smtp_user, smtp_password)
-                        server.sendmail(smtp_user, to_email, msg.as_string())
-                    print(f"[Email Success via SSL 465] Registration confirmation email sent to {to_email}")
-                    sent = True
-                except Exception as e2:
-                    print(f"[Email SSL 465 Exception] Failed to send confirmation email to {to_email}: {e2}")
+        if not sent:
+            all_success = False
 
-    thread = threading.Thread(target=_worker, daemon=True)
+    return all_success
+
+
+def send_email_in_background(to_emails: List[str], subject: str, html_content: str, text_content: str):
+    """
+    Spawns a daemon thread to send SMTP email asynchronously.
+    """
+    thread = threading.Thread(
+        target=send_email_smtp,
+        args=(to_emails, subject, html_content, text_content),
+        daemon=True
+    )
     thread.start()
 
 
@@ -214,7 +230,7 @@ Envision 2026
     </html>
     """
 
-    send_email_in_background(to_emails, subject, html_content, text_content)
+    return send_email_smtp(to_emails, subject, html_content, text_content)
 
 
 def dispatch_techtalk_confirmation_email(
@@ -222,14 +238,14 @@ def dispatch_techtalk_confirmation_email(
     participant_name: str,
     fest_id: str,
     registration_id: Optional[str] = None
-):
+) -> bool:
     """
     Dispatches immediate confirmation email for Tech Talk free seminar registration.
     Includes ONLY: Event Name, Date (6th August 2026), Reporting Time (10:00 AM IST), Venue (Mumukshananda Auditorium, RKMRC Narendrapur), Participant Name, Fest ID, and PDF Brochure Link.
     NO payment verified badge, NO UTR number, NO WhatsApp community link!
     """
     if not to_email or "@" not in to_email:
-        return
+        return False
 
     brochure_url = "https://drive.google.com/file/d/18zngC1fwb-heQlqg14H6lDjgBvioxfeJ/view"
     subject = "Registration Confirmed – Tech Talk | Envision'26"
@@ -312,4 +328,4 @@ Envision 2026 • RKMRC Narendrapur
     </html>
     """
 
-    send_email_in_background([to_email], subject, html_content, text_content)
+    return send_email_smtp([to_email], subject, html_content, text_content)

@@ -50,17 +50,22 @@ def process_approved_registrations_sync():
 
                     if recipients:
                         clean_ev = reg.event_name.lower().replace(" ", "-").strip()
+                        sent_ok = False
                         if clean_ev in ("techtalk", "tech-talk"):
                             from email_utils import dispatch_techtalk_confirmation_email
+                            all_ok = True
                             for email in recipients:
-                                dispatch_techtalk_confirmation_email(
+                                res = dispatch_techtalk_confirmation_email(
                                     to_email=email,
                                     participant_name=participant_name,
                                     fest_id=fest_id,
                                     registration_id=str(reg.reg_id)
                                 )
+                                if not res:
+                                    all_ok = False
+                            sent_ok = all_ok
                         else:
-                            dispatch_registration_approval_email(
+                            sent_ok = dispatch_registration_approval_email(
                                 to_emails=recipients,
                                 participant_name=participant_name,
                                 fest_id=fest_id,
@@ -69,16 +74,18 @@ def process_approved_registrations_sync():
                                 event_id=canonical_event_id,
                                 utr_number=utr_val
                             )
-                        reg.email_sent = True
-                        if reg.team_id:
-                            for tm_reg in db.query(models.Registration).filter(models.Registration.team_id == reg.team_id).all():
-                                tm_reg.email_sent = True
-                        db.commit()
-                        print(f"[Sweeper] Confirmation email dispatched & email_sent marked True for registration {reg.reg_id}.")
+
+                        if sent_ok:
+                            reg.email_sent = True
+                            if reg.team_id:
+                                for tm_reg in db.query(models.Registration).filter(models.Registration.team_id == reg.team_id).all():
+                                    tm_reg.email_sent = True
+                            db.commit()
+                            print(f"[Sweeper Success] Email dispatched & email_sent marked True for registration {reg.reg_id}.")
+                        else:
+                            print(f"[Sweeper Warning] Email delivery failed for registration {reg.reg_id}. Retrying on next cycle.")
                     else:
-                        reg.email_sent = True
-                        db.commit()
-                        print(f"[Sweeper Warning] No email found for participant {reg.participant_id}. Marked email_sent True.")
+                        print(f"[Sweeper Warning] No email recipient found for registration {reg.reg_id}.")
                 except Exception as ex:
                     print(f"[Sweeper Process Error] Failed to process registration {reg.reg_id}: {ex}")
     except Exception as e:
