@@ -7,6 +7,23 @@ from config import settings
 
 COMMUNITY_LINK = "https://chat.whatsapp.com/JJCbhKk8N1j7yNNW7kmKMX"
 
+
+def normalize_event_id(event_name: Optional[str]) -> str:
+    if not event_name:
+        return "techtalk"
+    clean = event_name.lower().strip()
+    if "chess" in clean or "carlsen" in clean:
+        return "carlsen-chess"
+    if "syntax" in clean:
+        return "syntaxx"
+    if "bid" in clean or "auction" in clean:
+        return "bidquest"
+    if "lens" in clean or "photo" in clean:
+        return "lensverse"
+    if "mind" in clean or "quiz" in clean:
+        return "mindspark"
+    return clean.replace(" ", "-")
+
 EVENT_GROUP_NAMES = {
     "carlsen-chess": "Envision'26 Carlsen Classic (Chess)",
     "syntaxx": "Envision'26 SyntaxX (Coding)",
@@ -46,11 +63,13 @@ def send_email_in_background(to_emails: List[str], subject: str, html_content: s
 
             msg = MIMEMultipart("alternative")
             msg["Subject"] = subject
-            msg["From"] = f"Envision'26 Organisers <{smtp_user}>"
+            msg["From"] = f"Envision 2026 TechFest <{smtp_user}>"
+            msg["Reply-To"] = smtp_user
             msg["To"] = to_email
+            msg["X-Mailer"] = "Envision26-Mailer"
 
-            part1 = MIMEText(text_content, "plain")
-            part2 = MIMEText(html_content, "html")
+            part1 = MIMEText(text_content, "plain", "utf-8")
+            part2 = MIMEText(html_content, "html", "utf-8")
             msg.attach(part1)
             msg.attach(part2)
 

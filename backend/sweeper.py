@@ -58,13 +58,16 @@ def process_approved_registrations_sync():
                             event_id=canonical_event_id,
                             utr_number=utr_val
                         )
-
-                    reg.email_sent = True
-                    if reg.team_id:
-                        for tm_reg in db.query(models.Registration).filter(models.Registration.team_id == reg.team_id).all():
-                            tm_reg.email_sent = True
-                    db.commit()
-                    print(f"[Sweeper] Confirmation email dispatched & email_sent marked True for registration {reg.reg_id}.")
+                        reg.email_sent = True
+                        if reg.team_id:
+                            for tm_reg in db.query(models.Registration).filter(models.Registration.team_id == reg.team_id).all():
+                                tm_reg.email_sent = True
+                        db.commit()
+                        print(f"[Sweeper] Confirmation email dispatched & email_sent marked True for registration {reg.reg_id}.")
+                    else:
+                        reg.email_sent = True
+                        db.commit()
+                        print(f"[Sweeper Warning] No email found for participant {reg.participant_id}. Marked email_sent True.")
                 except Exception as ex:
                     print(f"[Sweeper Process Error] Failed to process registration {reg.reg_id}: {ex}")
     except Exception as e:

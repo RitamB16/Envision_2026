@@ -19,7 +19,7 @@ from email_utils import dispatch_registration_approval_email, normalize_event_id
 
 def process_all_approved_registrations():
     print("=" * 65)
-    print("🚀 ENVISION '26 TECHFEST: PROCESSING APPROVED REGISTRATIONS")
+    print("ENVISION '26 TECHFEST: PROCESSING APPROVED REGISTRATIONS")
     print("=" * 65)
 
     db = SessionLocal()
@@ -35,10 +35,10 @@ def process_all_approved_registrations():
         ).all()
 
         if not paid_regs:
-            print("✅ No pending unsent approved registrations found in database.")
+            print("[INFO] No pending unsent approved registrations found in database.")
             return
 
-        print(f"📌 Found {len(paid_regs)} unsent approved registration(s) in database.\n")
+        print(f"[INFO] Found {len(paid_regs)} unsent approved registration(s) in database.\n")
 
         for index, reg in enumerate(paid_regs, 1):
             print(f"[{index}/{len(paid_regs)}] Processing Registration ID: {reg.reg_id} ({reg.event_name})...")
@@ -64,7 +64,7 @@ def process_all_approved_registrations():
                 utr_val = getattr(reg, "utr_number", None) or getattr(reg, "payment_order_id", None) or "VERIFIED"
 
                 if recipients:
-                    print(f"  ✉️ Dispatching confirmation email to: {recipients}")
+                    print(f"  Dispatching confirmation email to: {recipients}")
                     dispatch_registration_approval_email(
                         to_emails=recipients,
                         participant_name=participant_name,
@@ -75,7 +75,7 @@ def process_all_approved_registrations():
                         utr_number=utr_val
                     )
                 else:
-                    print("  ⚠️ No valid email recipient address found.")
+                    print("  Warning: No valid email recipient address found.")
 
                 reg.email_sent = True
                 if reg.team_id:
@@ -83,11 +83,11 @@ def process_all_approved_registrations():
                         tm_reg.email_sent = True
 
                 db.commit()
-                print("  ✓ Status updated: email_sent = True\n")
+                print("  Status updated: email_sent = True\n")
             except Exception as ex:
-                print(f"  ❌ Error processing registration {reg.reg_id}: {ex}\n")
+                print(f"  Error processing registration {reg.reg_id}: {ex}\n")
 
-        print("🎉 Finished processing all database registration approvals!")
+        print("Finished processing all database registration approvals!")
 
     finally:
         db.close()
