@@ -196,3 +196,93 @@ Envision 2026
     """
 
     send_email_in_background(to_emails, subject, html_content, text_content)
+
+
+def dispatch_techtalk_confirmation_email(to_email: str, participant_name: str, fest_id: str):
+    """
+    Dispatches immediate confirmation email for Tech Talk free seminar registration.
+    Includes ONLY: Event Name, Date (6th August 2026), Reporting Time (10:00 AM IST), Venue (Mumukshananda Auditorium, RKMRC Narendrapur), Participant Name, Fest ID, and PDF Brochure Link.
+    """
+    if not to_email or "@" not in to_email:
+        return
+
+    brochure_url = "https://drive.google.com/file/d/18zngC1fwb-heQlqg14H6lDjgBvioxfeJ/view"
+    subject = "Registration Confirmed – Tech Talk | Envision'26"
+
+    text_content = f"""Dear {participant_name},
+
+Greetings!
+
+We are pleased to inform you that your registration for TECH TALK (Keynote Seminar & Technical Sessions) has been successfully confirmed.
+
+Registration Details:
+• Participant Name: {participant_name}
+• Fest ID: {fest_id}
+• Event Name: TECH TALK
+• Event Date: 6th August 2026
+• Reporting Time: 10:00 AM IST
+• Venue: Mumukshananda Auditorium, RKMRC Narendrapur
+
+Official PDF Brochure Link:
+{brochure_url}
+
+We look forward to your participation!
+
+Regards,
+Organizing Team
+Envision 2026 • RKMRC Narendrapur
+"""
+
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #04010d; color: #e2e8f0; margin: 0; padding: 20px; }}
+        .card {{ max-width: 600px; margin: 0 auto; background: #0a051c; border: 1px solid #00f3ff; border-radius: 16px; padding: 28px; box-shadow: 0 0 35px rgba(0, 243, 255, 0.2); }}
+        .header {{ text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 16px; margin-bottom: 20px; }}
+        .title {{ color: #00f3ff; font-size: 24px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; margin: 0; }}
+        .subtitle {{ color: #a855f7; font-size: 13px; font-weight: 700; margin-top: 6px; letter-spacing: 1px; }}
+        .status-badge {{ display: inline-block; background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #10b981; padding: 6px 16px; border-radius: 20px; font-weight: 800; font-size: 12px; margin-top: 12px; }}
+        .box {{ background: #070318; border: 1px solid rgba(0, 243, 255, 0.3); border-radius: 12px; padding: 18px; margin: 20px 0; font-family: monospace; font-size: 13px; line-height: 1.8; }}
+        .btn-brochure {{ display: block; width: 80%; margin: 18px auto; text-align: center; background: linear-gradient(to right, #00f3ff, #a855f7); color: #000000; padding: 13px 20px; border-radius: 12px; font-weight: 900; text-decoration: none; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 0 20px rgba(0, 243, 255, 0.4); }}
+        .footer {{ text-align: center; font-size: 11px; color: #6b7280; margin-top: 24px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px; }}
+      </style>
+    </head>
+    <body>
+      <div class="card">
+        <div class="header">
+          <h1 class="title">ENVISION '26 TECHFEST</h1>
+          <div class="subtitle">KEYNOTE SEMINAR REGISTRATION</div>
+          <div class="status-badge">✓ SEAT CONFIRMED (100% FREE PASS)</div>
+        </div>
+
+        <p>Dear <strong>{participant_name}</strong>,</p>
+        <p>Greetings!</p>
+        <p>We are pleased to inform you that your registration for <strong>TECH TALK</strong> has been successfully confirmed.</p>
+
+        <div class="box">
+          <div>👤 <strong>NAME:</strong> {participant_name}</div>
+          <div>🆔 <strong>FEST ID:</strong> <span style="color: #00f3ff;">{fest_id}</span></div>
+          <div>🏆 <strong>EVENT NAME:</strong> TECH TALK</div>
+          <div>📅 <strong>DATE:</strong> 6th August 2026</div>
+          <div>⏰ <strong>REPORTING TIME:</strong> 10:00 AM IST</div>
+          <div>📍 <strong>VENUE:</strong> Mumukshananda Auditorium, RKMRC Narendrapur</div>
+        </div>
+
+        <a href="{brochure_url}" class="btn-brochure" target="_blank">📄 VIEW OFFICIAL FESTIVAL BROCHURE PDF &rarr;</a>
+
+        <p>We look forward to your participation and wish you the very best for the event!</p>
+
+        <div class="footer">
+          <strong>Regards,</strong><br>
+          Organizing Team<br>
+          Envision 2026 &bull; RKMRC Narendrapur
+        </div>
+      </div>
+    </body>
+    </html>
+    """
+
+    send_email_in_background([to_email], subject, html_content, text_content)

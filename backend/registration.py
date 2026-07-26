@@ -100,8 +100,8 @@ def check_event_capacity(db: Session, event_name: str):
 def auto_enroll_techtalk(db: Session, participant_id: uuid.UUID) -> Optional[models.Registration]:
     """
     Idempotent helper function:
-    Automatically enrolls a participant into Tech Talk (techtalk) with payment_status="PAID"
-    whenever they register for any event in the tech fest.
+    Enrolls a participant into Tech Talk with payment_status="PAID" if they are not already registered.
+    If the participant ALREADY registered for Tech Talk directly, it leaves their registration untouched!
     """
     if not participant_id:
         return None
@@ -112,14 +112,7 @@ def auto_enroll_techtalk(db: Session, participant_id: uuid.UUID) -> Optional[mod
     ).first()
 
     if existing_techtalk:
-        if existing_techtalk.payment_status not in ("PAID", "COMPLETED", "SUCCESS"):
-            existing_techtalk.payment_status = "PAID"
-            db.add(existing_techtalk)
-            try:
-                db.commit()
-                db.refresh(existing_techtalk)
-            except Exception:
-                db.rollback()
+        # User already registered for Tech Talk directly - do not overwrite or duplicate!
         return existing_techtalk
 
     auto_reg = models.Registration(
@@ -127,7 +120,8 @@ def auto_enroll_techtalk(db: Session, participant_id: uuid.UUID) -> Optional[mod
         event_name="techtalk",
         team_id=None,
         payment_order_id=f"auto_techtalk_{uuid.uuid4().hex[:10]}",
-        payment_status="PAID"
+        payment_status="PAID",
+        email_sent=True
     )
     db.add(auto_reg)
     try:
@@ -264,8 +258,18 @@ def register_solo(
         db.commit()
         db.refresh(registration)
 
-        # Auto-enroll in Tech Talk for all festival participants
-        auto_enroll_techtalk(db, participant.id)
+        # Immediate confirmation email for free Tech Talk registration
+        clean_ev_name = payload.event_name.lower().replace(" ", "-").strip()
+        if clean_ev_name in ("techtalk", "tech-talk"):
+            from email_utils import dispatch_techtalk_confirmation_email
+            p_name = participant.full_name or participant.name
+            p_fest_id = participant.fest_id or "ENV-2026-001"
+            dispatch_techtalk_confirmation_email(participant.email, p_name, p_fest_id)
+            registration.email_sent = True
+            db.commit()
+        else:
+            # Auto-enroll in Tech Talk for paid festival event participants if not already registered
+            auto_enroll_techtalk(db, participant.id)
 
         return {
             "status": "success",
