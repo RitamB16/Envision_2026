@@ -52,8 +52,9 @@ async def startup_event():
     try:
         from sqlalchemy import text
         with engine.connect() as conn:
-            # 1. Safely add max_capacity column to events if missing
+            # 1. Safely add max_capacity column to events and email_sent to registrations if missing
             conn.execute(text("ALTER TABLE public.events ADD COLUMN IF NOT EXISTS max_capacity INTEGER DEFAULT 100;"))
+            conn.execute(text("ALTER TABLE public.registrations ADD COLUMN IF NOT EXISTS email_sent BOOLEAN DEFAULT FALSE;"))
             
             # 2. Check if legacy teams table exists without team_id column
             teams_table_exists = conn.execute(text(

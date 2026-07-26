@@ -240,7 +240,9 @@ def admin_approve_utr(
             detail="Registration record not found."
         )
 
-    target_status = "PAID" if payload.action.upper() == "APPROVE" else "REJECTED"
+    action_clean = (payload.action or "").upper().strip()
+    is_approval = action_clean in ("APPROVE", "CONFIRM", "CONFIRMED", "PAID", "SUCCESS", "COMPLETED")
+    target_status = "PAID" if is_approval else "REJECTED"
     reg.payment_status = target_status
 
     if reg.team_id:
@@ -253,7 +255,7 @@ def admin_approve_utr(
     db.commit()
 
     # Auto-enroll in Tech Talk & dispatch confirmation email upon successful payment approval
-    if target_status == "PAID":
+    if is_approval:
         from registration import auto_enroll_techtalk
         from email_utils import dispatch_registration_approval_email, normalize_event_id
 
@@ -272,9 +274,10 @@ def admin_approve_utr(
                 if tm_user and tm_user.email and tm_user.email not in recipients:
                     recipients.append(tm_user.email)
 
-        participant_name = participant_user.full_name or participant_user.name if participant_user else "Participant"
+        participant_name = (participant_user.full_name or participant_user.name) if participant_user else "Participant"
         fest_id = participant_user.fest_id if (participant_user and participant_user.fest_id) else "ENV-2026-001"
         canonical_event_id = normalize_event_id(reg.event_name)
+        utr_val = getattr(reg, "utr_number", None) or getattr(reg, "payment_order_id", None) or "VERIFIED"
 
         dispatch_registration_approval_email(
             to_emails=recipients,
@@ -283,8 +286,14 @@ def admin_approve_utr(
             registration_id=str(reg.reg_id),
             event_name=reg.event_name,
             event_id=canonical_event_id,
-            utr_number=reg.utr_number
+            utr_number=utr_val
         )
+
+        reg.email_sent = True
+        if reg.team_id:
+            for tm_reg in db.query(models.Registration).filter(models.Registration.team_id == reg.team_id).all():
+                tm_reg.email_sent = True
+        db.commit()
 
     return {
         "status": "success",

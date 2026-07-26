@@ -28,35 +28,56 @@ EVENT_RULES_LINKS = {
 
 def send_email_in_background(to_emails: List[str], subject: str, html_content: str, text_content: str):
     """
-    Spawns a daemon thread to send SMTP email asynchronously without blocking HTTP response.
+    Spawns a daemon thread to send SMTP email asynchronously with dual-port fallback (SSL 465 / TLS 587).
     """
     def _worker():
         smtp_user = settings.SMTP_USER
         smtp_password = settings.SMTP_PASSWORD
         if not smtp_user or not smtp_password:
-            print("[Email Warning] SMTP credentials not configured in settings. Skipping email dispatch.")
+            print("[Email Warning] SMTP_USER or SMTP_PASSWORD not configured in settings. Skipping email dispatch.")
             return
+
+        print(f"[Email Dispatcher] Starting email dispatch for {len(to_emails)} recipient(s): {to_emails}")
 
         for to_email in to_emails:
             if not to_email or "@" not in to_email:
+                print(f"[Email Warning] Skipping invalid email recipient: '{to_email}'")
                 continue
+
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = subject
+            msg["From"] = f"Envision'26 Organisers <{smtp_user}>"
+            msg["To"] = to_email
+
+            part1 = MIMEText(text_content, "plain")
+            part2 = MIMEText(html_content, "html")
+            msg.attach(part1)
+            msg.attach(part2)
+
+            sent = False
+            # Attempt 1: TLS Port 587
             try:
-                msg = MIMEMultipart("alternative")
-                msg["Subject"] = subject
-                msg["From"] = f"Envision'26 Organisers <{smtp_user}>"
-                msg["To"] = to_email
-
-                part1 = MIMEText(text_content, "plain")
-                part2 = MIMEText(html_content, "html")
-                msg.attach(part1)
-                msg.attach(part2)
-
-                with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=12) as server:
+                with smtplib.SMTP("smtp.gmail.com", 587, timeout=12) as server:
+                    server.ehlo()
+                    server.starttls()
+                    server.ehlo()
                     server.login(smtp_user, smtp_password)
                     server.sendmail(smtp_user, to_email, msg.as_string())
-                print(f"[Email Success] Registration confirmation email sent to {to_email}")
-            except Exception as e:
-                print(f"[Email Error] Failed to send email to {to_email}: {e}")
+                print(f"[Email Success via TLS 587] Registration confirmation email sent to {to_email}")
+                sent = True
+            except Exception as e1:
+                print(f"[Email TLS 587 Exception] {e1}. Retrying with SSL 465...")
+
+            # Attempt 2: SSL Port 465
+            if not sent:
+                try:
+                    with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=12) as server:
+                        server.login(smtp_user, smtp_password)
+                        server.sendmail(smtp_user, to_email, msg.as_string())
+                    print(f"[Email Success via SSL 465] Registration confirmation email sent to {to_email}")
+                    sent = True
+                except Exception as e2:
+                    print(f"[Email SSL 465 Exception] Failed to send confirmation email to {to_email}: {e2}")
 
     thread = threading.Thread(target=_worker, daemon=True)
     thread.start()

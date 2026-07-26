@@ -74,6 +74,7 @@ class Registration(Base):
     team_id = Column(UUID(as_uuid=True), ForeignKey("teams.team_id", ondelete="SET NULL"), nullable=True)
     payment_order_id = Column(String, nullable=False)
     payment_status = Column(String, nullable=False, default="PENDING")
+    email_sent = Column(Boolean, default=False, nullable=True)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
 
     # Relationships for Eager Loading
