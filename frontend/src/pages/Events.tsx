@@ -1478,29 +1478,25 @@ export default function Events({ onBack: _onBack }: Props) {
       {view === 'grid' && (
         <>
           {/* Top EVENTS Section Header Label */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-cyan-950/40 via-purple-950/40 to-slate-950/60 border border-cyan-500/30 mb-8 sm:mb-10 w-full box-border shadow-[0_0_25px_rgba(0,243,255,0.15)] backdrop-blur-md">
-            <div className="flex items-center gap-3 text-left">
+          <div className="flex flex-col items-center justify-center text-center p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-cyan-950/40 via-purple-950/40 to-slate-950/60 border border-cyan-500/30 mb-8 sm:mb-10 w-full box-border shadow-[0_0_25px_rgba(0,243,255,0.15)] backdrop-blur-md">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 sm:gap-3 text-center">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/25 via-purple-500/25 to-pink-500/25 border border-cyan-400/50 flex items-center justify-center text-xl shrink-0 shadow-[0_0_15px_rgba(0,243,255,0.3)]">
                 🚀
               </div>
               <div>
-                <h2 className="text-xl sm:text-2xl font-black font-mono tracking-widest uppercase m-0 flex items-center gap-2">
+                <h2 className="text-xl sm:text-2xl font-black font-mono tracking-widest uppercase m-0 flex items-center justify-center gap-2 text-center">
                   <span className="bg-gradient-to-r from-cyan-300 via-purple-200 to-pink-400 bg-clip-text text-transparent">EVENTS</span>
                 </h2>
-                <p className="text-[11px] sm:text-xs text-cyan-200/70 font-mono tracking-wide m-0 mt-0.5">
+                <p className="text-[11px] sm:text-xs text-cyan-200/70 font-mono tracking-wide m-0 mt-0.5 text-center">
                   ENVISION '26 COMPETITIONS & KEYNOTE SEMINARS
                 </p>
               </div>
-            </div>
-            <div className="self-start sm:self-center px-3.5 py-1.5 rounded-full bg-cyan-500/15 border border-cyan-400/40 text-cyan-300 font-mono text-xs font-black tracking-wider flex items-center gap-2 shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-              <span>6 OFFICIAL TRACKS</span>
             </div>
           </div>
 
           {isLoading && (
             <div className="w-full py-4 text-center text-xs font-mono text-cyan-400 animate-pulse bg-cyan-950/20 border border-cyan-500/20 rounded-xl mb-4">
-              ⚡ Loading catalog via React Query cache (5m staleTime)...
+              ⚡ Loading...
             </div>
           )}
 

@@ -149,8 +149,27 @@ def create_upi_order(
             detail="Registration is already paid and completed."
         )
 
-    event = db.query(models.Event).filter(models.Event.id == reg.event_name).first()
-    price_amount = event.price_amount if event else 49
+    event = db.query(models.Event).filter(
+        (models.Event.id == reg.event_name) |
+        (models.Event.id == getattr(reg, "event_id", "")) |
+        (models.Event.name.ilike(reg.event_name))
+    ).first()
+
+    if not event and reg.event_name:
+        reg_name_lower = reg.event_name.lower()
+        if "syntax" in reg_name_lower:
+            event = db.query(models.Event).filter(models.Event.id == "syntaxx").first()
+        elif "chess" in reg_name_lower or "carlsen" in reg_name_lower:
+            event = db.query(models.Event).filter(models.Event.id == "carlsen-chess").first()
+        elif "quiz" in reg_name_lower or "mindspark" in reg_name_lower:
+            event = db.query(models.Event).filter(models.Event.id == "mindspark").first()
+        elif "bid" in reg_name_lower or "auction" in reg_name_lower:
+            event = db.query(models.Event).filter(models.Event.id == "bidquest").first()
+        elif "photo" in reg_name_lower or "lens" in reg_name_lower:
+            event = db.query(models.Event).filter(models.Event.id == "lensverse").first()
+
+    price_amount = event.price_amount if (event and event.price_amount) else (reg.amount or 49)
+    event_display_name = event.name if event else reg.event_name
 
     order_id = reg.payment_order_id or f"ENV26-ORD-{uuid.uuid4().hex[:6].upper()}"
     if not reg.payment_order_id:
@@ -163,8 +182,60 @@ def create_upi_order(
         "status": "success",
         "order_id": order_id,
         "amount": price_amount,
+        "event_name": event_display_name,
         "currency": "INR",
         "upi_id": upi_id
+    }
+
+
+@router.get("/registration/{registration_id}")
+def get_registration_details_for_checkout(
+    registration_id: str,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Fetches exact registration & event details from the database for checkout page refresh resilience.
+    """
+    reg = db.query(models.Registration).filter(
+        models.Registration.reg_id == registration_id,
+        models.Registration.participant_id == current_user.id
+    ).first()
+
+    if not reg:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Registration record not found."
+        )
+
+    event = db.query(models.Event).filter(
+        (models.Event.id == reg.event_name) |
+        (models.Event.name.ilike(reg.event_name))
+    ).first()
+
+    if not event and reg.event_name:
+        reg_name_lower = reg.event_name.lower()
+        if "syntax" in reg_name_lower:
+            event = db.query(models.Event).filter(models.Event.id == "syntaxx").first()
+        elif "chess" in reg_name_lower or "carlsen" in reg_name_lower:
+            event = db.query(models.Event).filter(models.Event.id == "carlsen-chess").first()
+        elif "quiz" in reg_name_lower or "mindspark" in reg_name_lower:
+            event = db.query(models.Event).filter(models.Event.id == "mindspark").first()
+        elif "bid" in reg_name_lower or "auction" in reg_name_lower:
+            event = db.query(models.Event).filter(models.Event.id == "bidquest").first()
+        elif "photo" in reg_name_lower or "lens" in reg_name_lower:
+            event = db.query(models.Event).filter(models.Event.id == "lensverse").first()
+
+    price_amount = event.price_amount if (event and event.price_amount) else (reg.amount or 49)
+    event_display_name = event.name if event else reg.event_name
+
+    return {
+        "registration_id": reg.reg_id,
+        "event_name": event_display_name,
+        "amount": price_amount,
+        "payment_status": reg.payment_status,
+        "participant_name": current_user.full_name or current_user.name,
+        "fest_id": current_user.fest_id
     }
 
 
