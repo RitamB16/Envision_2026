@@ -166,62 +166,62 @@ Envision 2026
     <head>
       <meta charset="utf-8">
       <style>
-        body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #04010d; color: #e2e8f0; margin: 0; padding: 20px; }}
+        body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #04010d; color: #ffffff; margin: 0; padding: 20px; }}
         .card {{ max-width: 620px; margin: 0 auto; background: #0a051c; border: 1px solid #00f3ff; border-radius: 16px; padding: 30px; box-shadow: 0 0 35px rgba(0, 243, 255, 0.2); }}
         .header {{ text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 18px; margin-bottom: 22px; }}
         .title {{ color: #00f3ff; font-size: 24px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; margin: 0; }}
         .subtitle {{ color: #a855f7; font-size: 13px; font-weight: 700; margin-top: 6px; letter-spacing: 1px; }}
         .status-badge {{ display: inline-block; background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #10b981; padding: 6px 16px; border-radius: 20px; font-weight: 800; font-size: 12px; margin-top: 12px; }}
-        .box {{ background: #070318; border: 1px solid rgba(0, 243, 255, 0.3); border-radius: 12px; padding: 18px; margin: 20px 0; font-family: monospace; font-size: 13px; line-height: 1.8; }}
-        .btn-wa {{ display: block; width: 85%; margin: 16px auto; text-align: center; background: #25D366; color: #000000; padding: 14px 20px; border-radius: 12px; font-weight: 900; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 0 20px rgba(37, 211, 102, 0.4); }}
-        .btn-rules {{ display: inline-block; padding: 10px 18px; background: rgba(0,243,255,0.15); border: 1px solid #00f3ff; color: #00f3ff; border-radius: 8px; text-decoration: none; font-size: 12px; font-weight: 700; margin: 6px 4px; }}
-        .footer {{ text-align: center; font-size: 11px; color: #6b7280; margin-top: 28px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px; }}
+        .box {{ background: #070318; border: 1px solid rgba(0, 243, 255, 0.3); border-radius: 12px; padding: 20px; margin: 20px 0; font-family: monospace; font-size: 13.5px; line-height: 1.9; color: #ffffff !important; }}
+        .btn-wa {{ display: block; width: 85%; margin: 18px auto; text-align: center; background: #25D366; color: #000000 !important; padding: 14px 20px; border-radius: 12px; font-weight: 900; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 0 20px rgba(37, 211, 102, 0.4); }}
+        .btn-rules {{ display: inline-block; padding: 10px 18px; background: rgba(0,243,255,0.15); border: 1px solid #00f3ff; color: #00f3ff !important; border-radius: 8px; text-decoration: none; font-size: 12px; font-weight: 700; margin: 6px 4px; }}
+        .footer {{ text-align: center; font-size: 11.5px; color: #9ca3af !important; margin-top: 28px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px; line-height: 1.5; }}
       </style>
     </head>
-    <body>
-      <div class="card">
+    <body style="background-color: #04010d; color: #ffffff !important;">
+      <div class="card" style="background-color: #0a051c; border: 1px solid #00f3ff;">
         <div class="header">
-          <h1 class="title">ENVISION '26 TECHFEST</h1>
-          <div class="subtitle">REGISTRATION CONFIRMED</div>
-          <div class="status-badge">✓ PAYMENT VERIFIED & SEAT CONFIRMED</div>
+          <h1 class="title" style="color: #00f3ff !important;">ENVISION '26 TECHFEST</h1>
+          <div class="subtitle" style="color: #a855f7 !important;">REGISTRATION CONFIRMED</div>
+          <div class="status-badge" style="color: #10b981 !important;">✓ PAYMENT VERIFIED & SEAT CONFIRMED</div>
         </div>
 
-        <p>Dear <strong>{participant_name}</strong>,</p>
-        <p>Greetings!</p>
-        <p>We are pleased to inform you that your registration for <strong>{event_name}</strong> has been successfully confirmed.</p>
+        <p style="color: #ffffff !important; font-size: 15px; margin: 12px 0;">Dear <strong style="color: #ffffff !important;">{participant_name}</strong>,</p>
+        <p style="color: #ffffff !important; font-size: 15px; margin: 8px 0;">Greetings!</p>
+        <p style="color: #ffffff !important; font-size: 15px; margin: 8px 0 16px 0;">We are pleased to inform you that your registration for <strong style="color: #00f3ff !important;">{event_name}</strong> has been successfully confirmed.</p>
 
-        <div class="box">
-          <div>📌 <strong>PARTICIPANT NAME:</strong> {participant_name}</div>
-          <div>🎫 <strong>REGISTRATION ID:</strong> <span style="color: #a855f7;">{registration_id}</span></div>
-          <div>🆔 <strong>FEST ID:</strong> <span style="color: #00f3ff;">{fest_id}</span></div>
-          <div>🏆 <strong>REGISTERED EVENT:</strong> <span style="color: #ffffff;">{event_name}</span></div>
-          <div>💳 <strong>PAYMENT UTR:</strong> {utr_number or 'VERIFIED'}</div>
-          <div>📅 <strong>EVENT DATE:</strong> 6th August 2026</div>
-          <div>⏰ <strong>REPORTING TIME:</strong> 9:30 AM IST</div>
+        <div class="box" style="background: #070318; border: 1px solid rgba(0, 243, 255, 0.4); color: #ffffff !important;">
+          <div style="margin-bottom: 6px; color: #ffffff !important;">📌 <span style="color: #94a3b8 !important;">PARTICIPANT NAME:</span> <strong style="color: #ffffff !important;">{participant_name}</strong></div>
+          <div style="margin-bottom: 6px; color: #ffffff !important;">🎫 <span style="color: #94a3b8 !important;">REGISTRATION ID:</span> <span style="color: #c084fc !important; font-weight: bold;">{registration_id}</span></div>
+          <div style="margin-bottom: 6px; color: #ffffff !important;">🆔 <span style="color: #94a3b8 !important;">FEST ID:</span> <span style="color: #38bdf8 !important; font-weight: bold;">{fest_id}</span></div>
+          <div style="margin-bottom: 6px; color: #ffffff !important;">🏆 <span style="color: #94a3b8 !important;">REGISTERED EVENT:</span> <strong style="color: #ffffff !important;">{event_name}</strong></div>
+          <div style="margin-bottom: 6px; color: #ffffff !important;">💳 <span style="color: #94a3b8 !important;">PAYMENT UTR:</span> <strong style="color: #f1f5f9 !important;">{utr_number or 'VERIFIED'}</strong></div>
+          <div style="margin-bottom: 6px; color: #ffffff !important;">📅 <span style="color: #94a3b8 !important;">EVENT DATE:</span> <strong style="color: #ffffff !important;">6th August 2026</strong></div>
+          <div style="margin-bottom: 6px; color: #ffffff !important;">⏰ <span style="color: #94a3b8 !important;">REPORTING TIME:</span> <strong style="color: #ffffff !important;">9:30 AM IST</strong></div>
         </div>
 
-        <p>To receive all important announcements, event schedules, reporting instructions, and other updates, please join our official WhatsApp Community using the link below:</p>
+        <p style="color: #f1f5f9 !important; font-size: 13.5px; line-height: 1.6; margin: 18px 0 14px 0;">To receive all important announcements, event schedules, reporting instructions, and other updates, please join our official WhatsApp Community using the link below:</p>
 
-        <a href="{COMMUNITY_LINK}" class="btn-wa" target="_blank">🔗 JOIN OFFICIAL WHATSAPP COMMUNITY &rarr;</a>
+        <a href="{COMMUNITY_LINK}" class="btn-wa" target="_blank" style="color: #000000 !important; background-color: #25D366;">🔗 JOIN OFFICIAL WHATSAPP COMMUNITY &rarr;</a>
 
-        <div style="background: rgba(168,85,247,0.1); border: 1px solid #a855f7; border-radius: 10px; padding: 14px; text-align: center; margin: 16px 0;">
-          <p style="margin: 0; font-size: 13px;">📌 <strong>WhatsApp Group Name:</strong> <strong style="color: #00f3ff;">{group_name}</strong></p>
-          <p style="margin: 6px 0 0 0; font-size: 11.5px; color: #cbd5e1;">After joining the community, please join the above-mentioned WhatsApp group for your registered event.</p>
+        <div style="background: #0f0826; border: 1px solid #a855f7; border-radius: 12px; padding: 16px; text-align: center; margin: 18px 0;">
+          <p style="margin: 0; font-size: 14px; color: #ffffff !important;">📌 <strong>WhatsApp Group Name:</strong> <strong style="color: #38bdf8 !important;">{group_name}</strong></p>
+          <p style="margin: 6px 0 0 0; font-size: 12px; color: #cbd5e1 !important;">After joining the community, please join the above-mentioned WhatsApp group for your registered event.</p>
         </div>
 
-        <p style="font-size: 12.5px; color: #cbd5e1; line-height: 1.6;">
+        <p style="font-size: 12.5px; color: #cbd5e1 !important; line-height: 1.6; margin: 16px 0;">
           All further updates regarding the event will be shared only through this WhatsApp Community and the respective event WhatsApp group. We request you to join the Community as soon as possible to avoid missing any important information.
         </p>
 
-        <p style="text-align: center; margin-top: 16px;">
-          <a href="{rule_url}" class="btn-rules" target="_blank">📜 View Event Guidelines & Rules</a>
-          <a href="{brochure_url}" class="btn-rules" style="border-color: #a855f7; color: #a855f7;" target="_blank">📄 Download Brochure PDF</a>
+        <p style="text-align: center; margin-top: 20px;">
+          <a href="{rule_url}" class="btn-rules" target="_blank" style="color: #00f3ff !important;">📜 View Event Guidelines & Rules</a>
+          <a href="{brochure_url}" class="btn-rules" style="border-color: #a855f7; color: #c084fc !important;" target="_blank">📄 Download Brochure PDF</a>
         </p>
 
-        <p>We look forward to your participation and wish you the very best for the event!</p>
+        <p style="color: #ffffff !important; font-size: 14px; margin-top: 20px;">We look forward to your participation and wish you the very best for the event!</p>
 
-        <div class="footer">
-          <strong>Regards,</strong><br>
+        <div class="footer" style="color: #9ca3af !important;">
+          <strong style="color: #ffffff !important;">Regards,</strong><br>
           Organizing Team<br>
           Envision 2026 &bull; RKMRC Narendrapur
         </div>
@@ -281,45 +281,45 @@ Envision 2026 • RKMRC Narendrapur
     <head>
       <meta charset="utf-8">
       <style>
-        body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #04010d; color: #e2e8f0; margin: 0; padding: 20px; }}
+        body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #04010d; color: #ffffff; margin: 0; padding: 20px; }}
         .card {{ max-width: 600px; margin: 0 auto; background: #0a051c; border: 1px solid #00f3ff; border-radius: 16px; padding: 28px; box-shadow: 0 0 35px rgba(0, 243, 255, 0.2); }}
         .header {{ text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 16px; margin-bottom: 20px; }}
         .title {{ color: #00f3ff; font-size: 24px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; margin: 0; }}
         .subtitle {{ color: #a855f7; font-size: 13px; font-weight: 700; margin-top: 6px; letter-spacing: 1px; }}
         .status-badge {{ display: inline-block; background: rgba(0, 243, 255, 0.15); border: 1px solid #00f3ff; color: #00f3ff; padding: 6px 16px; border-radius: 20px; font-weight: 800; font-size: 12px; margin-top: 12px; }}
-        .box {{ background: #070318; border: 1px solid rgba(0, 243, 255, 0.3); border-radius: 12px; padding: 18px; margin: 20px 0; font-family: monospace; font-size: 13px; line-height: 1.8; }}
-        .btn-brochure {{ display: block; width: 80%; margin: 18px auto; text-align: center; background: linear-gradient(to right, #00f3ff, #a855f7); color: #000000; padding: 13px 20px; border-radius: 12px; font-weight: 900; text-decoration: none; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 0 20px rgba(0, 243, 255, 0.4); }}
-        .footer {{ text-align: center; font-size: 11px; color: #6b7280; margin-top: 24px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px; }}
+        .box {{ background: #070318; border: 1px solid rgba(0, 243, 255, 0.3); border-radius: 12px; padding: 20px; margin: 20px 0; font-family: monospace; font-size: 13.5px; line-height: 1.9; color: #ffffff !important; }}
+        .btn-brochure {{ display: block; width: 80%; margin: 18px auto; text-align: center; background: linear-gradient(to right, #00f3ff, #a855f7); color: #000000 !important; padding: 13px 20px; border-radius: 12px; font-weight: 900; text-decoration: none; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 0 20px rgba(0, 243, 255, 0.4); }}
+        .footer {{ text-align: center; font-size: 11.5px; color: #9ca3af !important; margin-top: 24px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 14px; line-height: 1.5; }}
       </style>
     </head>
-    <body>
-      <div class="card">
+    <body style="background-color: #04010d; color: #ffffff !important;">
+      <div class="card" style="background-color: #0a051c; border: 1px solid #00f3ff;">
         <div class="header">
-          <h1 class="title">ENVISION '26 TECHFEST</h1>
-          <div class="subtitle">KEYNOTE SEMINAR REGISTRATION</div>
-          <div class="status-badge">✓ SEAT CONFIRMED (100% FREE PASS)</div>
+          <h1 class="title" style="color: #00f3ff !important;">ENVISION '26 TECHFEST</h1>
+          <div class="subtitle" style="color: #a855f7 !important;">KEYNOTE SEMINAR REGISTRATION</div>
+          <div class="status-badge" style="color: #00f3ff !important;">✓ SEAT CONFIRMED (100% FREE PASS)</div>
         </div>
 
-        <p>Dear <strong>{participant_name}</strong>,</p>
-        <p>Greetings!</p>
-        <p>We are pleased to inform you that your registration for <strong>TECH TALK</strong> has been successfully confirmed.</p>
+        <p style="color: #ffffff !important; font-size: 15px; margin: 12px 0;">Dear <strong style="color: #ffffff !important;">{participant_name}</strong>,</p>
+        <p style="color: #ffffff !important; font-size: 15px; margin: 8px 0;">Greetings!</p>
+        <p style="color: #ffffff !important; font-size: 15px; margin: 8px 0 16px 0;">We are pleased to inform you that your registration for <strong style="color: #00f3ff !important;">TECH TALK</strong> has been successfully confirmed.</p>
 
-        <div class="box">
-          <div>📌 <strong>PARTICIPANT NAME:</strong> {participant_name}</div>
-          <div>🎫 <strong>REGISTRATION ID:</strong> <span style="color: #a855f7;">{registration_id or 'CONFIRMED'}</span></div>
-          <div>🆔 <strong>FEST ID:</strong> <span style="color: #00f3ff;">{fest_id}</span></div>
-          <div>🏆 <strong>REGISTERED EVENT:</strong> TECH TALK</div>
-          <div>📅 <strong>EVENT DATE:</strong> 6th August 2026</div>
-          <div>⏰ <strong>REPORTING TIME:</strong> 10:00 AM IST</div>
-          <div>📍 <strong>VENUE:</strong> Mumukshananda Auditorium, RKMRC Narendrapur</div>
+        <div class="box" style="background: #070318; border: 1px solid rgba(0, 243, 255, 0.4); color: #ffffff !important;">
+          <div style="margin-bottom: 6px; color: #ffffff !important;">📌 <span style="color: #94a3b8 !important;">PARTICIPANT NAME:</span> <strong style="color: #ffffff !important;">{participant_name}</strong></div>
+          <div style="margin-bottom: 6px; color: #ffffff !important;">🎫 <span style="color: #94a3b8 !important;">REGISTRATION ID:</span> <span style="color: #c084fc !important; font-weight: bold;">{registration_id or 'CONFIRMED'}</span></div>
+          <div style="margin-bottom: 6px; color: #ffffff !important;">🆔 <span style="color: #94a3b8 !important;">FEST ID:</span> <span style="color: #38bdf8 !important; font-weight: bold;">{fest_id}</span></div>
+          <div style="margin-bottom: 6px; color: #ffffff !important;">🏆 <span style="color: #94a3b8 !important;">REGISTERED EVENT:</span> <strong style="color: #ffffff !important;">TECH TALK</strong></div>
+          <div style="margin-bottom: 6px; color: #ffffff !important;">📅 <span style="color: #94a3b8 !important;">EVENT DATE:</span> <strong style="color: #ffffff !important;">6th August 2026</strong></div>
+          <div style="margin-bottom: 6px; color: #ffffff !important;">⏰ <span style="color: #94a3b8 !important;">REPORTING TIME:</span> <strong style="color: #ffffff !important;">10:00 AM IST</strong></div>
+          <div style="margin-bottom: 6px; color: #ffffff !important;">📍 <span style="color: #94a3b8 !important;">VENUE:</span> <strong style="color: #ffffff !important;">Mumukshananda Auditorium, RKMRC Narendrapur</strong></div>
         </div>
 
-        <a href="{brochure_url}" class="btn-brochure" target="_blank">📄 DOWNLOAD BROCHURE PDF &rarr;</a>
+        <a href="{brochure_url}" class="btn-brochure" target="_blank" style="color: #000000 !important;">📄 DOWNLOAD BROCHURE PDF &rarr;</a>
 
-        <p>We look forward to your participation and wish you the very best for the event!</p>
+        <p style="color: #ffffff !important; font-size: 14px; margin-top: 20px;">We look forward to your participation and wish you the very best for the event!</p>
 
-        <div class="footer">
-          <strong>Regards,</strong><br>
+        <div class="footer" style="color: #9ca3af !important;">
+          <strong style="color: #ffffff !important;">Regards,</strong><br>
           Organizing Team<br>
           Envision 2026 &bull; RKMRC Narendrapur
         </div>
