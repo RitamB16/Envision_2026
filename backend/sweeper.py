@@ -49,15 +49,26 @@ def process_approved_registrations_sync():
                     utr_val = getattr(reg, "utr_number", None) or getattr(reg, "payment_order_id", None) or "VERIFIED"
 
                     if recipients:
-                        dispatch_registration_approval_email(
-                            to_emails=recipients,
-                            participant_name=participant_name,
-                            fest_id=fest_id,
-                            registration_id=str(reg.reg_id),
-                            event_name=reg.event_name,
-                            event_id=canonical_event_id,
-                            utr_number=utr_val
-                        )
+                        clean_ev = reg.event_name.lower().replace(" ", "-").strip()
+                        if clean_ev in ("techtalk", "tech-talk"):
+                            from email_utils import dispatch_techtalk_confirmation_email
+                            for email in recipients:
+                                dispatch_techtalk_confirmation_email(
+                                    to_email=email,
+                                    participant_name=participant_name,
+                                    fest_id=fest_id,
+                                    registration_id=str(reg.reg_id)
+                                )
+                        else:
+                            dispatch_registration_approval_email(
+                                to_emails=recipients,
+                                participant_name=participant_name,
+                                fest_id=fest_id,
+                                registration_id=str(reg.reg_id),
+                                event_name=reg.event_name,
+                                event_id=canonical_event_id,
+                                utr_number=utr_val
+                            )
                         reg.email_sent = True
                         if reg.team_id:
                             for tm_reg in db.query(models.Registration).filter(models.Registration.team_id == reg.team_id).all():

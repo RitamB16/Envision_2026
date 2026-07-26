@@ -112,14 +112,14 @@ def dispatch_registration_approval_email(
     utr_number: Optional[str] = None
 ):
     """
-    Dispatches exact registration confirmation email template after manual payment verification.
+    Dispatches exact registration confirmation email template after manual payment verification for paid events.
     """
     clean_id = (event_id or "").lower().replace(" ", "-")
     group_name = EVENT_GROUP_NAMES.get(clean_id, f"Envision'26 {event_name}")
     rule_url = EVENT_RULES_LINKS.get(clean_id, f"{settings.FRONTEND_URL}/events")
     brochure_url = "https://drive.google.com/file/d/18zngC1fwb-heQlqg14H6lDjgBvioxfeJ/view"
 
-    subject = "Registration Confirmed – Envision'26"
+    subject = f"Registration Confirmed – Envision'26 ({event_name.upper()})"
 
     text_content = f"""Dear {participant_name},
 
@@ -158,7 +158,7 @@ Envision 2026
         .status-badge {{ display: inline-block; background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #10b981; padding: 6px 16px; border-radius: 20px; font-weight: 800; font-size: 12px; margin-top: 12px; }}
         .box {{ background: #070318; border: 1px solid rgba(0, 243, 255, 0.3); border-radius: 12px; padding: 18px; margin: 20px 0; font-family: monospace; font-size: 13px; line-height: 1.8; }}
         .btn-wa {{ display: block; width: 85%; margin: 16px auto; text-align: center; background: #25D366; color: #000000; padding: 14px 20px; border-radius: 12px; font-weight: 900; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 0 20px rgba(37, 211, 102, 0.4); }}
-        .btn-rules {{ display: inline-block; padding: 10px 18px; background: rgba(0,243,255,0.15); border: 1px solid #00f3ff; color: #00f3ff; border-radius: 8px; text-decoration: none; font-size: 12px; font-weight: 700; margin-top: 10px; }}
+        .btn-rules {{ display: inline-block; padding: 10px 18px; background: rgba(0,243,255,0.15); border: 1px solid #00f3ff; color: #00f3ff; border-radius: 8px; text-decoration: none; font-size: 12px; font-weight: 700; margin: 6px 4px; }}
         .footer {{ text-align: center; font-size: 11px; color: #6b7280; margin-top: 28px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px; }}
       </style>
     </head>
@@ -188,7 +188,7 @@ Envision 2026
 
         <a href="{COMMUNITY_LINK}" class="btn-wa" target="_blank">🔗 JOIN OFFICIAL WHATSAPP COMMUNITY &rarr;</a>
 
-        <div style="background: rgba(168,85,247,0.1); border: 1px border #a855f7; border-radius: 10px; padding: 14px; text-align: center; margin: 16px 0;">
+        <div style="background: rgba(168,85,247,0.1); border: 1px solid #a855f7; border-radius: 10px; padding: 14px; text-align: center; margin: 16px 0;">
           <p style="margin: 0; font-size: 13px;">📌 <strong>WhatsApp Group Name:</strong> <strong style="color: #00f3ff;">{group_name}</strong></p>
           <p style="margin: 6px 0 0 0; font-size: 11.5px; color: #cbd5e1;">After joining the community, please join the above-mentioned WhatsApp group for your registered event.</p>
         </div>
@@ -217,10 +217,16 @@ Envision 2026
     send_email_in_background(to_emails, subject, html_content, text_content)
 
 
-def dispatch_techtalk_confirmation_email(to_email: str, participant_name: str, fest_id: str):
+def dispatch_techtalk_confirmation_email(
+    to_email: str,
+    participant_name: str,
+    fest_id: str,
+    registration_id: Optional[str] = None
+):
     """
     Dispatches immediate confirmation email for Tech Talk free seminar registration.
     Includes ONLY: Event Name, Date (6th August 2026), Reporting Time (10:00 AM IST), Venue (Mumukshananda Auditorium, RKMRC Narendrapur), Participant Name, Fest ID, and PDF Brochure Link.
+    NO payment verified badge, NO UTR number, NO WhatsApp community link!
     """
     if not to_email or "@" not in to_email:
         return
@@ -236,6 +242,7 @@ We are pleased to inform you that your registration for TECH TALK (Keynote Semin
 
 Registration Details:
 • Participant Name: {participant_name}
+• Registration ID: {registration_id or 'CONFIRMED'}
 • Fest ID: {fest_id}
 • Event Name: TECH TALK
 • Event Date: 6th August 2026
@@ -245,7 +252,7 @@ Registration Details:
 Official PDF Brochure Link:
 {brochure_url}
 
-We look forward to your participation!
+We look forward to your participation and wish you the very best for the event!
 
 Regards,
 Organizing Team
@@ -263,7 +270,7 @@ Envision 2026 • RKMRC Narendrapur
         .header {{ text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 16px; margin-bottom: 20px; }}
         .title {{ color: #00f3ff; font-size: 24px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; margin: 0; }}
         .subtitle {{ color: #a855f7; font-size: 13px; font-weight: 700; margin-top: 6px; letter-spacing: 1px; }}
-        .status-badge {{ display: inline-block; background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #10b981; padding: 6px 16px; border-radius: 20px; font-weight: 800; font-size: 12px; margin-top: 12px; }}
+        .status-badge {{ display: inline-block; background: rgba(0, 243, 255, 0.15); border: 1px solid #00f3ff; color: #00f3ff; padding: 6px 16px; border-radius: 20px; font-weight: 800; font-size: 12px; margin-top: 12px; }}
         .box {{ background: #070318; border: 1px solid rgba(0, 243, 255, 0.3); border-radius: 12px; padding: 18px; margin: 20px 0; font-family: monospace; font-size: 13px; line-height: 1.8; }}
         .btn-brochure {{ display: block; width: 80%; margin: 18px auto; text-align: center; background: linear-gradient(to right, #00f3ff, #a855f7); color: #000000; padding: 13px 20px; border-radius: 12px; font-weight: 900; text-decoration: none; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 0 20px rgba(0, 243, 255, 0.4); }}
         .footer {{ text-align: center; font-size: 11px; color: #6b7280; margin-top: 24px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px; }}
@@ -282,15 +289,16 @@ Envision 2026 • RKMRC Narendrapur
         <p>We are pleased to inform you that your registration for <strong>TECH TALK</strong> has been successfully confirmed.</p>
 
         <div class="box">
-          <div>👤 <strong>NAME:</strong> {participant_name}</div>
+          <div>📌 <strong>PARTICIPANT NAME:</strong> {participant_name}</div>
+          <div>🎫 <strong>REGISTRATION ID:</strong> <span style="color: #a855f7;">{registration_id or 'CONFIRMED'}</span></div>
           <div>🆔 <strong>FEST ID:</strong> <span style="color: #00f3ff;">{fest_id}</span></div>
-          <div>🏆 <strong>EVENT NAME:</strong> TECH TALK</div>
-          <div>📅 <strong>DATE:</strong> 6th August 2026</div>
+          <div>🏆 <strong>REGISTERED EVENT:</strong> TECH TALK</div>
+          <div>📅 <strong>EVENT DATE:</strong> 6th August 2026</div>
           <div>⏰ <strong>REPORTING TIME:</strong> 10:00 AM IST</div>
           <div>📍 <strong>VENUE:</strong> Mumukshananda Auditorium, RKMRC Narendrapur</div>
         </div>
 
-        <a href="{brochure_url}" class="btn-brochure" target="_blank">📄 VIEW OFFICIAL FESTIVAL BROCHURE PDF &rarr;</a>
+        <a href="{brochure_url}" class="btn-brochure" target="_blank">📄 DOWNLOAD BROCHURE PDF &rarr;</a>
 
         <p>We look forward to your participation and wish you the very best for the event!</p>
 
