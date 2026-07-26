@@ -322,6 +322,13 @@ const OTHER_SECTIONS: CategorySection[] = [
         phone: '+91 8170909952',
         photoUrl: 'https://ibb.co/G4QPb3pj',
         imgId: 'G4QPb3pj'
+      },
+      {
+        name: 'PRITHIRAJ SENGUPTA',
+        role: 'CODING COORDINATOR',
+        phone: '+91 7063235247',
+        photoUrl: 'https://ibb.co/Lzc53n3P',
+        imgId: 'Lzc53n3P'
       }
     ]
   }
