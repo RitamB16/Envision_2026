@@ -81,6 +81,52 @@ def check_event_capacity(db: Session, event_name: str):
         )
 
 
+def auto_enroll_techtalk(db: Session, participant_id: uuid.UUID) -> Optional[models.Registration]:
+    """
+    Idempotent helper function:
+    Automatically enrolls a participant into Tech Talk (techtalk) with payment_status="PAID"
+    whenever they register for any event in the tech fest.
+    """
+    if not participant_id:
+        return None
+
+    existing_techtalk = db.query(models.Registration).filter(
+        models.Registration.participant_id == participant_id,
+        models.Registration.event_name.ilike("techtalk")
+    ).first()
+
+    if existing_techtalk:
+        if existing_techtalk.payment_status not in ("PAID", "COMPLETED", "SUCCESS"):
+            existing_techtalk.payment_status = "PAID"
+            db.add(existing_techtalk)
+            try:
+                db.commit()
+                db.refresh(existing_techtalk)
+            except Exception:
+                db.rollback()
+        return existing_techtalk
+
+    auto_reg = models.Registration(
+        participant_id=participant_id,
+        event_name="techtalk",
+        team_id=None,
+        payment_order_id=f"auto_techtalk_{uuid.uuid4().hex[:10]}",
+        payment_status="PAID"
+    )
+    db.add(auto_reg)
+    try:
+        db.commit()
+        db.refresh(auto_reg)
+        print(f"[AUTO-ENROLL SUCCESS] Participant {participant_id} auto-enrolled into Tech Talk.")
+        return auto_reg
+    except Exception as err:
+        db.rollback()
+        return db.query(models.Registration).filter(
+            models.Registration.participant_id == participant_id,
+            models.Registration.event_name.ilike("techtalk")
+        ).first()
+
+
 @router.post("/register/solo")
 def register_solo(
     payload: schemas.SoloRegistrationCreate,
@@ -201,6 +247,9 @@ def register_solo(
         db.add(registration)
         db.commit()
         db.refresh(registration)
+
+        # Auto-enroll in Tech Talk for all festival participants
+        auto_enroll_techtalk(db, participant.id)
 
         return {
             "status": "success",
@@ -388,6 +437,11 @@ def register_team(
 
         db.commit()
         db.refresh(leader_reg)
+
+        # Auto-enroll leader and all team members into Tech Talk
+        auto_enroll_techtalk(db, leader.id)
+        for tm in teammates:
+            auto_enroll_techtalk(db, tm.id)
 
         return {
             "status": "success",

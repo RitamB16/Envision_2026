@@ -32,7 +32,8 @@ DEFAULT_EVENTS = [
         "benefits": "Free Keynote Entry Pass to RKMRC Tech Talk, Technical Seminars & Certificates.",
         "date": "6th August",
         "venue": "Mumukshananda Auditorium, RKMRC",
-        "time": "10:30 AM"
+        "time": "10:30 AM",
+        "prize": "Free E-Certificates of Participation for Attendees"
     },
     {
         "id": "syntaxx",
@@ -49,7 +50,8 @@ DEFAULT_EVENTS = [
         "benefits": "Participation certificate, Exciting Swags for Winner",
         "date": "6th August",
         "venue": "Computer Science Lab",
-        "time": "1 PM"
+        "time": "1 PM",
+        "prize": "Winning Cash Prize Worth ₹399, Tech Medals & Winner Certificates"
     },
     {
         "id": "mindspark",
@@ -66,7 +68,8 @@ DEFAULT_EVENTS = [
         "benefits": "Participation certificate, Winning Cash prize worth ₹499",
         "date": "6th August",
         "venue": "Mumukshananda Auditorium, RKMRC",
-        "time": "11:30 AM"
+        "time": "11:30 AM",
+        "prize": "Winning Cash Prize Worth ₹499 & Champion Medals"
     },
     {
         "id": "bidquest",
@@ -80,10 +83,11 @@ DEFAULT_EVENTS = [
         "max_capacity": 70,
         "notes": "Team Event (max. 3 members)",
         "image": "/images/events/bidquest.jpg",
-        "benefits": "Participation certificate, Winning Cash prize worth ₹1199",
+        "benefits": "Participation certificate, Winning Cash prize worth ₹1500",
         "date": "6th August",
         "venue": "Mumukshananda Auditorium, RKMRC",
-        "time": "11:00 AM"
+        "time": "11:00 AM",
+        "prize": "Winning Cash Prize Worth ₹1500 & Franchise Winner Medals"
     },
     {
         "id": "lensverse",
@@ -100,7 +104,8 @@ DEFAULT_EVENTS = [
         "benefits": "Top 10 shortlisted photographers get invited to RKMRC campus with FREE food & festival pass to compete in live campus photo competition for winner cash prizes!",
         "date": "6th August",
         "venue": "RKMRC Campus (For Top 10 Finalists)",
-        "time": "10:00 AM"
+        "time": "10:00 AM",
+        "prize": "Winning Cash Prize Worth ₹499, Winner Medals & Certificates"
     },
     {
         "id": "carlsen-chess",
@@ -117,7 +122,8 @@ DEFAULT_EVENTS = [
         "benefits": "Participation certificate, Winning Cash prize worth ₹499",
         "date": "6th August",
         "venue": "Mumukshananda Auditorium, RKMRC",
-        "time": "1 PM"
+        "time": "1 PM",
+        "prize": "Winning Cash Prize Worth ₹499 & Grand Master Medals"
     }
 ]
 
@@ -143,6 +149,7 @@ def seed_events_if_empty(db: Session):
                 ev.benefits = item["benefits"]
                 ev.venue = item["venue"]
                 ev.max_capacity = item["max_capacity"]
+                ev.prize = item.get("prize")
         db.commit()
 
 
@@ -192,17 +199,10 @@ def get_user_registrations(
     ]
 
     if paid_registrations and "techtalk" not in registered_event_ids:
-        auto_techtalk_reg = models.EventRegistration(
-            user_id=current_user.id,
-            event_id="techtalk",
-            payment_order_id=f"auto_free_{uuid.uuid4().hex[:10]}",
-            payment_status="COMPLETED",
-            status="CONFIRMED"
-        )
-        db.add(auto_techtalk_reg)
-        db.commit()
-        db.refresh(auto_techtalk_reg)
-        registrations.append(auto_techtalk_reg)
+        from registration import auto_enroll_techtalk
+        auto_techtalk_reg = auto_enroll_techtalk(db, current_user.id)
+        if auto_techtalk_reg and auto_techtalk_reg.reg_id not in {r.reg_id for r in registrations}:
+            registrations.append(auto_techtalk_reg)
 
     all_events = {e.id: e for e in db.query(models.Event).all()}
     result = []
@@ -372,7 +372,7 @@ def register_for_event(
                     db.commit()
                     db.refresh(tm_user)
                 else:
-                    if not tm_user.fest_id or not tm_user.fest_id.startswith("ENV-2026-"):
+                    if not tm_user.fest_id:
                         tm_user.fest_id = generate_fest_id(db)
                     if tm_name and not tm_user.name:
                         tm_user.name = tm_name

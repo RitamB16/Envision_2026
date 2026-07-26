@@ -31,7 +31,7 @@ def generate_fest_id(db: Session) -> str:
 
 def ensure_valid_fest_id(user: User, db: Session) -> bool:
     """Checks if a user has a valid Fest ID, and generates one if they don't."""
-    if not user.fest_id or not (user.fest_id.startswith("ENV26-") or user.fest_id.startswith("ENV-2026-")):
+    if not user.fest_id:
         user.fest_id = generate_fest_id(db)
         return True
     return False

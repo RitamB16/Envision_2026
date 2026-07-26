@@ -49,6 +49,9 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
       try {
         const data = await api.get<UserProfile>('/users/me');
         setUser(data);
+        if (data.fest_id) {
+          localStorage.setItem('fest_id', data.fest_id);
+        }
         setFullName(data.full_name || data.name || '');
         setGender(data.gender || 'Male');
         setCollege(data.college || '');

@@ -205,6 +205,14 @@ def admin_approve_utr(
 
     db.commit()
 
+    # Auto-enroll in Tech Talk upon successful payment confirmation
+    if target_status == "PAID":
+        from registration import auto_enroll_techtalk
+        auto_enroll_techtalk(db, reg.participant_id)
+        if reg.team_id:
+            for tm_reg in db.query(models.Registration).filter(models.Registration.team_id == reg.team_id).all():
+                auto_enroll_techtalk(db, tm_reg.participant_id)
+
     return {
         "status": "success",
         "message": f"Registration '{reg.reg_id}' status updated to {target_status} after manual bank audit.",

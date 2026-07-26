@@ -67,6 +67,7 @@ class EventResponse(BaseModel):
     date: Optional[str] = None
     venue: Optional[str] = None
     time: Optional[str] = None
+    prize: Optional[str] = None
     created_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)

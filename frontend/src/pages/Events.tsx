@@ -22,6 +22,7 @@ interface EventData {
   date: string;
   venue: string;
   Time: string;
+  prize?: string;
 }
 
 const EVENT_RULES_LINKS: Record<string, string> = {
@@ -40,7 +41,7 @@ const EVENT_DESCRIPTIONS: Record<string, string> = {
   'carlsen-chess': 'This is a chess competition where you put your tactical brilliance and strategic thinking to the test. Outthink your opponents move by move, master the board, and checkmate your way to the championship.',
   chess: 'This is a chess competition where you put your tactical brilliance and strategic thinking to the test. Outthink your opponents move by move, master the board, and checkmate your way to the championship.',
   lensverse: 'This is an online photography competition where you capture stunning moments, express your unique vision, and showcase your creative eye through the lens to win recognition.',
-  techtalk: 'Join top industry visionaries and tech pioneers for an inspiring keynote seminar exploring AI breakthroughs, future tech stacks, and career pathways in modern software engineering.'
+  techtalk: "Join an engaging Tech Talk featuring experienced speakers from the technology industry and academia. The session will cover emerging technologies, career opportunities, industry trends, and practical insights to inspire and guide students. Whether you're a beginner or a tech enthusiast, this seminar offers valuable knowledge and real-world perspectives for everyone."
 };
 
 interface EventContact {
@@ -59,6 +60,26 @@ const EVENT_CONTACTS: Record<string, EventContact> = {
   techtalk: { head: 'Jyotipraba Pal', phone: '+91 97347 72175', rawPhone: '+919734772175' }
 };
 
+function getShortPrizeLabel(event: any): string {
+  const dbPrize = event?.prize || '';
+  if (dbPrize) {
+    if (dbPrize.includes('1500') || dbPrize.includes('₹1500')) return '₹1500 PRIZE';
+    if (dbPrize.includes('499') || dbPrize.includes('₹499')) return '₹499 PRIZE';
+    if (dbPrize.includes('399') || dbPrize.includes('₹399')) return '₹399 PRIZE';
+    if (dbPrize.toLowerCase().includes('certificate')) return 'FREE E-CERT';
+    if (dbPrize.toLowerCase().includes('cash')) return 'CASH PRIZES';
+  }
+
+  const id = (event?.id || '').toLowerCase();
+  if (id === 'mindspark') return '₹499 PRIZE';
+  if (id === 'bidquest') return '₹1500 PRIZE';
+  if (id === 'carlsen-chess' || id === 'chess') return '₹499 PRIZE';
+  if (id === 'techtalk') return 'FREE E-CERT';
+  if (id === 'syntaxx') return '₹399 PRIZE';
+  if (id === 'lensverse' || id === 'photography') return '₹499 PRIZE';
+  return dbPrize ? dbPrize.toUpperCase() : 'CASH PRIZES';
+}
+
 const EVENTS_DATA: EventData[] = [
   {
     id: 'techtalk',
@@ -74,7 +95,8 @@ const EVENTS_DATA: EventData[] = [
     benefits: 'Free Keynote Entry Pass to RKMRC Tech Talk, Technical Seminars & Certificates.',
     date: '6th August',
     venue: 'Mumukshananda Auditorium, RKMRC',
-    Time: '10:30 AM'
+    Time: '10:30 AM',
+    prize: 'Free E-Certificates of Participation for Attendees'
   },
   {
     id: 'syntaxx',
@@ -90,7 +112,8 @@ const EVENTS_DATA: EventData[] = [
     benefits: 'Participation certificate, Exciting Swags for Winner',
     date: '6th August',
     venue: 'Computer Science Lab',
-    Time: '1 PM'
+    Time: '1 PM',
+    prize: 'Winning Cash Prize Worth ₹399, Tech Medals & Winner Certificates'
   },
   {
     id: 'mindspark',
@@ -106,7 +129,8 @@ const EVENTS_DATA: EventData[] = [
     benefits: 'Participation certificate, Winning Cash prize worth ₹499',
     date: '6th August',
     venue: 'Mumukshananda Auditorium, RKMRC',
-    Time: '11:30 AM'
+    Time: '11:30 AM',
+    prize: 'Winning Cash Prize Worth ₹499 & Champion Medals'
   },
   {
     id: 'bidquest',
@@ -119,10 +143,11 @@ const EVENTS_DATA: EventData[] = [
     notes: 'Team Event (max. 3 members)',
     image: '/images/events/bidquest.jpg',
     placeholderAlt: 'BidQuest Auction Event',
-    benefits: 'Participation certificate, Winning Cash prize worth ₹1199',
+    benefits: 'Participation certificate, Winning Cash prize worth ₹1500',
     date: '6th August',
     venue: 'Mumukshananda Auditorium, RKMRC',
-    Time: '11:00 AM'
+    Time: '11:00 AM',
+    prize: 'Winning Cash Prize Worth ₹1500 & Franchise Winner Medals'
   },
   {
     id: 'lensverse',
@@ -138,7 +163,8 @@ const EVENTS_DATA: EventData[] = [
     benefits: 'Top 10 shortlisted photographers get invited to RKMRC campus with FREE food & festival pass to compete in live campus photo competition for winner cash prizes!',
     date: '6th August',
     venue: 'RKMRC Campus (For Top 10 Finalists)',
-    Time: '10:00 AM'
+    Time: '10:00 AM',
+    prize: 'Winning Cash Prize Worth ₹499, Winner Medals & Certificates'
   },
   {
     id: 'carlsen-chess',
@@ -154,7 +180,8 @@ const EVENTS_DATA: EventData[] = [
     benefits: 'Participation certificate, Winning Cash prize worth ₹499',
     date: '6th August',
     venue: 'Mumukshananda Auditorium, RKMRC',
-    Time: '1 PM'
+    Time: '1 PM',
+    prize: 'Winning Cash Prize Worth ₹499 & Grand Master Medals'
   }
 ];
 
@@ -200,7 +227,8 @@ export default function Events({ onBack: _onBack }: Props) {
             benefits: be.benefits || '',
             date: be.date || '6th August',
             venue: be.venue || 'RKMRC',
-            Time: be.time || '10:00 AM'
+            Time: be.time || '10:00 AM',
+            prize: be.prize || undefined
           }));
         }
       } catch (err) {
@@ -239,7 +267,8 @@ export default function Events({ onBack: _onBack }: Props) {
       benefits: singleEventDetail.benefits || '',
       date: singleEventDetail.date || '6th August',
       venue: singleEventDetail.venue || 'RKMRC',
-      Time: singleEventDetail.time || '10:00 AM'
+      Time: singleEventDetail.time || '10:00 AM',
+      prize: singleEventDetail.prize || undefined
     }
     : matchedEvent;
   const [activeTab, setActiveTab] = useState<'details' | 'rules' | 'contact' | 'terms'>('details');
@@ -804,6 +833,29 @@ export default function Events({ onBack: _onBack }: Props) {
           border: 1px solid rgba(168, 85, 247, 0.4);
         }
 
+        .card-prize-tag {
+          font-size: 0.68rem;
+          font-weight: 900;
+          letter-spacing: 0.08em;
+          color: #fbbf24;
+          text-transform: uppercase;
+          background: rgba(0, 0, 0, 0.85);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          padding: 0.3rem 0.65rem;
+          border-radius: 6px;
+          border: 1px solid rgba(251, 191, 36, 0.6);
+          box-shadow: 0 0 10px rgba(251, 191, 36, 0.25);
+        }
+
+        .cyber-card-bottom-badge-overlay {
+          position: absolute;
+          bottom: 10px;
+          right: 10px;
+          z-index: 10;
+          pointer-events: none;
+        }
+
         .card-price-tag {
           font-size: 0.75rem;
           font-weight: 900;
@@ -1072,6 +1124,26 @@ export default function Events({ onBack: _onBack }: Props) {
           text-transform: uppercase;
         }
 
+        .mobile-prize-badge {
+          background: rgba(0, 0, 0, 0.85);
+          border: 1px solid rgba(251, 191, 36, 0.6);
+          color: #fbbf24;
+          padding: 4px 10px;
+          border-radius: 6px;
+          font-size: 0.7rem;
+          font-weight: 900;
+          text-transform: uppercase;
+          box-shadow: 0 0 10px rgba(251, 191, 36, 0.25);
+        }
+
+        .mobile-bottom-badge-bar {
+          position: absolute;
+          bottom: 10px;
+          right: 10px;
+          z-index: 10;
+          pointer-events: none;
+        }
+
         .mobile-price-badge {
           background: rgba(0, 0, 0, 0.85);
           border: 1px solid rgba(0, 243, 255, 0.5);
@@ -1081,6 +1153,7 @@ export default function Events({ onBack: _onBack }: Props) {
           font-size: 0.7rem;
           font-weight: 900;
           text-transform: uppercase;
+          box-shadow: 0 0 10px rgba(0, 243, 255, 0.25);
         }
 
         .mobile-price-badge.free {
@@ -1132,6 +1205,7 @@ export default function Events({ onBack: _onBack }: Props) {
         .mobile-stat-label.date { color: #00f3ff; }
         .mobile-stat-label.venue { color: #c084fc; }
         .mobile-stat-label.time { color: #f472b6; }
+        .mobile-stat-label.prize { color: #fbbf24; }
 
         .mobile-stat-value {
           font-size: 0.82rem;
@@ -1462,7 +1536,10 @@ export default function Events({ onBack: _onBack }: Props) {
                       <img src={event.image} alt={event.placeholderAlt} className="cyber-card-img" />
                       <div className="cyber-card-badge-overlay">
                         <span className="card-category-tag">{event.category}</span>
-                        <span className={`card-price-tag ${event.price === 'FREE' ? 'free' : ''}`}>{event.price}</span>
+                        <span className="card-prize-tag">🏆 {getShortPrizeLabel(event)}</span>
+                      </div>
+                      <div className="cyber-card-bottom-badge-overlay">
+                        <span className={`card-price-tag ${event.price === 'FREE' ? 'free' : ''}`}>FEE: {event.price}</span>
                       </div>
                     </div>
                     <h3 className="card-title">{event.name}</h3>
@@ -1491,20 +1568,21 @@ export default function Events({ onBack: _onBack }: Props) {
           {/* Global Festival Terms & Conditions Section */}
           <div className="mt-8 p-6 rounded-2xl bg-black/45 border border-purple-500/30 text-left backdrop-blur-md shadow-2xl">
             <h3 className="text-sm font-black text-cyan-300 uppercase tracking-widest font-mono mb-4 flex items-center gap-2">
-              <span>📜</span> ENVISION '26 FESTIVAL TERMS & CONDITIONS
+              <span>📜</span> ENVISION '26 TECHFEST TERMS & CONDITIONS
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-gray-300 leading-relaxed font-sans">
-              <div className="flex flex-col gap-2.5 p-3.5 rounded-xl bg-white/[0.02] border border-white/5">
-                <p><strong className="text-purple-400">1. Reporting Time:</strong> All participants must report to the campus by 9:30 AM on the event day. Late reporting may result in disqualification.</p>
-                <p><strong className="text-purple-400">2. On-Spot Registration:</strong> On-spot registration is available after online registration closes, strictly subject to seat availability.</p>
-                <p><strong className="text-purple-400">3. Verification & ID:</strong> Valid college student photo ID is strictly required at venue entry points.</p>
-                <p><strong className="text-purple-400">4. Non-Refundable:</strong> All paid event registration slots are non-refundable and non-transferable.</p>
-              </div>
-              <div className="flex flex-col gap-2.5 p-3.5 rounded-xl bg-white/[0.02] border border-white/5">
-                <p><strong className="text-purple-400">5. Lunch Provision:</strong> Lunch is provided only to participants who registered for at least one event during online registration.</p>
-                <p><strong className="text-purple-400">6. Seminar & Lunch Exclusions:</strong> Any participant may register for the seminar (Tech Talk). However, lunch will be provided only to participants registered for at least one other event; seminar-only participants are not eligible for lunch.</p>
-                <p><strong className="text-purple-400">7. Event Head Communication:</strong> Each event has a designated Event Head; participants must contact only the respective Event Head for any event-related queries or issues. Please do not contact the Event Head of another event regarding matters unrelated to their event.</p>
-              </div>
+              <ul className="list-disc pl-5 flex flex-col gap-2.5 p-3.5 rounded-xl bg-white/[0.02] border border-white/5 m-0">
+                <li className="pl-1"><strong className="text-purple-400">Reporting Time:</strong> All participants must report to the campus by 9:30 AM on the event day. Late reporting may result in disqualification.</li>
+                <li className="pl-1"><strong className="text-purple-400">On-Spot Registration:</strong> On-spot registration is available after online registration closes, strictly subject to seat availability.</li>
+                <li className="pl-1"><strong className="text-purple-400">Verification & ID:</strong> Valid college student photo ID is strictly required at venue entry points.</li>
+                <li className="pl-1"><strong className="text-purple-400">Non-Refundable:</strong> All paid event registration slots are non-refundable and non-transferable.</li>
+              </ul>
+              <ul className="list-disc pl-5 flex flex-col gap-2.5 p-3.5 rounded-xl bg-white/[0.02] border border-white/5 m-0">
+                <li className="pl-1"><strong className="text-purple-400">Lunch Provision:</strong> Lunch is provided only to participants who registered for at least one event during online registration.</li>
+                <li className="pl-1"><strong className="text-purple-400">Seminar & Lunch Exclusions:</strong> Any participant may register for the seminar (Tech Talk). However, lunch will be provided only to participants registered for at least one other event; seminar-only participants are not eligible for lunch.</li>
+                <li className="pl-1"><strong className="text-purple-400">Event Head Communication:</strong> Each event has a designated Event Head; participants must contact only the respective Event Head for any event-related queries or issues. Please do not contact the Event Head of another event regarding matters unrelated to their event.</li>
+                <li className="pl-1"><strong className="text-purple-400">Prize Pool:</strong> The prize pool is variable and will be determined based on the total number of valid registrations received for each event.</li>
+              </ul>
             </div>
           </div>
         </>
@@ -1524,8 +1602,13 @@ export default function Events({ onBack: _onBack }: Props) {
                 <span className="mobile-category-badge">
                   {selectedEvent.category}
                 </span>
+                <span className="mobile-prize-badge">
+                  🏆 {getShortPrizeLabel(selectedEvent)}
+                </span>
+              </div>
+              <div className="mobile-bottom-badge-bar">
                 <span className={`mobile-price-badge ${selectedEvent.price === 'FREE' ? 'free' : ''}`}>
-                  {selectedEvent.price}
+                  FEE: {selectedEvent.price}
                 </span>
               </div>
             </div>
@@ -1535,7 +1618,7 @@ export default function Events({ onBack: _onBack }: Props) {
               {selectedEvent.name}
             </h2>
 
-            {/* 3. Organized Stats Tiles (Date, Venue, Time) */}
+            {/* 3. Organized Stats Tiles (Date, Venue, Time, Prize) */}
             <div className="mobile-stats-container">
               <div className="mobile-stat-tile">
                 <span className="mobile-stat-label date">
@@ -1554,6 +1637,12 @@ export default function Events({ onBack: _onBack }: Props) {
                   <span>⏰</span> TIME :
                 </span>
                 <span className="mobile-stat-value">{selectedEvent.Time}</span>
+              </div>
+              <div className="mobile-stat-tile">
+                <span className="mobile-stat-label prize">
+                  <span>🏆</span> PRIZE :
+                </span>
+                <span className="mobile-stat-value">{selectedEvent.prize || 'Exciting Cash Prizes & Winner Trophies'}</span>
               </div>
             </div>
 
@@ -1593,25 +1682,54 @@ export default function Events({ onBack: _onBack }: Props) {
                 </p>
               )}
               {activeTab === 'rules' && (
-                <div className="space-y-3">
-                  <ul className="list-disc pl-5 space-y-1.5 text-xs text-gray-200">
-                    <li>All participants must adhere to general techfest decorum.</li>
-                    <li>Submissions must be finalized before the strict schedule timeline bounds.</li>
-                    <li>Code snippets or presentation files must be original work.</li>
-                    <li>Team formations must fall within the range parameters specified ({selectedEvent.requires_team ? `Max ${selectedEvent.max_team_size} members` : 'Individual'}).</li>
-                  </ul>
+                <div className="space-y-4 font-sans text-left">
+                  {selectedEvent.id.toLowerCase() === 'techtalk' ? (
+                    /* Tech Talk Seminar Guidelines */
+                    <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-purple-950/80 via-slate-950/90 to-cyan-950/80 border border-purple-500/40 space-y-3 shadow-lg">
+                      <div className="text-xs sm:text-sm font-mono font-bold text-cyan-300 uppercase tracking-wider flex items-center gap-2">
+                        <span>📜</span> TECH TALK (SEMINAR) – RULES & GUIDELINES
+                      </div>
+                      <ul className="list-disc pl-5 space-y-2 text-xs sm:text-sm text-gray-200 leading-relaxed font-sans">
+                        <li><strong className="text-cyan-300">Participation is absolutely FREE</strong> for everyone.</li>
+                        <li><strong className="text-purple-300">No food or refreshments</strong> will be provided for this seminar.</li>
+                        <li>Participants who register for <strong className="text-cyan-300">any other event</strong> in the tech fest are <strong className="text-amber-300">required to attend</strong> the Tech Talk seminar.</li>
+                        <li>All registered participants who attend the seminar will receive an <strong className="text-emerald-300">E-Certificate of Participation</strong>.</li>
+                        <li>Anyone is welcome to attend the seminar, even if they are not participating in any other event.</li>
+                      </ul>
+                    </div>
+                  ) : (
+                    /* All Other Events: High-Visual VIEW RULES Card (No text points) */
+                    <div className="p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-slate-950/90 via-purple-950/50 to-cyan-950/80 border-2 border-cyan-400/60 text-center space-y-5 shadow-[0_0_35px_rgba(0,243,255,0.25)] relative overflow-hidden backdrop-blur-xl">
+                      {/* Subtle Ambient Radial Light */}
+                      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-cyan-500/10 via-transparent to-transparent pointer-events-none"></div>
 
-                  {EVENT_RULES_LINKS[selectedEvent.id.toLowerCase()] && selectedEvent.id.toLowerCase() !== 'techtalk' && (
-                    <div className="pt-3 border-t border-cyan-500/25 mt-3">
-                      <a
-                        href={EVENT_RULES_LINKS[selectedEvent.id.toLowerCase()]}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-pink-500/20 hover:from-cyan-500/35 hover:to-purple-500/35 border border-cyan-400/50 text-cyan-200 font-mono text-xs font-bold transition-all shadow-[0_0_15px_rgba(0,243,255,0.2)] active:scale-95 cursor-pointer no-underline"
-                      >
-                        <span>📜</span>
-                        <span>VIEW RULES</span>
-                      </a>
+                      <div className="space-y-1.5 relative z-10">
+                        <span className="text-[11px] font-mono font-extrabold text-cyan-300 uppercase tracking-widest block">
+                          OFFICIAL EVENT RULEBOOK
+                        </span>
+                        <h3 className="text-lg sm:text-2xl font-black text-white font-mono uppercase tracking-wide m-0">
+                          {selectedEvent.name} RULES & REGULATIONS
+                        </h3>
+                        <p className="text-xs sm:text-sm text-gray-300 font-sans max-w-md mx-auto m-0">
+                          Click below to open and inspect the official full image rulebook for {selectedEvent.name}.
+                        </p>
+                      </div>
+
+                      {/* Prominent Visual View Rules Button */}
+                      {EVENT_RULES_LINKS[selectedEvent.id.toLowerCase()] && (
+                        <div className="pt-2 relative z-10 flex justify-center">
+                          <a
+                            href={EVENT_RULES_LINKS[selectedEvent.id.toLowerCase()]}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full sm:w-auto min-w-[240px] px-6 py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 via-purple-600 to-pink-500 hover:from-cyan-400 hover:via-purple-500 hover:to-pink-400 text-white font-mono text-sm font-black transition-all transform hover:scale-[1.03] active:scale-95 shadow-[0_0_25px_rgba(0,243,255,0.4)] hover:shadow-[0_0_40px_rgba(168,85,247,0.6)] flex items-center justify-center gap-3 no-underline cursor-pointer border border-cyan-300/40"
+                          >
+                            <span className="text-lg">📜</span>
+                            <span className="tracking-widest">VIEW OFFICIAL RULES</span>
+                            <span className="text-xs opacity-90 font-sans">&rarr;</span>
+                          </a>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -1717,18 +1835,32 @@ export default function Events({ onBack: _onBack }: Props) {
                 );
               })()}
               {activeTab === 'terms' && (
-                <ol className="list-decimal pl-4 sm:pl-5 space-y-2.5 text-[11.5px] sm:text-xs text-gray-200 font-sans leading-relaxed">
-                  <li className="pl-1"><strong className="text-purple-300">Non-Refundable Policy:</strong> All event registration fees are strictly non-refundable and non-transferable.</li>
-                  <li className="pl-1"><strong className="text-purple-300">ID Verification:</strong> Participants must produce valid College Student Photo ID cards at venue registration desks.</li>
-                  <li className="pl-1"><strong className="text-purple-300">Decorum & Conduct:</strong> Plagiarism, malicious exploits, or misconduct result in instant forfeiture and track expulsion.</li>
-                  <li className="pl-1"><strong className="text-purple-300">Schedule Amendments:</strong> Organizers reserve the right to revise schedule timelines or disqualification parameters if required.</li>
-                  <li className="pl-1"><strong className="text-purple-300">On-Spot Registration:</strong> On-spot registration is available after online registration closes, subject to seat availability.</li>
-                  <li className="pl-1"><strong className="text-purple-300">Lunch Eligibility:</strong> Lunch is provided only to participants who registered for at least one event during online registration.</li>
-                  <li className="pl-1"><strong className="text-purple-300">Event Head Protocol:</strong> Each event has a designated Event Head; participants must contact only the respective Event Head for any event-related queries or issues.</li>
-                  <li className="pl-1"><strong className="text-purple-300">No Cross-Event Contact:</strong> Please do not contact the Event Head of another event regarding matters unrelated to their event.</li>
-                  <li className="pl-1"><strong className="text-purple-300">Reporting Time:</strong> All participants must report to the campus by 9:30 AM on the event day. Late reporting may result in disqualification from the event.</li>
-                  <li className="pl-1"><strong className="text-purple-300">Seminar & Lunch Rule:</strong> Any participant may register for the seminar. Lunch will be provided only to participants registered for at least one other event; seminar-only participants are not eligible for lunch.</li>
-                </ol>
+                selectedEvent.id.toLowerCase() === 'techtalk' ? (
+                  <ul className="list-disc pl-5 space-y-2.5 text-[11.5px] sm:text-xs text-gray-200 font-sans leading-relaxed text-left">
+                    <li className="pl-1"><strong className="text-purple-300">Free Registration:</strong> Registration is free of charge and open to all participants.</li>
+                    <li className="pl-1"><strong className="text-purple-300">Prior Registration:</strong> Participants must register before attending the seminar.</li>
+                    <li className="pl-1"><strong className="text-purple-300">Mandatory Attendance:</strong> Attendance is mandatory for participants registered in any other event of the tech fest.</li>
+                    <li className="pl-1"><strong className="text-purple-300">E-Certificate Issuance:</strong> E-Certificates will be issued only to registered participants who attend the complete seminar.</li>
+                    <li className="pl-1"><strong className="text-purple-300">No Refreshments:</strong> No food or refreshments will be provided during the seminar.</li>
+                    <li className="pl-1"><strong className="text-purple-300">Code of Conduct:</strong> Participants are expected to maintain discipline and follow the instructions of the organisers throughout the event.</li>
+                    <li className="pl-1"><strong className="text-purple-300">Discipline Enforcement:</strong> Any form of misconduct or disruption may result in removal from the seminar without a certificate.</li>
+                    <li className="pl-1"><strong className="text-purple-300">Schedule Amendments:</strong> The organisers reserve the right to modify the schedule or rules if necessary.</li>
+                  </ul>
+                ) : (
+                  <ul className="list-disc pl-5 space-y-2.5 text-[11.5px] sm:text-xs text-gray-200 font-sans leading-relaxed text-left">
+                    <li className="pl-1"><strong className="text-purple-300">Non-Refundable Policy:</strong> All event registration fees are strictly non-refundable and non-transferable.</li>
+                    <li className="pl-1"><strong className="text-purple-300">ID Verification:</strong> Participants must produce valid College Student Photo ID cards at venue registration desks.</li>
+                    <li className="pl-1"><strong className="text-purple-300">Decorum & Conduct:</strong> Plagiarism, malicious exploits, or misconduct result in instant forfeiture and track expulsion.</li>
+                    <li className="pl-1"><strong className="text-purple-300">Schedule Amendments:</strong> Organizers reserve the right to revise schedule timelines or disqualification parameters if required.</li>
+                    <li className="pl-1"><strong className="text-purple-300">On-Spot Registration:</strong> On-spot registration is available after online registration closes, subject to seat availability.</li>
+                    <li className="pl-1"><strong className="text-purple-300">Lunch Eligibility:</strong> Lunch is provided only to participants who registered for at least one event during online registration.</li>
+                    <li className="pl-1"><strong className="text-purple-300">Event Head Protocol:</strong> Each event has a designated Event Head; participants must contact only the respective Event Head for any event-related queries or issues.</li>
+                    <li className="pl-1"><strong className="text-purple-300">No Cross-Event Contact:</strong> Please do not contact the Event Head of another event regarding matters unrelated to their event.</li>
+                    <li className="pl-1"><strong className="text-purple-300">Reporting Time:</strong> All participants must report to the campus by 9:30 AM on the event day. Late reporting may result in disqualification from the event.</li>
+                    <li className="pl-1"><strong className="text-purple-300">Seminar & Lunch Rule:</strong> Any participant may register for the seminar. Lunch will be provided only to participants registered for at least one other event; seminar-only participants are not eligible for lunch.</li>
+                    <li className="pl-1"><strong className="text-purple-300">Prize Pool Policy:</strong> The prize pool is variable and will be determined based on the total number of valid registrations received for each event.</li>
+                  </ul>
+                )
               )}
             </div>
 

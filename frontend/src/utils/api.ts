@@ -111,6 +111,7 @@ export interface BackendEvent {
   date?: string;
   venue?: string;
   time?: string;
+  prize?: string;
 }
 
 export interface EventRegistration {

@@ -10,7 +10,7 @@ router = APIRouter(prefix="/users", tags=["Users"])
 @router.get("/me", response_model=UserResponse)
 def get_me(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Returns profile data for the authenticated student/user."""
-    if not current_user.fest_id or not current_user.fest_id.startswith("ENV-2026-") or not current_user.fest_id.replace("ENV-2026-", "").isdigit():
+    if not current_user.fest_id:
         from auth import generate_fest_id
         current_user.fest_id = generate_fest_id(db)
         db.commit()

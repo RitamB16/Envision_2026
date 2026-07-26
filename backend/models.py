@@ -45,6 +45,7 @@ class Event(Base):
     date = Column(String, nullable=True)
     venue = Column(String, nullable=True)
     time = Column(String, nullable=True)
+    prize = Column(String, nullable=True)
     max_capacity = Column(Integer, default=100, nullable=False)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
 
