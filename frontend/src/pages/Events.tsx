@@ -1481,7 +1481,6 @@ export default function Events({ onBack: _onBack }: Props) {
           <div className="flex flex-col items-center justify-center text-center p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-cyan-950/40 via-purple-950/40 to-slate-950/60 border border-cyan-500/30 mb-8 sm:mb-10 w-full box-border shadow-[0_0_25px_rgba(0,243,255,0.15)] backdrop-blur-md">
             <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 sm:gap-3 text-center">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/25 via-purple-500/25 to-pink-500/25 border border-cyan-400/50 flex items-center justify-center text-xl shrink-0 shadow-[0_0_15px_rgba(0,243,255,0.3)]">
-                🚀
               </div>
               <div>
                 <h2 className="text-xl sm:text-2xl font-black font-mono tracking-widest uppercase m-0 flex items-center justify-center gap-2 text-center">
