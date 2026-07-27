@@ -113,6 +113,13 @@ const OTHER_SECTIONS: CategorySection[] = [
         imgId: 'wrhssYSJ'
       },
       {
+        name: 'KRISHANU SANA',
+        role: 'FEST ORGANISER',
+        phone: '+91 8001396479',
+        photoUrl: 'https://ibb.co/bMLhHbzm',
+        imgId: 'bMLhHbzm'
+      },
+      {
         name: 'JYOTIPRABA PAL',
         role: 'FEST ORGANISER',
         phone: '+91 9734772175',
