@@ -28,15 +28,16 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
 
   // Route Guard: Direct manual URL navigation check
   useEffect(() => {
+    const hasParamsState = !!(params.registrationId && params.registrationId !== 'REG-PENDING');
     const hasLocationState = !!(stateData.registrationId || stateData.razorpayOrderId || stateData.razorpay_order_id);
     const hasPropsState = !!(props.registrationId && props.registrationId !== 'REG-PENDING');
     const hasContextState = !!(regContextState.registrationId || regContextState.razorpayOrderId);
 
-    if (!hasLocationState && !hasPropsState && !hasContextState) {
+    if (!hasParamsState && !hasLocationState && !hasPropsState && !hasContextState) {
       console.warn("Direct URL navigation to /checkout detected without active registration session. Redirecting to /events.");
       navigate('/events', { replace: true });
     }
-  }, [stateData, props.registrationId, regContextState, navigate]);
+  }, [params.registrationId, stateData, props.registrationId, regContextState, navigate]);
 
   const registrationId = props.registrationId || params.registrationId || stateData.registrationId || regContextState.registrationId || 'REG-PENDING';
   const [fetchedPrice, setFetchedPrice] = useState<number | null>(null);

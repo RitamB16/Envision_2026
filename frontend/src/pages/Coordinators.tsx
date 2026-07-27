@@ -267,6 +267,13 @@ const OTHER_SECTIONS: CategorySection[] = [
         phone: '+91 7872169208',
         photoUrl: 'https://ibb.co/QvtNvxSr',
         imgId: 'QvtNvxSr'
+      },
+      {
+        name: 'KRISHANU SANA',
+        role: 'AUCTION COORDINATOR',
+        phone: '+91 8001396479',
+        photoUrl: 'https://ibb.co/bMLhHbzm',
+        imgId: 'bMLhHbzm'
       }
     ]
   },

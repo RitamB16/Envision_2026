@@ -96,7 +96,14 @@ export default function ProfileModal({ isOpen = true, user: initialUser, onClose
   };
 
   if (showDashboard) {
-    return <StudentDashboard onClose={() => setShowDashboard(false)} />;
+    return (
+      <StudentDashboard
+        onClose={() => {
+          setShowDashboard(false);
+          if (onClose) onClose();
+        }}
+      />
+    );
   }
 
   return (

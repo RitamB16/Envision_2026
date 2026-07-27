@@ -459,7 +459,8 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
 
                         const handleDirectCheckout = () => {
                           if (onClose) onClose();
-                          navigate('/checkout', {
+                          const targetPath = reg.id ? `/checkout/${reg.id}` : '/checkout';
+                          navigate(targetPath, {
                             state: {
                               registrationId: reg.id,
                               eventName: (reg as any).event_name || eventName,
