@@ -402,17 +402,17 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
               </div>
             </div>
 
-            <div className="bg-[#060214] border border-purple-500/30 rounded-xl p-4 sm:p-5 space-y-3 box-border">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-mono text-purple-300 font-extrabold uppercase tracking-wider flex items-center gap-1.5">
-                  <span>🔑</span> ENTER 12-DIGIT UPI UTR / REF NO.
+            <div className="bg-[#060214] border-2 border-cyan-500/40 hover:border-cyan-400/70 rounded-2xl p-4 sm:p-6 space-y-4 box-border shadow-[0_0_30px_rgba(0,243,255,0.15)] transition-all">
+              <div className="flex flex-wrap items-center justify-between gap-2 pb-1.5 border-b border-purple-500/20">
+                <label className="text-sm sm:text-base font-black font-mono text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-white to-purple-300 uppercase tracking-wider flex items-center gap-2 drop-shadow-[0_0_10px_rgba(0,243,255,0.4)]">
+                  <span className="text-lg animate-pulse">🔑</span> ENTER 12-DIGIT UPI UTR / REF NO.
                 </label>
-                <span className={`text-[10.5px] font-mono font-bold ${utrLength === 12 ? 'text-emerald-400' : 'text-amber-400'}`}>
-                  {utrLength === 12 ? '✓ 12/12 VALID' : `${utrLength} / 12 digits`}
+                <span className={`text-xs font-mono font-black px-2.5 py-1 rounded-full border ${utrLength === 12 ? 'text-emerald-300 bg-emerald-950/60 border-emerald-500/50 shadow-[0_0_12px_rgba(16,185,129,0.3)]' : 'text-amber-300 bg-amber-950/60 border-amber-500/50'}`}>
+                  {utrLength === 12 ? '✓ 12/12 VALID UTR' : `${utrLength} / 12 digits`}
                 </span>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 <input
                   type="text"
                   inputMode="numeric"
@@ -424,21 +424,21 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
                   onPaste={handlePasteUtr}
                   onKeyDown={handleKeyDownUtr}
                   placeholder="e.g. 420185938210"
-                  className="w-full bg-[#0a051d] border border-purple-500/40 focus:border-cyan-400 disabled:opacity-50 rounded-xl p-3 sm:p-3.5 text-cyan-200 font-mono text-sm sm:text-base tracking-widest placeholder:text-gray-600 outline-none transition-colors box-border text-center"
+                  className="w-full bg-[#0a051d] border-2 border-purple-500/50 focus:border-cyan-400 disabled:opacity-50 rounded-xl p-3.5 sm:p-4 text-cyan-200 font-mono text-base sm:text-lg font-bold tracking-widest placeholder:text-gray-600 outline-none transition-all box-border text-center shadow-[inset_0_0_12px_rgba(0,0,0,0.6)]"
                 />
                 
-                <p className="text-[10.5px] font-mono leading-tight m-0 pt-0.5 text-center">
+                <p className="text-xs font-mono leading-relaxed m-0 text-center">
                   {utrLength === 12 ? (
                     <span className="text-emerald-400 font-bold">
-                      ✓ Ready! Click below to submit UTR for verification.
+                      ✓ UTR Ready! Click the button below to submit for instant verification.
                     </span>
                   ) : utrLength > 0 ? (
-                    <span className="text-amber-300">
-                      ⚠️ Enter all 12 digits from your receipt ({12 - utrLength} digits remaining).
+                    <span className="text-amber-300 font-semibold">
+                      ⚠️ Enter all 12 digits from your UPI payment receipt ({12 - utrLength} digits remaining).
                     </span>
                   ) : (
-                    <span className="text-gray-400">
-                      Found on payment receipt as 12-digit UTR/RRN.
+                    <span className="text-gray-300 font-medium">
+                      Found on your PhonePe / GooglePay / Paytm receipt as 12-digit UTR / RRN / Ref No.
                     </span>
                   )}
                 </p>
@@ -448,12 +448,12 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
                 type="button"
                 onClick={handleVerifyUTR}
                 disabled={paymentStatus === 'PROCESSING' || utrLength !== 12}
-                className="w-full mt-2 py-3.5 px-4 rounded-xl bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white font-black text-xs sm:text-sm uppercase font-mono tracking-wider shadow-[0_0_20px_rgba(168,85,247,0.3)] transition-all transform active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer box-border"
+                className="w-full mt-3 py-4 sm:py-5 px-6 rounded-xl bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white font-black text-sm sm:text-base uppercase font-mono tracking-widest shadow-[0_0_25px_rgba(168,85,247,0.45)] hover:shadow-[0_0_35px_rgba(0,243,255,0.65)] transition-all transform active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-3 cursor-pointer box-border min-h-[56px]"
               >
                 {paymentStatus === 'PROCESSING' ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>SUBMITTING...</span>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>SUBMITTING UTR...</span>
                   </>
                 ) : (
                   <span>SUBMIT UTR FOR VERIFICATION &rarr;</span>

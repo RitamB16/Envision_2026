@@ -449,24 +449,43 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
                         const eventName = reg.event?.name || reg.event_id?.toUpperCase() || 'ENVISION EVENT';
                         const isTechTalk = reg.event_id === 'techtalk' || eventName.includes('TECH TALK');
                         const isPendingVerification = reg.payment_status === 'PENDING_VERIFICATION';
+                        const isPendingCheckout = reg.payment_status === 'PENDING' || reg.payment_status === 'UNPAID';
                         const isPaid = reg.payment_status === 'COMPLETED' || reg.payment_status === 'CONFIRMED' || reg.payment_status === 'SUCCESS' || isPendingVerification || isTechTalk;
                         const statusLabel = isTechTalk
                           ? '✓ FREE AUTO-ENROLLED PASS'
                           : isPendingVerification
                           ? '⏳ UTR SUBMITTED (VERIFICATION PENDING)'
-                          : (isPaid ? '✓ CONFIRMED & PAID' : 'PENDING CHECKOUT');
+                          : (isPaid ? '✓ CONFIRMED & PAID' : 'PENDING CHECKOUT ⚡');
+
+                        const handleDirectCheckout = () => {
+                          if (onClose) onClose();
+                          navigate('/checkout', {
+                            state: {
+                              registrationId: reg.id,
+                              eventName: (reg as any).event_name || eventName,
+                              baseFee: reg.event?.price_amount || 49,
+                              priceAmount: reg.event?.price_amount || 49,
+                              amount: reg.event?.price_amount || 49,
+                              orderId: reg.transaction_id
+                            }
+                          });
+                        };
 
                         return (
                           <div
                             key={`reg-${reg.id || idx}-${idx}`}
+                            onClick={isPendingCheckout ? handleDirectCheckout : undefined}
                             style={{
                               padding: '14px',
                               borderRadius: '14px',
                               backgroundColor: 'rgba(14, 7, 38, 0.85)',
-                              border: isPaid ? '1px solid rgba(0, 243, 255, 0.3)' : '1px solid rgba(234, 179, 8, 0.4)',
+                              border: isPaid ? '1px solid rgba(0, 243, 255, 0.3)' : '1px solid rgba(234, 179, 8, 0.5)',
                               display: 'flex',
                               flexDirection: 'column',
-                              gap: '8px'
+                              gap: '8px',
+                              cursor: isPendingCheckout ? 'pointer' : 'default',
+                              boxShadow: isPendingCheckout ? '0 0 15px rgba(234, 179, 8, 0.15)' : 'none',
+                              transition: 'all 0.2s ease-in-out'
                             }}
                           >
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '6px' }}>
@@ -478,15 +497,24 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
                               </div>
 
                               <span
+                                onClick={(e) => {
+                                  if (isPendingCheckout) {
+                                    e.stopPropagation();
+                                    handleDirectCheckout();
+                                  }
+                                }}
+                                title={isPendingCheckout ? "Click to complete payment & submit UTR" : undefined}
                                 style={{
-                                  padding: '3px 8px',
+                                  padding: '4px 10px',
                                   borderRadius: '9999px',
-                                  backgroundColor: isPaid ? 'rgba(16, 185, 129, 0.2)' : 'rgba(234, 179, 8, 0.2)',
-                                  border: isPaid ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid rgba(234, 179, 8, 0.4)',
+                                  backgroundColor: isPaid ? 'rgba(16, 185, 129, 0.2)' : 'rgba(234, 179, 8, 0.25)',
+                                  border: isPaid ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid rgba(234, 179, 8, 0.6)',
                                   color: isPaid ? '#6ee7b7' : '#fef08a',
                                   fontSize: '10px',
-                                  fontWeight: 800,
-                                  fontFamily: 'monospace'
+                                  fontWeight: 900,
+                                  fontFamily: 'monospace',
+                                  cursor: isPendingCheckout ? 'pointer' : 'default',
+                                  boxShadow: isPendingCheckout ? '0 0 10px rgba(234, 179, 8, 0.3)' : 'none'
                                 }}
                               >
                                 {statusLabel}
@@ -512,27 +540,19 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
                             </div>
 
                             {/* Dynamic Action Button & State Mapping */}
-                            {reg.payment_status === 'PENDING' || reg.payment_status === 'UNPAID' ? (
+                            {isPendingCheckout ? (
                               <button
                                 type="button"
-                                onClick={() => {
-                                  if (onClose) onClose();
-                                  navigate('/checkout', {
-                                    state: {
-                                      registrationId: reg.id,
-                                      eventName,
-                                      baseFee: reg.event?.price_amount || 49,
-                                      priceAmount: reg.event?.price_amount || 49,
-                                      amount: reg.event?.price_amount || 49
-                                    }
-                                  });
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDirectCheckout();
                                 }}
                                 style={{
                                   marginTop: '8px',
-                                  padding: '8px 12px',
+                                  padding: '9px 14px',
                                   borderRadius: '8px',
-                                  backgroundColor: 'rgba(0, 243, 255, 0.15)',
-                                  border: '1px solid rgba(0, 243, 255, 0.4)',
+                                  backgroundColor: 'rgba(0, 243, 255, 0.18)',
+                                  border: '1px solid rgba(0, 243, 255, 0.5)',
                                   color: '#00f3ff',
                                   fontSize: '11px',
                                   fontWeight: 900,
@@ -543,7 +563,8 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
                                   display: 'flex',
                                   alignItems: 'center',
                                   justifyContent: 'center',
-                                  gap: '6px'
+                                  gap: '6px',
+                                  boxShadow: '0 0 12px rgba(0, 243, 255, 0.25)'
                                 }}
                               >
                                 ⚡ COMPLETE PAYMENT & SUBMIT UTR &rarr;

@@ -116,4 +116,4 @@ async def cleanup_expired_registrations():
         except Exception as e:
             print(f"[Sweeper Error] {e}")
 
-        await asyncio.sleep(30)  # Runs every 30 seconds
+        await asyncio.sleep(5)  # Runs every 5 seconds for ultra-fast instant email dispatch
