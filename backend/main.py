@@ -33,9 +33,7 @@ async def keep_alive_ping():
     urls_to_ping = [
         os.getenv("RAILWAY_PUBLIC_DOMAIN"),
         os.getenv("RAILWAY_STATIC_URL"),
-        os.getenv("RENDER_EXTERNAL_URL"),
-        os.getenv("BACKEND_URL"),
-        "https://envision-2026.onrender.com/ping"
+        os.getenv("BACKEND_URL")
     ]
     
     # Filter valid non-empty URLs

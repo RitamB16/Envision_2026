@@ -238,14 +238,9 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
     setErrorMessage(null);
 
     try {
-      await api.post('/payments/verify-utr', {
+      await api.post('/payments/submit-utr', {
         registration_id: registrationId,
         utr_number: cleanUtr
-      }).catch(async () => {
-        return await api.post('/payments/submit-utr', {
-          registration_id: registrationId,
-          utr_number: cleanUtr
-        });
       });
 
       const submittedTxnId = `UTR-${cleanUtr}`;
