@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
-import { setAuthSession, API_BASE_URL } from '../utils/api';
+import { api, setAuthSession } from '../utils/api';
 
 interface AuthBackendResponse {
   access_token: string;
@@ -48,23 +48,7 @@ export default function Login() {
       }
 
       try {
-        const response = await fetch(`${API_BASE_URL}/auth/google`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-          body: JSON.stringify({ id_token: credential }),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(
-            errorData.detail || `Google authentication failed (Status ${response.status})`
-          );
-        }
-
-        const data: AuthBackendResponse = await response.json();
+        const data: AuthBackendResponse = await api.post('/auth/google', { id_token: credential });
         setAuthSession(data.access_token, data.user);
         navigate('/dashboard');
         return;

@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useGoogleLogin } from '@react-oauth/google';
 import PageLayout from './PageLayout';
-import { api, BackendEvent, setAuthSession, API_BASE_URL } from '../utils/api';
+import { api, BackendEvent, setAuthSession } from '../utils/api';
 import { useRegistrationContext } from '../context/RegistrationContext';
 
 interface EventData {
@@ -320,21 +320,7 @@ export default function Events({ onBack: _onBack }: Props) {
         setIsLoadingGoogle(true);
         setRegErrorMsg(null);
         try {
-          const response = await fetch(`${API_BASE_URL}/auth/google`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-            body: JSON.stringify({ token: tokenResponse.access_token }),
-          });
-
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.detail || 'Google sign in failed');
-          }
-
-          const data = await response.json();
+          const data: any = await api.post('/auth/google', { token: tokenResponse.access_token });
           setAuthSession(data.access_token, data.user);
 
           // Pre-fill email and name dynamically without data loss!

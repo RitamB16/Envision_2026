@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useGoogleLogin } from '@react-oauth/google';
 import PageLayout from './PageLayout';
-import { api, setAuthSession, API_BASE_URL } from '../utils/api';
+import { api, setAuthSession } from '../utils/api';
 
 interface Props {
   onBack: () => void;
@@ -32,23 +32,7 @@ export default function Register({ onBack, onRegisterSuccess }: Props) {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/google`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ token }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData.detail || `Authentication failed with status ${response.status}`
-        );
-      }
-
-      const data = await response.json();
+      const data: any = await api.post('/auth/google', { token });
       setAuthSession(data.access_token, data.user);
       await processTeamInviteIfPresent();
 
