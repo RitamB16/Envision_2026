@@ -23,6 +23,8 @@ def get_redis_url() -> str:
     return "redis://localhost:6379"
 
 
+import asyncio
+
 async def init_cache():
     """
     Initializes FastAPICache with Upstash TLS Redis backend.
@@ -30,8 +32,14 @@ async def init_cache():
     """
     redis_url = get_redis_url()
     try:
-        redis = aioredis.from_url(redis_url, encoding="utf8", decode_responses=True)
-        await redis.ping()
+        redis = aioredis.from_url(
+            redis_url,
+            encoding="utf8",
+            decode_responses=True,
+            socket_timeout=3.0,
+            socket_connect_timeout=3.0
+        )
+        await asyncio.wait_for(redis.ping(), timeout=3.0)
         FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
         print(f"✅ FastAPICache successfully initialized with Upstash Redis backend!")
     except Exception as e:

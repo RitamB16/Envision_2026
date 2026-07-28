@@ -122,7 +122,11 @@ async def startup_event():
     # Run DB setup in thread pool so it does not block Uvicorn startup
     asyncio.create_task(asyncio.to_thread(run_db_setup))
 
-    await init_cache()
+    try:
+        await init_cache()
+    except Exception as cache_err:
+        print(f"[!] Cache Initialization Notice: {cache_err}")
+
     asyncio.create_task(cleanup_expired_registrations())
     asyncio.create_task(keep_alive_ping())
 
