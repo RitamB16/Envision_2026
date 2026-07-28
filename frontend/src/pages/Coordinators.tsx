@@ -130,8 +130,8 @@ const OTHER_SECTIONS: CategorySection[] = [
         name: 'ANIRBAN MANDAL',
         role: 'FEST ORGANISER',
         phone: '+91 7384416208',
-        photoUrl: 'https://ibb.co/ksdy31VR',
-        imgId: 'ksdy31VR'
+        photoUrl: 'https://ibb.co/gbDgkm1D',
+        imgId: 'gbDgkm1D'
       },
       {
         name: 'ANIK BHUNIA',
