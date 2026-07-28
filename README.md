@@ -136,3 +136,4 @@ docker-compose up --build -d
 
 ## 🔒 Security & Secrets
 The `.gitignore` file excludes sensitive `.env` files and compiled assets. Always set your production environment variables directly in your deployment provider settings.
+"# Envision_2026" 
