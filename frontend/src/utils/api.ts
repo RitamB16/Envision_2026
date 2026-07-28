@@ -70,11 +70,24 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    credentials: 'include',
-    headers,
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...options,
+      credentials: 'include',
+      headers,
+    });
+  } catch (err: any) {
+    // Fallback retry without cross-site credentials for mobile Safari ITP / mobile network blocks
+    if (err.name === 'TypeError' || (err.message && (err.message.includes('Failed to fetch') || err.message.includes('Load failed')))) {
+      response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        ...options,
+        headers,
+      });
+    } else {
+      throw err;
+    }
+  }
 
   if (!response.ok) {
     if (response.status === 401) {
