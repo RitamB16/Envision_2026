@@ -151,9 +151,11 @@ app.include_router(webhooks_router)
 app.include_router(registration_router)
 
 @app.get("/")
-def root():
+@app.head("/")
+async def root():
     return {"status": "online", "message": "Welcome to the Tech Fest API"}
 
 @app.get("/ping")
-def ping():
+@app.head("/ping")
+async def ping():
     return {"status": "awake", "message": "Keep-alive ping successful"}
