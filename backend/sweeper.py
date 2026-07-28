@@ -84,36 +84,36 @@ def process_approved_registrations_sync():
         db.close()
 
 
+def run_sweeper_cycle_sync():
+    try:
+        # 1. Cleanup expired abandoned pending registrations
+        db = SessionLocal()
+        cutoff = datetime.now(timezone.utc) - timedelta(minutes=15)
+
+        expired_regs = db.query(models.Registration).filter(
+            models.Registration.payment_status == "PENDING",
+            models.Registration.created_at <= cutoff
+        ).all()
+
+        if expired_regs:
+            count = len(expired_regs)
+            for reg in expired_regs:
+                reg.payment_status = "EXPIRED"
+
+            db.commit()
+            print(f"[Sweeper] Expired {count} abandoned PENDING registrations older than 15m.")
+        db.close()
+
+        # 2. Process newly approved database registrations and dispatch emails
+        process_approved_registrations_sync()
+
+    except Exception as e:
+        print(f"[Sweeper Error] {e}")
+
+
 async def cleanup_expired_registrations():
-    """
-    Background Sweeper:
-    1. Sweeps abandoned "PENDING" registrations older than 15 minutes and marks them as "EXPIRED".
-    2. Scans for direct SQL database payment status updates (PAID/CONFIRMED) and sends confirmation emails.
-    """
+    # Allow 5 seconds initial delay so FastAPI server completes startup instantly
+    await asyncio.sleep(5)
     while True:
-        try:
-            # 1. Cleanup expired abandoned pending registrations
-            db = SessionLocal()
-            cutoff = datetime.now(timezone.utc) - timedelta(minutes=15)
-
-            expired_regs = db.query(models.Registration).filter(
-                models.Registration.payment_status == "PENDING",
-                models.Registration.created_at <= cutoff
-            ).all()
-
-            if expired_regs:
-                count = len(expired_regs)
-                for reg in expired_regs:
-                    reg.payment_status = "EXPIRED"
-
-                db.commit()
-                print(f"[Sweeper] Expired {count} abandoned PENDING registrations older than 15m.")
-            db.close()
-
-            # 2. Process newly approved database registrations and dispatch emails
-            process_approved_registrations_sync()
-
-        except Exception as e:
-            print(f"[Sweeper Error] {e}")
-
-        await asyncio.sleep(5)  # Runs every 5 seconds for ultra-fast instant email dispatch
+        await asyncio.to_thread(run_sweeper_cycle_sync)
+        await asyncio.sleep(30)  # Runs every 30 seconds in background thread

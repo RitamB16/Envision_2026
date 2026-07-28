@@ -73,7 +73,7 @@ async def startup_event():
         # Auto-Migration: Ensure max_capacity column exists on events and legacy schemas are cleaned up
         try:
             from sqlalchemy import text
-            with engine.connect() as conn:
+            with engine.connect().execution_options(isolation_level="AUTOCOMMIT") as conn:
                 # 1. Safely add max_capacity column to events and email_sent to registrations if missing
                 conn.execute(text("ALTER TABLE public.events ADD COLUMN IF NOT EXISTS max_capacity INTEGER DEFAULT 100;"))
                 conn.execute(text("ALTER TABLE public.registrations ADD COLUMN IF NOT EXISTS email_sent BOOLEAN DEFAULT FALSE;"))
@@ -108,25 +108,19 @@ async def startup_event():
                             END $$;
                         """))
                 
-                conn.commit()
-                print("✅ Auto-migration check completed (teams uix_team_event & events max_capacity verified).")
+                print("[OK] Auto-migration check completed (teams uix_team_event & events max_capacity verified).")
         except Exception as migration_err:
             print(f"[!] Migration Check Notice: {migration_err}")
 
         try:
             Base.metadata.create_all(bind=engine)
-            print("✅ Database tables (participants, teams, registrations) created/verified successfully!")
+            print("[OK] Database tables (participants, teams, registrations) created/verified successfully!")
         except Exception as e:
             print(f"[!] Warning: Could not initialize DB tables on startup: {e}")
 
-    # Run DB setup in thread pool so it does not block Uvicorn startup
+    # Run DB setup and cache init in background tasks so Uvicorn startup completes instantly
     asyncio.create_task(asyncio.to_thread(run_db_setup))
-
-    try:
-        await init_cache()
-    except Exception as cache_err:
-        print(f"[!] Cache Initialization Notice: {cache_err}")
-
+    asyncio.create_task(init_cache())
     asyncio.create_task(cleanup_expired_registrations())
     asyncio.create_task(keep_alive_ping())
 
