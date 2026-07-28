@@ -84,10 +84,10 @@ def check_event_capacity(db: Session, event_name: str):
     if max_cap >= 999999 or max_cap == 0:
         return
 
-    # Count active rows including COMPLETED, SUCCESS, and PENDING
+    # Count active rows including COMPLETED, SUCCESS, CONFIRMED, PAID, PENDING, and PENDING_VERIFICATION
     active_count = db.query(models.Registration).filter(
         models.Registration.event_name.ilike(event_name),
-        models.Registration.payment_status.in_(["SUCCESS", "COMPLETED", "PENDING"])
+        models.Registration.payment_status.in_(["SUCCESS", "COMPLETED", "CONFIRMED", "PAID", "PENDING", "PENDING_VERIFICATION"])
     ).count()
 
     if active_count >= max_cap:
