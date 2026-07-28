@@ -14,7 +14,7 @@ from database import SessionLocal
 import models
 from sqlalchemy import func
 from registration import auto_enroll_techtalk
-from email_utils import dispatch_registration_approval_email, normalize_event_id
+from email_utils import dispatch_registration_approval_email, dispatch_techtalk_confirmation_email, normalize_event_id
 
 
 def process_all_approved_registrations():

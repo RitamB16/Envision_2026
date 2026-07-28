@@ -45,8 +45,8 @@ EVENT_RULES_LINKS = {
 
 def send_email_smtp(to_emails: List[str], subject: str, html_content: str, text_content: str) -> bool:
     """
-    Sends SMTP email synchronously with dual-port fallback (TLS 587 / SSL 465).
-    Returns True if email was successfully delivered to all recipients, False otherwise.
+    Sends SMTP emails reliably with batch connection pooling (single login session per batch)
+    and dual-port fallback (TLS 587 / SSL 465).
     """
     smtp_user = settings.SMTP_USER
     smtp_password = settings.SMTP_PASSWORD
@@ -54,15 +54,33 @@ def send_email_smtp(to_emails: List[str], subject: str, html_content: str, text_
         print("[Email Error] SMTP_USER or SMTP_PASSWORD not configured in settings. Skipping email dispatch.")
         return False
 
-    print(f"[Email Dispatcher] Dispatching email to {len(to_emails)} recipient(s): {to_emails}")
+    valid_emails = [e.strip() for e in to_emails if e and "@" in e]
+    if not valid_emails:
+        print("[Email Warning] No valid email recipients specified.")
+        return False
 
+    print(f"[Email Dispatcher] Dispatching email to {len(valid_emails)} recipient(s): {valid_emails}")
+
+    server = None
     all_success = True
-    for to_email in to_emails:
-        if not to_email or "@" not in to_email:
-            print(f"[Email Warning] Skipping invalid recipient: '{to_email}'")
-            all_success = False
-            continue
 
+    # Try establishing pooled SMTP session via TLS 587 first
+    try:
+        server = smtplib.SMTP("smtp.gmail.com", 587, timeout=15)
+        server.ehlo()
+        server.starttls()
+        server.ehlo()
+        server.login(smtp_user, smtp_password)
+    except Exception as e1:
+        print(f"[Email TLS 587 Notice] {e1}. Trying SSL 465...")
+        try:
+            server = smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=15)
+            server.login(smtp_user, smtp_password)
+        except Exception as e2:
+            print(f"[Email Connection Error] Could not connect to SMTP server: {e2}")
+            server = None
+
+    for to_email in valid_emails:
         msg = MIMEMultipart("alternative")
         msg["Subject"] = subject
         msg["From"] = f"Envision 2026 TechFest <{smtp_user}>"
@@ -76,32 +94,44 @@ def send_email_smtp(to_emails: List[str], subject: str, html_content: str, text_
         msg.attach(part2)
 
         sent = False
-        # Attempt 1: TLS Port 587
-        try:
-            with smtplib.SMTP("smtp.gmail.com", 587, timeout=12) as server:
-                server.ehlo()
-                server.starttls()
-                server.ehlo()
-                server.login(smtp_user, smtp_password)
-                server.sendmail(smtp_user, to_email, msg.as_string())
-            print(f"[Email Success via TLS 587] Email sent to {to_email}")
-            sent = True
-        except Exception as e1:
-            print(f"[Email TLS 587 Warning] {e1}. Retrying with SSL 465...")
-
-        # Attempt 2: SSL Port 465
-        if not sent:
+        if server:
             try:
-                with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=12) as server:
-                    server.login(smtp_user, smtp_password)
-                    server.sendmail(smtp_user, to_email, msg.as_string())
-                print(f"[Email Success via SSL 465] Email sent to {to_email}")
+                server.sendmail(smtp_user, to_email, msg.as_string())
+                print(f"[Email Success] Email sent to {to_email}")
                 sent = True
-            except Exception as e2:
-                print(f"[Email SSL 465 Error] Failed to send email to {to_email}: {e2}")
+            except Exception as send_err:
+                print(f"[Email Send Notice] Failed sending to {to_email} via pooled session ({send_err}). Retrying fallback...")
+                server = None
+
+        if not sent:
+            # Fallback single send attempt
+            try:
+                with smtplib.SMTP("smtp.gmail.com", 587, timeout=12) as fb_server:
+                    fb_server.ehlo()
+                    fb_server.starttls()
+                    fb_server.ehlo()
+                    fb_server.login(smtp_user, smtp_password)
+                    fb_server.sendmail(smtp_user, to_email, msg.as_string())
+                print(f"[Email Success via Fallback TLS] Email sent to {to_email}")
+                sent = True
+            except Exception as fb_err:
+                try:
+                    with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=12) as fb_ssl_server:
+                        fb_ssl_server.login(smtp_user, smtp_password)
+                        fb_ssl_server.sendmail(smtp_user, to_email, msg.as_string())
+                    print(f"[Email Success via Fallback SSL] Email sent to {to_email}")
+                    sent = True
+                except Exception as fb_ssl_err:
+                    print(f"[Email Error] Final delivery failure for {to_email}: {fb_ssl_err}")
 
         if not sent:
             all_success = False
+
+    if server:
+        try:
+            server.quit()
+        except Exception:
+            pass
 
     return all_success
 
