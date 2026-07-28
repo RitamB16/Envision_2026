@@ -31,6 +31,8 @@ async def keep_alive_ping():
     await asyncio.sleep(15)
     
     urls_to_ping = [
+        os.getenv("RAILWAY_PUBLIC_DOMAIN"),
+        os.getenv("RAILWAY_STATIC_URL"),
         os.getenv("RENDER_EXTERNAL_URL"),
         os.getenv("BACKEND_URL"),
         "https://envision-2026.onrender.com/ping",
@@ -136,7 +138,7 @@ app.add_middleware(
         "https://neon-gtr-showcase.vercel.app",
         "https://envision-2026-seven.vercel.app"
     ],
-    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|.*\.vercel\.app)(:[0-9]+)?",
+    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|.*\.vercel\.app|.*\.up\.railway\.app)(:[0-9]+)?",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
