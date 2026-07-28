@@ -69,54 +69,58 @@ async def keep_alive_ping():
 
 @app.on_event("startup")
 async def startup_event():
-    # Auto-Migration: Ensure max_capacity column exists on events and legacy schemas are cleaned up
-    try:
-        from sqlalchemy import text
-        with engine.connect() as conn:
-            # 1. Safely add max_capacity column to events and email_sent to registrations if missing
-            conn.execute(text("ALTER TABLE public.events ADD COLUMN IF NOT EXISTS max_capacity INTEGER DEFAULT 100;"))
-            conn.execute(text("ALTER TABLE public.registrations ADD COLUMN IF NOT EXISTS email_sent BOOLEAN DEFAULT FALSE;"))
-            
-            # 2. Check if legacy teams table exists without team_id column
-            teams_table_exists = conn.execute(text(
-                "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'teams');"
-            )).scalar()
-            
-            if teams_table_exists:
-                team_id_col_exists = conn.execute(text(
-                    "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'teams' AND column_name = 'team_id');"
+    def run_db_setup():
+        # Auto-Migration: Ensure max_capacity column exists on events and legacy schemas are cleaned up
+        try:
+            from sqlalchemy import text
+            with engine.connect() as conn:
+                # 1. Safely add max_capacity column to events and email_sent to registrations if missing
+                conn.execute(text("ALTER TABLE public.events ADD COLUMN IF NOT EXISTS max_capacity INTEGER DEFAULT 100;"))
+                conn.execute(text("ALTER TABLE public.registrations ADD COLUMN IF NOT EXISTS email_sent BOOLEAN DEFAULT FALSE;"))
+                
+                # 2. Check if legacy teams table exists without team_id column
+                teams_table_exists = conn.execute(text(
+                    "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'teams');"
                 )).scalar()
                 
-                if not team_id_col_exists:
-                    print("[!] Auto-Cleanup: Dropping legacy tables lacking team_id...")
-                    conn.execute(text("DROP TABLE IF EXISTS registrations CASCADE;"))
-                    conn.execute(text("DROP TABLE IF EXISTS event_registrations CASCADE;"))
-                    conn.execute(text("DROP TABLE IF EXISTS teams CASCADE;"))
-                    conn.execute(text("DROP TABLE IF EXISTS participants CASCADE;"))
-                    conn.execute(text("DROP TABLE IF EXISTS users CASCADE;"))
-                else:
-                    # Ensure uix_team_event unique constraint exists on public.teams
-                    conn.execute(text("""
-                        DO $$ 
-                        BEGIN
-                            IF NOT EXISTS (
-                                SELECT 1 FROM pg_constraint WHERE conname = 'uix_team_event'
-                            ) THEN
-                                ALTER TABLE public.teams ADD CONSTRAINT uix_team_event UNIQUE (team_name, event_name);
-                            END IF;
-                        END $$;
-                    """))
-            
-            conn.commit()
-            print("✅ Auto-migration check completed (teams uix_team_event & events max_capacity verified).")
-    except Exception as migration_err:
-        print(f"[!] Migration Check Notice: {migration_err}")
+                if teams_table_exists:
+                    team_id_col_exists = conn.execute(text(
+                        "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'teams' AND column_name = 'team_id');"
+                    )).scalar()
+                    
+                    if not team_id_col_exists:
+                        print("[!] Auto-Cleanup: Dropping legacy tables lacking team_id...")
+                        conn.execute(text("DROP TABLE IF EXISTS registrations CASCADE;"))
+                        conn.execute(text("DROP TABLE IF EXISTS event_registrations CASCADE;"))
+                        conn.execute(text("DROP TABLE IF EXISTS teams CASCADE;"))
+                        conn.execute(text("DROP TABLE IF EXISTS participants CASCADE;"))
+                        conn.execute(text("DROP TABLE IF EXISTS users CASCADE;"))
+                    else:
+                        # Ensure uix_team_event unique constraint exists on public.teams
+                        conn.execute(text("""
+                            DO $$ 
+                            BEGIN
+                                IF NOT EXISTS (
+                                    SELECT 1 FROM pg_constraint WHERE conname = 'uix_team_event'
+                                ) THEN
+                                    ALTER TABLE public.teams ADD CONSTRAINT uix_team_event UNIQUE (team_name, event_name);
+                                END IF;
+                            END $$;
+                        """))
+                
+                conn.commit()
+                print("✅ Auto-migration check completed (teams uix_team_event & events max_capacity verified).")
+        except Exception as migration_err:
+            print(f"[!] Migration Check Notice: {migration_err}")
 
-    try:
-        Base.metadata.create_all(bind=engine)
-        print("✅ Database tables (participants, teams, registrations) created/verified successfully!")
-    except Exception as e:
-        print(f"[!] Warning: Could not initialize DB tables on startup: {e}")
+        try:
+            Base.metadata.create_all(bind=engine)
+            print("✅ Database tables (participants, teams, registrations) created/verified successfully!")
+        except Exception as e:
+            print(f"[!] Warning: Could not initialize DB tables on startup: {e}")
+
+    # Run DB setup in thread pool so it does not block Uvicorn startup
+    asyncio.create_task(asyncio.to_thread(run_db_setup))
 
     await init_cache()
     asyncio.create_task(cleanup_expired_registrations())
