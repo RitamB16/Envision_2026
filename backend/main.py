@@ -35,8 +35,7 @@ async def keep_alive_ping():
         os.getenv("RAILWAY_STATIC_URL"),
         os.getenv("RENDER_EXTERNAL_URL"),
         os.getenv("BACKEND_URL"),
-        "https://envision-2026.onrender.com/ping",
-        "https://envision26.rkmrc.org/ping"
+        "https://envision-2026.onrender.com/ping"
     ]
     
     # Filter valid non-empty URLs
@@ -136,11 +135,10 @@ app.add_middleware(
         "http://127.0.0.1:5173",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
-        "https://envision26.rkmrc.org",
         "https://neon-gtr-showcase.vercel.app",
         "https://envision-2026-seven.vercel.app"
     ],
-    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|.*\.vercel\.app|.*\.up\.railway\.app|.*\.rkmrc\.org|.*\.onrender\.com)(:[0-9]+)?",
+    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|.*\.vercel\.app|.*\.up\.railway\.app|.*\.onrender\.com)(:[0-9]+)?",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
