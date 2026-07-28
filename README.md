@@ -115,22 +115,22 @@ docker-compose up --build -d
 
 ## 🌐 Cloud Deployment Options
 
-### 1. Frontend Deployment (Vercel / Netlify)
+### 1. Frontend Deployment (Vercel)
 1. Push the repository to GitHub.
 2. Import the project on [Vercel](https://vercel.com).
 3. Set **Root Directory** to `frontend`.
 4. Set Environment Variables:
-   - `VITE_API_BASE_URL` = `https://your-backend-url.onrender.com`
+   - `VITE_API_BASE_URL` = `https://<your-railway-backend-domain>.up.railway.app`
    - `VITE_GOOGLE_CLIENT_ID` = `your_google_client_id`
    - `VITE_RAZORPAY_KEY_ID` = `your_razorpay_key_id`
 5. Deploy! (`vercel.json` ensures SPA routes like `/dashboard` work without 404 errors).
 
-### 2. Backend Deployment (Render / Railway)
-1. Import the repository on [Render](https://render.com) or [Railway](https://railway.app).
+### 2. Backend Deployment (Railway)
+1. Import the repository on [Railway](https://railway.app).
 2. Set **Root Directory** to `backend`.
-3. Set **Build Command**: `pip install -r requirements.txt`
-4. Set **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
-5. Add all Environment Variables from `backend/.env`.
+3. Set **Builder**: `Dockerfile` (or automatically detected from `backend/railway.json`).
+4. Set **Target Port**: `8000` under **Settings** -> **Networking**.
+5. Add Environment Variables (`DATABASE_URL`, `JWT_SECRET_KEY`, `RESEND_API_KEY`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`).
 
 ---
 

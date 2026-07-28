@@ -71,7 +71,7 @@ export default function Login() {
       } catch (backendErr: any) {
         console.warn('Backend Google Auth endpoint notice:', backendErr);
 
-        // If backend fetch failed (e.g. Render server cold start / network delay),
+        // If backend fetch failed (e.g. Railway server restart / network delay),
         // establish session directly using Google's verified JWT identity payload
         if (googleUserPayload && googleUserPayload.email) {
           const googleVerifiedUser = {
