@@ -48,6 +48,7 @@ interface EventContact {
   head: string;
   phone: string;
   rawPhone: string;
+  email?: string;
 }
 
 const EVENT_CONTACTS: Record<string, EventContact> = {
@@ -56,7 +57,7 @@ const EVENT_CONTACTS: Record<string, EventContact> = {
   bidquest: { head: 'Anik Bhunia', phone: '+91 78721 69208', rawPhone: '+917872169208' },
   'carlsen-chess': { head: 'Soumyarup Sarkar', phone: '+91 82933 55649', rawPhone: '+918293355649' },
   chess: { head: 'Soumyarup Sarkar', phone: '+91 82933 55649', rawPhone: '+918293355649' },
-  lensverse: { head: 'Souvik Roy', phone: '+91 89429 09735', rawPhone: '+918942909735' },
+  lensverse: { head: 'Souvik Roy', phone: '+91 89429 09735', rawPhone: '+918942909735', email: 'roysouvik0987@gmail.com' },
   techtalk: { head: 'Jyotipraba Pal', phone: '+91 97347 72175', rawPhone: '+919734772175' }
 };
 
@@ -1798,9 +1799,9 @@ export default function Events({ onBack: _onBack }: Props) {
 
                             {/* 2. Official Email Action */}
                             <a
-                              href="mailto:techfestenvision@gmail.com"
+                              href={`mailto:${contact.email || 'roysouvik0987@gmail.com'}`}
                               className="py-3 px-3.5 rounded-xl bg-gradient-to-r from-purple-500/25 to-indigo-500/25 hover:from-purple-500/40 hover:to-indigo-500/40 border border-purple-400/60 text-purple-200 font-mono text-xs font-black text-center transition-all flex items-center justify-center gap-2 no-underline cursor-pointer active:scale-95 shadow-[0_0_15px_rgba(168,85,247,0.2)] hover:shadow-[0_0_20px_rgba(168,85,247,0.4)]"
-                              title="Email techfestenvision@gmail.com"
+                              title={`Email ${contact.email || 'roysouvik0987@gmail.com'}`}
                             >
                               <span className="text-sm">✉️</span>
                               <span>EMAIL US</span>
