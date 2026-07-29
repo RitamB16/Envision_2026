@@ -1,11 +1,8 @@
 import asyncio
 import threading
 import requests
-import resend
 from typing import List, Optional
 from config import settings
-
-resend.api_key = settings.RESEND_API_KEY
 
 COMMUNITY_LINK = "https://chat.whatsapp.com/JJCbhKk8N1j7yNNW7kmKMX"
 
@@ -104,60 +101,8 @@ async def send_email_brevo(to_emails: List[str], subject: str, html_content: str
     return all_success
 
 
-async def send_email_resend(to_emails: List[str], subject: str, html_content: str, text_content: str) -> bool:
-    """
-    Dispatches emails asynchronously using the Resend HTTP API (resend.Emails.send_async).
-    Loops through recipient list with asyncio.sleep(0.5) delay per dispatch to prevent rate-limiting.
-    Includes try/except block around each dispatch to ensure individual network failures do not halt batch loop.
-    """
-    resend.api_key = settings.RESEND_API_KEY
-    if not resend.api_key:
-        print("[Email Error] RESEND_API_KEY not configured in settings. Skipping email dispatch.")
-        return False
-
-    valid_emails = [e.strip() for e in to_emails if e and "@" in e]
-    if not valid_emails:
-        print("[Email Warning] No valid email recipients specified.")
-        return False
-
-    print(f"[Email Dispatcher] Dispatching email via Resend to {len(valid_emails)} recipient(s): {valid_emails}")
-
-    all_success = True
-    from_email = getattr(settings, "RESEND_FROM_EMAIL", "Envision 2026 TechFest <onboarding@resend.dev>")
-
-    for to_email in valid_emails:
-        try:
-            params: resend.Emails.SendParams = {
-                "from": from_email,
-                "to": [to_email],
-                "subject": subject,
-                "html": html_content,
-                "text": text_content,
-            }
-            response = await resend.Emails.send_async(params)
-            print(f"[Email Success] Resend email successfully dispatched to {to_email}: {response}")
-        except Exception as err:
-            err_str = str(err)
-            if "testing emails to your own email address" in err_str:
-                print(
-                    f"[Resend Sandbox Restriction] Could not deliver to {to_email}.\n"
-                    f"  -> Resend account is currently in Sandbox/Testing mode.\n"
-                    f"  -> To send emails to all external recipients, verify your domain at https://resend.com/domains\n"
-                    f"  -> And set RESEND_FROM_EMAIL=Envision 2026 TechFest <noreply@yourdomain.com> in your environment settings."
-                )
-            else:
-                print(f"[Email Error] Failed sending email to {to_email} via Resend API: {err}")
-            all_success = False
-
-        await asyncio.sleep(0.5)
-
-    return all_success
-
-
 async def send_email(to_emails: List[str], subject: str, html_content: str, text_content: str) -> bool:
-    if settings.BREVO_API_KEY:
-        return await send_email_brevo(to_emails, subject, html_content, text_content)
-    return await send_email_resend(to_emails, subject, html_content, text_content)
+    return await send_email_brevo(to_emails, subject, html_content, text_content)
 
 
 def run_async(coro):
@@ -173,9 +118,9 @@ def run_async(coro):
 
 def send_email_in_background(to_emails: List[str], subject: str, html_content: str, text_content: str):
     """
-    Spawns an async task or event loop execution to send email asynchronously using Resend API.
+    Spawns an async task or event loop execution to send email asynchronously using Brevo API.
     """
-    run_async(send_email_resend(to_emails, subject, html_content, text_content))
+    run_async(send_email_brevo(to_emails, subject, html_content, text_content))
 
 
 
@@ -291,7 +236,7 @@ Envision 2026
     </html>
     """
 
-    return await send_email_resend(to_emails, subject, html_content, text_content)
+    return await send_email_brevo(to_emails, subject, html_content, text_content)
 
 
 async def dispatch_techtalk_confirmation_email(
@@ -389,7 +334,7 @@ Envision 2026 • RKMRC Narendrapur
     </html>
     """
 
-    return await send_email_resend([to_email], subject, html_content, text_content)
+    return await send_email_brevo([to_email], subject, html_content, text_content)
 
 
 def dispatch_registration_approval_email_sync(*args, **kwargs):

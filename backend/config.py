@@ -13,9 +13,7 @@ class Settings(BaseSettings):
     
     DATABASE_URL: str
     JWT_SECRET_KEY: str
-    RESEND_API_KEY: str
-    RESEND_FROM_EMAIL: str = "Envision 2026 TechFest <onboarding@resend.dev>"
-    BREVO_API_KEY: Optional[str] = None
+    BREVO_API_KEY: str
     UPSTASH_REDIS_REST_URL: str
     UPSTASH_REDIS_REST_TOKEN: str
     CLOUDINARY_CLOUD_NAME: Optional[str] = None
