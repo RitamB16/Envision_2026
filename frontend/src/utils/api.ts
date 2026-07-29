@@ -79,13 +79,14 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     });
   } catch (err: any) {
     // Fallback retry without cross-site credentials for mobile Safari ITP / mobile network blocks
-    if (err.name === 'TypeError' || (err.message && (err.message.includes('Failed to fetch') || err.message.includes('Load failed')))) {
+    try {
       response = await fetch(`${API_BASE_URL}${endpoint}`, {
         ...options,
         headers,
       });
-    } else {
-      throw err;
+    } catch (retryErr: any) {
+      console.error(`[API Network Error] Could not reach backend at ${API_BASE_URL}${endpoint}:`, retryErr);
+      throw new Error(`Unable to connect to backend server at ${API_BASE_URL}. Please ensure the Railway backend service domain is generated and online.`);
     }
   }
 
