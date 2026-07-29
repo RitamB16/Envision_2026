@@ -1,5 +1,6 @@
 import asyncio
 import threading
+import requests
 import resend
 from typing import List, Optional
 from config import settings
@@ -42,6 +43,65 @@ EVENT_RULES_LINKS = {
     "lensverse": "https://ibb.co/PzQxbTX5",
     "techtalk": "https://envision-2026-seven.vercel.app/events"
 }
+
+
+async def send_email_brevo(to_emails: List[str], subject: str, html_content: str, text_content: str) -> bool:
+    """
+    Dispatches emails asynchronously using the Brevo (Sendinblue) v3 REST API.
+    Sends emails to any recipient address without requiring domain verification.
+    """
+    api_key = settings.BREVO_API_KEY
+    if not api_key:
+        print("[Email Error] BREVO_API_KEY not configured in settings. Skipping Brevo email dispatch.")
+        return False
+
+    valid_emails = [e.strip() for e in to_emails if e and "@" in e]
+    if not valid_emails:
+        print("[Email Warning] No valid email recipients specified.")
+        return False
+
+    print(f"[Email Dispatcher] Dispatching email via Brevo API to {len(valid_emails)} recipient(s): {valid_emails}")
+
+    url = "https://api.brevo.com/v3/smtp/email"
+    headers = {
+        "accept": "application/json",
+        "api-key": api_key,
+        "content-type": "application/json"
+    }
+
+    all_success = True
+
+    for to_email in valid_emails:
+        payload = {
+            "sender": {
+                "name": "Envision 2026 TechFest",
+                "email": "techfestenvision@gmail.com"
+            },
+            "to": [
+                {"email": to_email}
+            ],
+            "subject": subject,
+            "htmlContent": html_content,
+            "textContent": text_content
+        }
+
+        try:
+            response = await asyncio.to_thread(
+                requests.post, url, json=payload, headers=headers, timeout=12
+            )
+
+            if response.status_code in (200, 201, 202):
+                print(f"[Email Success] Brevo email successfully dispatched to {to_email}: {response.json()}")
+            else:
+                print(f"[Email Error] Brevo API failure for {to_email} ({response.status_code}): {response.text}")
+                all_success = False
+        except Exception as err:
+            print(f"[Email Error] Network error sending to {to_email} via Brevo API: {err}")
+            all_success = False
+
+        await asyncio.sleep(0.5)
+
+    return all_success
 
 
 async def send_email_resend(to_emails: List[str], subject: str, html_content: str, text_content: str) -> bool:
@@ -95,6 +155,8 @@ async def send_email_resend(to_emails: List[str], subject: str, html_content: st
 
 
 async def send_email(to_emails: List[str], subject: str, html_content: str, text_content: str) -> bool:
+    if settings.BREVO_API_KEY:
+        return await send_email_brevo(to_emails, subject, html_content, text_content)
     return await send_email_resend(to_emails, subject, html_content, text_content)
 
 
