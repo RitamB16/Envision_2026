@@ -1,3 +1,4 @@
+# Brevo API Active Email Dispatcher - Envision 2026
 import asyncio
 import threading
 import requests
