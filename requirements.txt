@@ -1,0 +1,16 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+psycopg2-binary
+pydantic-settings
+python-dotenv
+requests
+google-auth
+python-jose[cryptography]
+passlib
+email-validator
+slowapi
+fastapi-cache2
+jinja2
+alembic
+resend[async]
