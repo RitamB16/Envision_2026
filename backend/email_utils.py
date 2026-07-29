@@ -63,11 +63,12 @@ async def send_email_resend(to_emails: List[str], subject: str, html_content: st
     print(f"[Email Dispatcher] Dispatching email via Resend to {len(valid_emails)} recipient(s): {valid_emails}")
 
     all_success = True
+    from_email = getattr(settings, "RESEND_FROM_EMAIL", "Envision 2026 TechFest <onboarding@resend.dev>")
 
     for to_email in valid_emails:
         try:
             params: resend.Emails.SendParams = {
-                "from": "Envision 2026 TechFest <onboarding@resend.dev>",
+                "from": from_email,
                 "to": [to_email],
                 "subject": subject,
                 "html": html_content,
@@ -76,7 +77,16 @@ async def send_email_resend(to_emails: List[str], subject: str, html_content: st
             response = await resend.Emails.send_async(params)
             print(f"[Email Success] Resend email successfully dispatched to {to_email}: {response}")
         except Exception as err:
-            print(f"[Email Error] Failed sending email to {to_email} via Resend API: {err}")
+            err_str = str(err)
+            if "testing emails to your own email address" in err_str:
+                print(
+                    f"[Resend Sandbox Restriction] Could not deliver to {to_email}.\n"
+                    f"  -> Resend account is currently in Sandbox/Testing mode.\n"
+                    f"  -> To send emails to all external recipients, verify your domain at https://resend.com/domains\n"
+                    f"  -> And set RESEND_FROM_EMAIL=Envision 2026 TechFest <noreply@yourdomain.com> in your environment settings."
+                )
+            else:
+                print(f"[Email Error] Failed sending email to {to_email} via Resend API: {err}")
             all_success = False
 
         await asyncio.sleep(0.5)
