@@ -446,16 +446,32 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                       {registrations.map((reg, idx) => {
-                        const eventName = reg.event?.name || reg.event_id?.toUpperCase() || 'ENVISION EVENT';
-                        const isTechTalk = reg.event_id === 'techtalk' || eventName.includes('TECH TALK');
-                        const isPendingVerification = reg.payment_status === 'PENDING_VERIFICATION';
-                        const isPendingCheckout = reg.payment_status === 'PENDING' || reg.payment_status === 'UNPAID';
-                        const isPaid = reg.payment_status === 'COMPLETED' || reg.payment_status === 'CONFIRMED' || reg.payment_status === 'SUCCESS' || isPendingVerification || isTechTalk;
+                        const eventName = reg.event?.name || (reg as any).event_name || reg.event_id?.toUpperCase() || 'ENVISION EVENT';
+                        const isTechTalk = reg.event_id === 'techtalk' || eventName.toLowerCase().includes('tech talk');
+                        
+                        const statusClean = String(reg.payment_status || reg.status || '').toUpperCase().trim();
+                        const txnRefClean = String(reg.transaction_id || (reg as any).transaction_ref || (reg as any).payment_order_id || '').toUpperCase().trim();
+
+                        const isConfirmedPaid = [
+                          'PAID',
+                          'VERIFIED',
+                          'APPROVED',
+                          'COMPLETED',
+                          'CONFIRMED',
+                          'SUCCESS'
+                        ].includes(statusClean);
+
+                        const hasUtrReference = txnRefClean.includes('UTR-') || txnRefClean.length >= 10;
+                        const isPendingVerification = statusClean === 'PENDING_VERIFICATION' || (hasUtrReference && !isConfirmedPaid);
+                        const isPendingCheckout = (statusClean === 'PENDING' || statusClean === 'UNPAID' || !statusClean) && !hasUtrReference && !isConfirmedPaid;
+
                         const statusLabel = isTechTalk
                           ? '✓ FREE AUTO-ENROLLED PASS'
+                          : isConfirmedPaid
+                          ? '✓ CONFIRMED & PAID'
                           : isPendingVerification
                           ? '⏳ UTR SUBMITTED (VERIFICATION PENDING)'
-                          : (isPaid ? '✓ CONFIRMED & PAID' : 'PENDING CHECKOUT ⚡');
+                          : 'PENDING CHECKOUT ⚡';
 
                         const handleDirectCheckout = () => {
                           if (onClose) onClose();
@@ -480,7 +496,7 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
                               padding: '14px',
                               borderRadius: '14px',
                               backgroundColor: 'rgba(14, 7, 38, 0.85)',
-                              border: isPaid ? '1px solid rgba(0, 243, 255, 0.3)' : '1px solid rgba(234, 179, 8, 0.5)',
+                              border: isConfirmedPaid || isTechTalk ? '1px solid rgba(0, 243, 255, 0.35)' : isPendingVerification ? '1px solid rgba(6, 182, 212, 0.5)' : '1px solid rgba(234, 179, 8, 0.5)',
                               display: 'flex',
                               flexDirection: 'column',
                               gap: '8px',
@@ -491,7 +507,7 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
                           >
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '6px' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ width: '8px', height: '8px', borderRadius: '9999px', backgroundColor: isPaid ? '#10b981' : '#eab308' }} />
+                                <span style={{ width: '8px', height: '8px', borderRadius: '9999px', backgroundColor: isConfirmedPaid || isTechTalk ? '#10b981' : isPendingVerification ? '#06b6d4' : '#eab308' }} />
                                 <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 900, color: '#ffffff', fontFamily: 'monospace' }}>
                                   {eventName}
                                 </h4>
@@ -508,9 +524,9 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
                                 style={{
                                   padding: '4px 10px',
                                   borderRadius: '9999px',
-                                  backgroundColor: isPaid ? 'rgba(16, 185, 129, 0.2)' : 'rgba(234, 179, 8, 0.25)',
-                                  border: isPaid ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid rgba(234, 179, 8, 0.6)',
-                                  color: isPaid ? '#6ee7b7' : '#fef08a',
+                                  backgroundColor: isConfirmedPaid || isTechTalk ? 'rgba(16, 185, 129, 0.2)' : isPendingVerification ? 'rgba(6, 182, 212, 0.25)' : 'rgba(234, 179, 8, 0.25)',
+                                  border: isConfirmedPaid || isTechTalk ? '1px solid rgba(16, 185, 129, 0.4)' : isPendingVerification ? '1px solid rgba(6, 182, 212, 0.6)' : '1px solid rgba(234, 179, 8, 0.6)',
+                                  color: isConfirmedPaid || isTechTalk ? '#6ee7b7' : isPendingVerification ? '#67e8f9' : '#fef08a',
                                   fontSize: '10px',
                                   fontWeight: 900,
                                   fontFamily: 'monospace',
