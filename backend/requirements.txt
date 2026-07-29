@@ -11,6 +11,6 @@ passlib
 email-validator
 slowapi
 fastapi-cache2
-redis
 jinja2
 alembic
+resend[async]

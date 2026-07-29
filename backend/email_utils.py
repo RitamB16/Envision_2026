@@ -1,9 +1,10 @@
-import smtplib
+import asyncio
 import threading
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import resend
 from typing import List, Optional
 from config import settings
+
+resend.api_key = settings.RESEND_API_KEY
 
 COMMUNITY_LINK = "https://chat.whatsapp.com/JJCbhKk8N1j7yNNW7kmKMX"
 
@@ -43,15 +44,15 @@ EVENT_RULES_LINKS = {
 }
 
 
-def send_email_smtp(to_emails: List[str], subject: str, html_content: str, text_content: str) -> bool:
+async def send_email_resend(to_emails: List[str], subject: str, html_content: str, text_content: str) -> bool:
     """
-    Sends SMTP emails reliably with batch connection pooling (single login session per batch)
-    and dual-port fallback (TLS 587 / SSL 465).
+    Dispatches emails asynchronously using the Resend HTTP API (resend.Emails.send_async).
+    Loops through recipient list with asyncio.sleep(0.5) delay per dispatch to prevent rate-limiting.
+    Includes try/except block around each dispatch to ensure individual network failures do not halt batch loop.
     """
-    smtp_user = settings.SMTP_USER
-    smtp_password = settings.SMTP_PASSWORD
-    if not smtp_user or not smtp_password:
-        print("[Email Error] SMTP_USER or SMTP_PASSWORD not configured in settings. Skipping email dispatch.")
+    resend.api_key = settings.RESEND_API_KEY
+    if not resend.api_key:
+        print("[Email Error] RESEND_API_KEY not configured in settings. Skipping email dispatch.")
         return False
 
     valid_emails = [e.strip() for e in to_emails if e and "@" in e]
@@ -59,96 +60,54 @@ def send_email_smtp(to_emails: List[str], subject: str, html_content: str, text_
         print("[Email Warning] No valid email recipients specified.")
         return False
 
-    print(f"[Email Dispatcher] Dispatching email to {len(valid_emails)} recipient(s): {valid_emails}")
+    print(f"[Email Dispatcher] Dispatching email via Resend to {len(valid_emails)} recipient(s): {valid_emails}")
 
-    server = None
     all_success = True
 
-    # Try establishing pooled SMTP session via TLS 587 first
-    try:
-        server = smtplib.SMTP("smtp.gmail.com", 587, timeout=15)
-        server.ehlo()
-        server.starttls()
-        server.ehlo()
-        server.login(smtp_user, smtp_password)
-    except Exception as e1:
-        print(f"[Email TLS 587 Notice] {e1}. Trying SSL 465...")
-        try:
-            server = smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=15)
-            server.login(smtp_user, smtp_password)
-        except Exception as e2:
-            print(f"[Email Connection Error] Could not connect to SMTP server: {e2}")
-            server = None
-
     for to_email in valid_emails:
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = subject
-        msg["From"] = f"Envision 2026 TechFest <{smtp_user}>"
-        msg["Reply-To"] = smtp_user
-        msg["To"] = to_email
-        msg["X-Mailer"] = "Envision26-Mailer"
-
-        part1 = MIMEText(text_content, "plain", "utf-8")
-        part2 = MIMEText(html_content, "html", "utf-8")
-        msg.attach(part1)
-        msg.attach(part2)
-
-        sent = False
-        if server:
-            try:
-                server.sendmail(smtp_user, to_email, msg.as_string())
-                print(f"[Email Success] Email sent to {to_email}")
-                sent = True
-            except Exception as send_err:
-                print(f"[Email Send Notice] Failed sending to {to_email} via pooled session ({send_err}). Retrying fallback...")
-                server = None
-
-        if not sent:
-            # Fallback single send attempt
-            try:
-                with smtplib.SMTP("smtp.gmail.com", 587, timeout=12) as fb_server:
-                    fb_server.ehlo()
-                    fb_server.starttls()
-                    fb_server.ehlo()
-                    fb_server.login(smtp_user, smtp_password)
-                    fb_server.sendmail(smtp_user, to_email, msg.as_string())
-                print(f"[Email Success via Fallback TLS] Email sent to {to_email}")
-                sent = True
-            except Exception as fb_err:
-                try:
-                    with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=12) as fb_ssl_server:
-                        fb_ssl_server.login(smtp_user, smtp_password)
-                        fb_ssl_server.sendmail(smtp_user, to_email, msg.as_string())
-                    print(f"[Email Success via Fallback SSL] Email sent to {to_email}")
-                    sent = True
-                except Exception as fb_ssl_err:
-                    print(f"[Email Error] Final delivery failure for {to_email}: {fb_ssl_err}")
-
-        if not sent:
+        try:
+            params: resend.Emails.SendParams = {
+                "from": "Envision 2026 TechFest <onboarding@resend.dev>",
+                "to": [to_email],
+                "subject": subject,
+                "html": html_content,
+                "text": text_content,
+            }
+            response = await resend.Emails.send_async(params)
+            print(f"[Email Success] Resend email successfully dispatched to {to_email}: {response}")
+        except Exception as err:
+            print(f"[Email Error] Failed sending email to {to_email} via Resend API: {err}")
             all_success = False
 
-    if server:
-        try:
-            server.quit()
-        except Exception:
-            pass
+        await asyncio.sleep(0.5)
 
     return all_success
 
 
+async def send_email(to_emails: List[str], subject: str, html_content: str, text_content: str) -> bool:
+    return await send_email_resend(to_emails, subject, html_content, text_content)
+
+
+def run_async(coro):
+    """
+    Helper utility to execute an async coroutine from synchronous contexts safely.
+    """
+    try:
+        loop = asyncio.get_running_loop()
+        return loop.create_task(coro)
+    except RuntimeError:
+        return asyncio.run(coro)
+
+
 def send_email_in_background(to_emails: List[str], subject: str, html_content: str, text_content: str):
     """
-    Spawns a daemon thread to send SMTP email asynchronously.
+    Spawns an async task or event loop execution to send email asynchronously using Resend API.
     """
-    thread = threading.Thread(
-        target=send_email_smtp,
-        args=(to_emails, subject, html_content, text_content),
-        daemon=True
-    )
-    thread.start()
+    run_async(send_email_resend(to_emails, subject, html_content, text_content))
 
 
-def dispatch_registration_approval_email(
+
+async def dispatch_registration_approval_email(
     to_emails: List[str],
     participant_name: str,
     fest_id: str,
@@ -260,10 +219,10 @@ Envision 2026
     </html>
     """
 
-    return send_email_smtp(to_emails, subject, html_content, text_content)
+    return await send_email_resend(to_emails, subject, html_content, text_content)
 
 
-def dispatch_techtalk_confirmation_email(
+async def dispatch_techtalk_confirmation_email(
     to_email: str,
     participant_name: str,
     fest_id: str,
@@ -358,4 +317,13 @@ Envision 2026 • RKMRC Narendrapur
     </html>
     """
 
-    return send_email_smtp([to_email], subject, html_content, text_content)
+    return await send_email_resend([to_email], subject, html_content, text_content)
+
+
+def dispatch_registration_approval_email_sync(*args, **kwargs):
+    return run_async(dispatch_registration_approval_email(*args, **kwargs))
+
+
+def dispatch_techtalk_confirmation_email_sync(*args, **kwargs):
+    return run_async(dispatch_techtalk_confirmation_email(*args, **kwargs))
+

@@ -261,10 +261,10 @@ def register_solo(
         # Immediate confirmation email for free Tech Talk registration
         clean_ev_name = payload.event_name.lower().replace(" ", "-").strip()
         if clean_ev_name in ("techtalk", "tech-talk"):
-            from email_utils import dispatch_techtalk_confirmation_email
+            from email_utils import dispatch_techtalk_confirmation_email_sync
             p_name = participant.full_name or participant.name
             p_fest_id = participant.fest_id or "ENV-2026-001"
-            dispatch_techtalk_confirmation_email(participant.email, p_name, p_fest_id)
+            dispatch_techtalk_confirmation_email_sync(participant.email, p_name, p_fest_id)
             registration.email_sent = True
             db.commit()
         else:

@@ -4,6 +4,7 @@ Envision '26 TechFest - Manual Database Approval Email Trigger Script
 Run this script anytime after updating registration payment statuses directly in PostgreSQL / database:
     python backend/send_approval_emails.py
 """
+import asyncio
 import sys
 import os
 
@@ -17,7 +18,7 @@ from registration import auto_enroll_techtalk
 from email_utils import dispatch_registration_approval_email, dispatch_techtalk_confirmation_email, normalize_event_id
 
 
-def process_all_approved_registrations():
+async def process_all_approved_registrations():
     print("=" * 65)
     print("ENVISION '26 TECHFEST: PROCESSING APPROVED REGISTRATIONS")
     print("=" * 65)
@@ -66,17 +67,17 @@ def process_all_approved_registrations():
                 utr_val = getattr(reg, "utr_number", None) or getattr(reg, "payment_order_id", None) or "VERIFIED"
                 clean_ev = reg.event_name.lower().replace(" ", "-").strip()
 
-                print(f"  Dispatching personalized confirmation email to: {participant_user.email} (Dear {participant_name})")
+                print(f"  Dispatching personalized confirmation email via Resend to: {participant_user.email} (Dear {participant_name})")
 
                 if clean_ev in ("techtalk", "tech-talk"):
-                    sent_ok = dispatch_techtalk_confirmation_email(
+                    sent_ok = await dispatch_techtalk_confirmation_email(
                         to_email=participant_user.email,
                         participant_name=participant_name,
                         fest_id=fest_id,
                         registration_id=str(reg.reg_id)
                     )
                 else:
-                    sent_ok = dispatch_registration_approval_email(
+                    sent_ok = await dispatch_registration_approval_email(
                         to_emails=[participant_user.email],
                         participant_name=participant_name,
                         fest_id=fest_id,
@@ -96,6 +97,8 @@ def process_all_approved_registrations():
             except Exception as ex:
                 print(f"  Error processing registration {reg.reg_id}: {ex}\n")
 
+            await asyncio.sleep(0.5)
+
         print("Finished processing all database registration approvals!")
 
     finally:
@@ -103,4 +106,5 @@ def process_all_approved_registrations():
 
 
 if __name__ == "__main__":
-    process_all_approved_registrations()
+    asyncio.run(process_all_approved_registrations())
+

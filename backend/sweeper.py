@@ -7,12 +7,12 @@ import models
 from sqlalchemy import func
 
 
-def process_approved_registrations_sync():
+async def process_approved_registrations():
     """
     Scans the database for any registration with payment_status in ('PAID', 'COMPLETED', 'CONFIRMED', 'SUCCESS')
     where email_sent IS NOT True.
-    Auto-enrolls them in Tech Talk and dispatches personalized confirmation emails automatically per member.
-    Syncs payment status across team members and tracks email_sent per individual member!
+    Auto-enrolls them in Tech Talk and dispatches personalized confirmation emails automatically per member via Resend.
+    Loops through recipient batch with await asyncio.sleep(0.5) delay between dispatches and try/except error handling.
     """
     db = SessionLocal()
     try:
@@ -52,14 +52,14 @@ def process_approved_registrations_sync():
                     clean_ev = reg.event_name.lower().replace(" ", "-").strip()
 
                     if clean_ev in ("techtalk", "tech-talk"):
-                        sent_ok = dispatch_techtalk_confirmation_email(
+                        sent_ok = await dispatch_techtalk_confirmation_email(
                             to_email=participant_user.email,
                             participant_name=participant_name,
                             fest_id=fest_id,
                             registration_id=str(reg.reg_id)
                         )
                     else:
-                        sent_ok = dispatch_registration_approval_email(
+                        sent_ok = await dispatch_registration_approval_email(
                             to_emails=[participant_user.email],
                             participant_name=participant_name,
                             fest_id=fest_id,
@@ -78,13 +78,24 @@ def process_approved_registrations_sync():
 
                 except Exception as ex:
                     print(f"[Sweeper Error] Failed to process registration {reg.reg_id}: {ex}")
+
+                # Rate-limiting delay between dispatches in batch loop
+                await asyncio.sleep(0.5)
     except Exception as e:
-        print(f"[Sweeper Error in process_approved_registrations_sync] {e}")
+        print(f"[Sweeper Error in process_approved_registrations] {e}")
     finally:
         db.close()
 
 
-def run_sweeper_cycle_sync():
+def process_approved_registrations_sync():
+    """
+    Sync wrapper for process_approved_registrations.
+    """
+    from email_utils import run_async
+    return run_async(process_approved_registrations())
+
+
+async def run_sweeper_cycle():
     try:
         # 1. Cleanup expired abandoned pending registrations
         db = SessionLocal()
@@ -104,16 +115,22 @@ def run_sweeper_cycle_sync():
             print(f"[Sweeper] Expired {count} abandoned PENDING registrations older than 15m.")
         db.close()
 
-        # 2. Process newly approved database registrations and dispatch emails
-        process_approved_registrations_sync()
+        # 2. Process newly approved database registrations and dispatch emails asynchronously
+        await process_approved_registrations()
 
     except Exception as e:
         print(f"[Sweeper Error] {e}")
+
+
+def run_sweeper_cycle_sync():
+    from email_utils import run_async
+    return run_async(run_sweeper_cycle())
 
 
 async def cleanup_expired_registrations():
     # Allow 5 seconds initial delay so FastAPI server completes startup instantly
     await asyncio.sleep(5)
     while True:
-        await asyncio.to_thread(run_sweeper_cycle_sync)
+        await run_sweeper_cycle()
         await asyncio.sleep(30)  # Runs every 30 seconds in background thread
+

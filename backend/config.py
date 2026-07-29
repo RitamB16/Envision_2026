@@ -14,10 +14,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     JWT_SECRET_KEY: str
     GOOGLE_CLIENT_ID: str
-    GOOGLE_CLIENT_SECRET: str
     RESEND_API_KEY: str
-    SMTP_USER: Optional[str] = "techfestenvision@gmail.com"
-    SMTP_PASSWORD: Optional[str] = "gbcu aksx mbff pwyi"
     BREVO_API_KEY: Optional[str] = None
     UPSTASH_REDIS_REST_URL: str
     UPSTASH_REDIS_REST_TOKEN: str

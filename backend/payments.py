@@ -257,7 +257,7 @@ def admin_approve_utr(
     # Auto-enroll in Tech Talk & dispatch confirmation email upon successful payment approval
     if is_approval:
         from registration import auto_enroll_techtalk
-        from email_utils import dispatch_registration_approval_email, dispatch_techtalk_confirmation_email, normalize_event_id
+        from email_utils import dispatch_registration_approval_email_sync, dispatch_techtalk_confirmation_email_sync, normalize_event_id
 
         target_regs = [reg]
         if reg.team_id:
@@ -279,14 +279,14 @@ def admin_approve_utr(
                 tm_fest_id = tm_user.fest_id or "ENV-2026-001"
 
                 if clean_ev in ("techtalk", "tech-talk"):
-                    sent_ok = dispatch_techtalk_confirmation_email(
+                    sent_ok = dispatch_techtalk_confirmation_email_sync(
                         to_email=tm_user.email,
                         participant_name=tm_name,
                         fest_id=tm_fest_id,
                         registration_id=str(member_reg.reg_id)
                     )
                 else:
-                    sent_ok = dispatch_registration_approval_email(
+                    sent_ok = dispatch_registration_approval_email_sync(
                         to_emails=[tm_user.email],
                         participant_name=tm_name,
                         fest_id=tm_fest_id,
