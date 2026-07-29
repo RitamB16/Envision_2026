@@ -72,7 +72,7 @@ def clear_auth_cookie(response: Response, request: Request):
     )
 
 @router.post("/google", response_model=TokenResponse)
-@limiter.limit("3/minute")
+@limiter.limit("30/minute")
 def google_login(request: Request, response: Response, token_data: GoogleToken, db: Session = Depends(get_db)):
     raw_token = token_data.id_token or token_data.token
     if not raw_token:
@@ -168,7 +168,7 @@ def logout(response: Response, request: Request):
     return {"message": "Successfully logged out"}
 
 @router.post("/instant-login", response_model=TokenResponse)
-@limiter.limit("10/minute")
+@limiter.limit("30/minute")
 def instant_login(
     request: Request,
     response: Response,
