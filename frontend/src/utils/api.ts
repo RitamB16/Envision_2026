@@ -70,23 +70,27 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     headers['Authorization'] = `Bearer ${token}`;
   }
 
+  const requestHeaders = { ...headers };
+  const { credentials, ...restOptions } = options;
+
   let response: Response;
   try {
     response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      ...options,
-      credentials: 'include',
-      headers,
+      ...restOptions,
+      credentials: credentials || 'include',
+      headers: requestHeaders,
     });
   } catch (err: any) {
-    // Fallback retry without cross-site credentials for mobile Safari ITP / mobile network blocks
+    // Fallback retry with credentials: 'omit' for mobile browsers (Safari/Chrome Mobile ITP & CORS restrictions)
     try {
       response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        ...options,
-        headers,
+        ...restOptions,
+        credentials: 'omit',
+        headers: requestHeaders,
       });
     } catch (retryErr: any) {
       console.error(`[API Network Error] Could not reach backend at ${API_BASE_URL}${endpoint}:`, retryErr);
-      throw new Error(`Unable to connect to backend server at ${API_BASE_URL}. Please ensure the Railway backend service domain is generated and online.`);
+      throw new Error(`Unable to connect to backend server. Please check your network or try again.`);
     }
   }
 
