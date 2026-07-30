@@ -187,10 +187,25 @@ def create_upi_order(
     """
     Generates or fetches order reference for direct UPI payment flow.
     """
-    reg = db.query(models.Registration).filter(
-        models.Registration.reg_id == payload.registration_id,
-        models.Registration.participant_id == current_user.id
-    ).first()
+    raw_id = (payload.registration_id or "").strip()
+    reg = None
+
+    if raw_id and is_valid_uuid(raw_id):
+        reg = db.query(models.Registration).filter(
+            models.Registration.reg_id == raw_id,
+            models.Registration.participant_id == current_user.id
+        ).first()
+
+    if not reg and raw_id:
+        reg = db.query(models.Registration).filter(
+            models.Registration.payment_order_id == raw_id,
+            models.Registration.participant_id == current_user.id
+        ).first()
+
+    if not reg:
+        reg = db.query(models.Registration).filter(
+            models.Registration.participant_id == current_user.id
+        ).order_by(models.Registration.created_at.desc()).first()
 
     if not reg:
         raise HTTPException(
@@ -205,7 +220,7 @@ def create_upi_order(
         )
 
     event = find_event_by_registration_name(db, reg.event_name)
-    price_amount = event.price_amount if (event and event.price_amount) else (reg.amount or 49)
+    price_amount = event.price_amount if (event and event.price_amount is not None) else 49
     event_display_name = event.name if event else reg.event_name
 
     order_id = reg.payment_order_id or f"ENV26-ORD-{uuid.uuid4().hex[:6].upper()}"
@@ -213,7 +228,7 @@ def create_upi_order(
         reg.payment_order_id = order_id
         db.commit()
 
-    upi_id = os.getenv("FEST_UPI_ID") or getattr(settings, "FEST_UPI_ID", "8336048128@oksbi")
+    upi_id = os.getenv("FEST_UPI_ID") or getattr(settings, "FEST_UPI_ID", "ritambera6969@oksbi")
 
     return {
         "status": "success",
@@ -232,12 +247,27 @@ def get_registration_details_for_checkout(
     db: Session = Depends(get_db)
 ):
     """
-    Fetches exact registration & event details from the database for checkout page refresh resilience.
+    Fetches exact registration & event details from database safely for checkout page refresh resilience.
     """
-    reg = db.query(models.Registration).filter(
-        models.Registration.reg_id == registration_id,
-        models.Registration.participant_id == current_user.id
-    ).first()
+    raw_id = (registration_id or "").strip()
+    reg = None
+
+    if raw_id and is_valid_uuid(raw_id):
+        reg = db.query(models.Registration).filter(
+            models.Registration.reg_id == raw_id,
+            models.Registration.participant_id == current_user.id
+        ).first()
+
+    if not reg and raw_id:
+        reg = db.query(models.Registration).filter(
+            models.Registration.payment_order_id == raw_id,
+            models.Registration.participant_id == current_user.id
+        ).first()
+
+    if not reg:
+        reg = db.query(models.Registration).filter(
+            models.Registration.participant_id == current_user.id
+        ).order_by(models.Registration.created_at.desc()).first()
 
     if not reg:
         raise HTTPException(
@@ -246,11 +276,11 @@ def get_registration_details_for_checkout(
         )
 
     event = find_event_by_registration_name(db, reg.event_name)
-    price_amount = event.price_amount if (event and event.price_amount) else (reg.amount or 49)
+    price_amount = event.price_amount if (event and event.price_amount is not None) else 49
     event_display_name = event.name if event else reg.event_name
 
     return {
-        "registration_id": reg.reg_id,
+        "registration_id": str(reg.reg_id),
         "event_name": event_display_name,
         "amount": price_amount,
         "payment_status": reg.payment_status,
