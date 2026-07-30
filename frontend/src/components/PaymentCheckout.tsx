@@ -1,6 +1,7 @@
 import { useState, useEffect, ClipboardEvent, KeyboardEvent } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { api, RAZORPAY_UPI_ID, FEST_UPI_ID, FEST_UPI_NAME } from '../utils/api';
+import { enqueueOfflineItem } from '../utils/offlineQueue';
 import { useRegistrationContext } from '../context/RegistrationContext';
 import { formatISTTimestamp } from '../utils/timeUtils';
 
@@ -267,7 +268,14 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
         return;
       }
 
-      // Fallback: Proceed with UTR submission locally so mobile student isn't blocked on network drop
+      // Offline Cache & Auto-Sync: Enqueue UTR submission so background worker syncs to PostgreSQL as soon as network connects!
+      enqueueOfflineItem('UTR_SUBMIT', '/payments/submit-utr', {
+        registration_id: registrationId,
+        utr_number: cleanUtr,
+        event_name: eventName,
+        user_email: userDetails.email
+      });
+
       const submittedTxnId = `UTR-${cleanUtr}`;
       setTxnId(submittedTxnId);
       setPaymentStatus('SUCCESS');

@@ -22,6 +22,8 @@ const PaymentCheckout = lazy(() => import('./components/PaymentCheckout'));
 export type CarState = 'PATROLLING' | 'TRAVELING' | 'ARRIVED' | 'RETURNING';
 export type CameraMode = 'FOLLOW' | 'CINEMATIC' | 'PAGE' | 'RETURN';
 
+import { processOfflineQueue } from './utils/offlineQueue';
+
 function AppContent() {
   const [loaded, setLoaded] = useState(false);
   const [introFinished, setIntroFinished] = useState(false);
@@ -35,6 +37,11 @@ function AppContent() {
   const [isSignedUp, setIsSignedUp] = useState(() => {
     return !!localStorage.getItem('access_token') || localStorage.getItem('envision_user_signedup') === 'true';
   });
+
+  useEffect(() => {
+    // Process any offline sync queue items immediately on app load
+    processOfflineQueue();
+  }, []);
 
   useEffect(() => {
     const handleAuthCheck = () => {
