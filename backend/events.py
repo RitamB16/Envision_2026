@@ -204,10 +204,12 @@ def get_user_registrations(
         if auto_techtalk_reg and auto_techtalk_reg.reg_id not in {r.reg_id for r in registrations}:
             registrations.append(auto_techtalk_reg)
 
+    from registration import normalize_event_id
     all_events = {e.id: e for e in db.query(models.Event).all()}
     result = []
     for reg in registrations:
-        event = all_events.get(reg.event_id)
+        canonical_ev_id = normalize_event_id(reg.event_id)
+        event = all_events.get(canonical_ev_id) or all_events.get(reg.event_id)
         reg_response = schemas.EventRegistrationResponse.model_validate(reg)
         if event:
             reg_response.event = schemas.EventResponse.model_validate(event)

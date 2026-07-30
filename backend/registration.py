@@ -63,8 +63,21 @@ def get_event_price(db: Session, event_name: str) -> int:
 
 
 def generate_env_id(db: Session) -> str:
-    count = db.query(models.User).count() + 1
-    return f"ENV-2026-{count:03d}"
+    """Generates a clean Envision Fest ID in format ENV26-001, ENV26-002, etc."""
+    users = db.query(models.User).filter(
+        (models.User.env_id.isnot(None))
+    ).all()
+    max_num = 0
+    for u in users:
+        fid = u.env_id or getattr(u, 'fest_id', None)
+        if fid:
+            fid_upper = str(fid).upper()
+            if "ENV26-" in fid_upper or "ENV-2026-" in fid_upper:
+                suffix = fid_upper.replace("ENV-2026-", "").replace("ENV26-", "")
+                if suffix.isdigit():
+                    max_num = max(max_num, int(suffix))
+    next_num = max_num + 1
+    return f"ENV26-{next_num:03d}"
 
 
 def check_event_capacity(db: Session, event_name: str):
@@ -180,17 +193,18 @@ def register_solo(
             db.commit()
             db.refresh(participant)
 
+    canonical_id = normalize_event_id(payload.event_name)
+
     # Check for pre-existing registration record for this participant and event (Idempotent Resumption)
     existing_reg = db.query(models.Registration).filter(
         models.Registration.participant_id == participant.id,
-        models.Registration.event_name == payload.event_name
+        (models.Registration.event_name == canonical_id) | (models.Registration.event_name.ilike(payload.event_name.strip()))
     ).first()
 
     price_amount = get_event_price(db, payload.event_name)
 
     # Check if event requires a team or payload provided team_name / team_id
-    normalized_event_name = payload.event_name.lower().replace(" ", "-").strip()
-    event_obj = db.query(models.Event).filter(models.Event.id == normalized_event_name).first()
+    event_obj = db.query(models.Event).filter(models.Event.id == canonical_id).first()
     is_team_event = (event_obj and event_obj.requires_team) or bool(payload.team_name) or bool(payload.team_id)
 
     bound_team_id = payload.team_id
@@ -198,14 +212,14 @@ def register_solo(
         clean_team_name = payload.team_name.strip() if payload.team_name else f"{participant.name.strip()}'s Team"
         team = db.query(models.Team).filter(
             func.lower(models.Team.team_name) == clean_team_name.lower(),
-            models.Team.event_name == payload.event_name
+            (models.Team.event_name == canonical_id) | (models.Team.event_name.ilike(payload.event_name.strip()))
         ).first()
 
         if not team:
             try:
                 team = models.Team(
                     team_name=clean_team_name,
-                    event_name=payload.event_name,
+                    event_name=canonical_id,
                     leader_id=participant.id
                 )
                 db.add(team)
@@ -214,7 +228,7 @@ def register_solo(
                 db.rollback()
                 team = db.query(models.Team).filter(
                     func.lower(models.Team.team_name) == clean_team_name.lower(),
-                    models.Team.event_name == payload.event_name
+                    (models.Team.event_name == canonical_id) | (models.Team.event_name.ilike(payload.event_name.strip()))
                 ).first()
         
         if team:
@@ -249,7 +263,7 @@ def register_solo(
     try:
         registration = models.Registration(
             participant_id=participant.id,
-            event_name=payload.event_name,
+            event_name=canonical_id,
             team_id=bound_team_id,
             payment_order_id=order_id,
             payment_status=payment_status_val
