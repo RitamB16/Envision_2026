@@ -364,10 +364,12 @@ def register_team(
                 leader.food_pref = payload.leader_food_pref
             db.flush()
 
+        canonical_id = normalize_event_id(payload.event_name)
+
         # Check if leader already has a registration record for this event (Idempotent Resumption)
         existing_leader_reg = db.query(models.Registration).filter(
             models.Registration.participant_id == leader.id,
-            models.Registration.event_name == payload.event_name
+            (models.Registration.event_name == canonical_id) | (models.Registration.event_name.ilike(payload.event_name.strip()))
         ).first()
 
         # 2. Fetch or Create Teammate Participants
@@ -403,13 +405,13 @@ def register_team(
         clean_team_name = payload.team_name.strip()
         team = db.query(models.Team).filter(
             func.lower(models.Team.team_name) == clean_team_name.lower(),
-            models.Team.event_name == payload.event_name
+            (models.Team.event_name == canonical_id) | (models.Team.event_name.ilike(payload.event_name.strip()))
         ).first()
 
         if not team:
             team = models.Team(
                 team_name=clean_team_name,
-                event_name=payload.event_name,
+                event_name=canonical_id,
                 leader_id=leader.id
             )
             db.add(team)
@@ -439,7 +441,7 @@ def register_team(
 
             leader_reg = models.Registration(
                 participant_id=leader.id,
-                event_name=payload.event_name,
+                event_name=canonical_id,
                 team_id=team.team_id,
                 payment_order_id=order_id,
                 payment_status=payment_status_val
@@ -451,7 +453,7 @@ def register_team(
         for tm in teammates:
             tm_reg = db.query(models.Registration).filter(
                 models.Registration.participant_id == tm.id,
-                models.Registration.event_name == payload.event_name
+                (models.Registration.event_name == canonical_id) | (models.Registration.event_name.ilike(payload.event_name.strip()))
             ).first()
 
             if tm_reg:
@@ -461,7 +463,7 @@ def register_team(
             else:
                 tm_reg = models.Registration(
                     participant_id=tm.id,
-                    event_name=payload.event_name,
+                    event_name=canonical_id,
                     team_id=team.team_id,
                     payment_order_id=order_id,
                     payment_status=payment_status_val
@@ -491,14 +493,15 @@ def register_team(
         db.rollback()
         # Fallback query for concurrency race condition handling
         clean_team_name = payload.team_name.strip()
+        canonical_id = normalize_event_id(payload.event_name)
         team = db.query(models.Team).filter(
             func.lower(models.Team.team_name) == clean_team_name.lower(),
-            models.Team.event_name == payload.event_name
+            (models.Team.event_name == canonical_id) | (models.Team.event_name.ilike(payload.event_name.strip()))
         ).first()
 
         existing_reg = db.query(models.Registration).filter(
             models.Registration.participant_id == leader.id if 'leader' in locals() else False,
-            models.Registration.event_name == payload.event_name
+            (models.Registration.event_name == canonical_id) | (models.Registration.event_name.ilike(payload.event_name.strip()))
         ).first()
 
         if existing_reg:
