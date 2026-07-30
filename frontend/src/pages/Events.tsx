@@ -2330,24 +2330,8 @@ export default function Events({ onBack: _onBack }: Props) {
                             </button>
                           </div>
                           <p className="text-[10px] text-gray-300 font-mono m-0 mt-1">
-                            Scan QR with GPay/PhonePe/Paytm to pay <strong className="text-cyan-300">{selectedEvent.price}</strong>.
+                            Scan QR with any UPI app (GPay, PhonePe, Paytm) to pay <strong className="text-cyan-300">{selectedEvent.price}</strong>.
                           </p>
-
-                          {/* One-Tap App Links */}
-                          <div className="flex items-center gap-2 mt-2 justify-center sm:justify-start flex-wrap">
-                            <a
-                              href={`upi://pay?pa=ritambera6969@oksbi&pn=RITAM%20BERA&am=${selectedEvent.price_amount ?? 49}&cu=INR`}
-                              className="px-2 py-0.5 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/30 border border-cyan-400/30 text-cyan-300 text-[10px] font-bold transition-all"
-                            >
-                              GPay / PhonePe
-                            </a>
-                            <a
-                              href={`upi://pay?pa=ritambera6969@oksbi&pn=RITAM%20BERA&am=${selectedEvent.price_amount ?? 49}&cu=INR`}
-                              className="px-2 py-0.5 rounded-lg bg-purple-500/15 hover:bg-purple-500/30 border border-purple-400/30 text-purple-300 text-[10px] font-bold transition-all"
-                            >
-                              Paytm / BHIM
-                            </a>
-                          </div>
                         </div>
                       </div>
 
