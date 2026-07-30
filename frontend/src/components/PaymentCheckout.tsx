@@ -143,7 +143,8 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
   const cleanTargetVpa = (FEST_UPI_ID || (import.meta.env as any).VITE_FEST_UPI_ID || RAZORPAY_UPI_ID || 'ritambera6969@oksbi').trim();
   const cleanPayeeName = (FEST_UPI_NAME || (import.meta.env as any).VITE_FEST_UPI_NAME || 'RITAM BERA').trim();
   const cleanAmount = String(totalAmount).trim();
-  const shortId = String(registrationId).replace(/[^a-zA-Z0-9]/g, '').slice(0, 6);
+  const rawId = String(registrationId).replace(/^ENV26-REG-/i, '');
+  const shortId = rawId.replace(/[^a-zA-Z0-9]/g, '').slice(0, 6);
   const cleanNote = `Reg${shortId || '26'}`;
 
   const upiDeepLink = `upi://pay?pa=${encodeURIComponent(cleanTargetVpa)}&pn=${encodeURIComponent(cleanPayeeName)}&am=${encodeURIComponent(cleanAmount)}&cu=INR&tn=${encodeURIComponent(cleanNote)}`;

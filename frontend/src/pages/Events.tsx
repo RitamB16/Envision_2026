@@ -553,7 +553,11 @@ export default function Events({ onBack: _onBack }: Props) {
 
       // Mobile Network Fallback: If backend connection drops, generate a resilient registration pass locally
       const isFreeEvent = selectedEvent.price_amount === 0 || selectedEvent.price === '₹0' || selectedEvent.price === 'FREE';
-      const fallbackRegId = `ENV26-REG-${Date.now().toString(36).toUpperCase()}`;
+      const generateUUID = () => {
+        if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
+        return 'f' + Date.now().toString(16) + '-4000-8000-' + Math.random().toString(16).slice(2, 14).padEnd(12, '0');
+      };
+      const fallbackRegId = generateUUID();
 
       // Store in local student passes
       try {
