@@ -1,11 +1,22 @@
 import json
-from fastapi import APIRouter, Request, Depends, HTTPException, status
+import uuid
+from fastapi import APIRouter, Request, Depends
 from sqlalchemy.orm import Session
 
 from database import get_db
 import models
 
 router = APIRouter(prefix="/webhooks", tags=["webhooks"])
+
+
+def is_valid_uuid(val: str) -> bool:
+    if not val:
+        return False
+    try:
+        uuid.UUID(str(val))
+        return True
+    except (ValueError, AttributeError, TypeError):
+        return False
 
 
 @router.post("/generic")
@@ -31,9 +42,17 @@ async def generic_payment_webhook(
     registration_id = event_payload.get("registration_id")
 
     if registration_id and utr_number:
-        reg = db.query(models.Registration).filter(
-            models.Registration.reg_id == registration_id
-        ).first()
+        reg = None
+        raw_id = str(registration_id).strip()
+        if is_valid_uuid(raw_id):
+            reg = db.query(models.Registration).filter(
+                models.Registration.reg_id == raw_id
+            ).first()
+
+        if not reg:
+            reg = db.query(models.Registration).filter(
+                models.Registration.payment_order_id == raw_id
+            ).first()
 
         if reg and reg.payment_status not in ("COMPLETED", "SUCCESS"):
             reg.payment_status = "COMPLETED"
