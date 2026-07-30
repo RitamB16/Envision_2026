@@ -236,7 +236,7 @@ export default function Events({ onBack: _onBack }: Props) {
       }
       return EVENTS_DATA;
     },
-    staleTime: 300000,
+    staleTime: 0,
   });
 
   // React Query single event detail fetch

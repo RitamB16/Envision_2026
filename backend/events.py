@@ -148,15 +148,16 @@ def seed_events_if_empty(db: Session):
                 ev.notes = item["notes"]
                 ev.benefits = item["benefits"]
                 ev.venue = item["venue"]
+                ev.date = item["date"]
+                ev.time = item["time"]
                 ev.max_capacity = item["max_capacity"]
                 ev.prize = item.get("prize")
         db.commit()
 
 
 @router.get("", response_model=List[schemas.EventResponse])
-@cache(expire=3600)
 def get_all_events(db: Session = Depends(get_db)):
-    """Fetch all events available in Envision '26 (Cached for 1 hour)."""
+    """Fetch all events available in Envision '26."""
     seed_events_if_empty(db)
     return db.query(models.Event).all()
 
