@@ -27,12 +27,12 @@ DEFAULT_EVENTS = [
         "max_team_size": 1,
         "has_food": False,
         "max_capacity": 1000,
-        "notes": "100% FREE & Open to All! Direct Registration.",
+        "notes": "100% FREE & Open to All! Reporting Time: 9:30 AM.",
         "image": "/images/events/techtalk.jpg",
         "benefits": "Free Keynote Entry Pass to RKMRC Tech Talk, Technical Seminars & Certificates.",
         "date": "6th August",
         "venue": "Mumukshananda Auditorium, RKMRC",
-        "time": "10:30 AM",
+        "time": "2:00 PM (Reporting: 9:30 AM)",
         "prize": "Free E-Certificates of Participation for Attendees"
     },
     {
@@ -45,12 +45,12 @@ DEFAULT_EVENTS = [
         "max_team_size": 1,
         "has_food": True,
         "max_capacity": 50,
-        "notes": "Individual Event",
+        "notes": "Individual Coding Event. Reporting Time: 9:30 AM.",
         "image": "/images/events/syntaxx.jpg",
         "benefits": "Participation certificate, Exciting Swags for Winner",
         "date": "6th August",
         "venue": "Computer Science Lab",
-        "time": "1 PM",
+        "time": "12:00 PM (Reporting: 9:30 AM)",
         "prize": "Winning Cash Prize Worth ₹399, Tech Medals & Winner Certificates"
     },
     {
@@ -63,12 +63,12 @@ DEFAULT_EVENTS = [
         "max_team_size": 2,
         "has_food": True,
         "max_capacity": 50,
-        "notes": "Team (max. 2 members)",
+        "notes": "Team (max. 2 members). Reporting Time: 9:30 AM.",
         "image": "/images/events/mindspark.jpg",
         "benefits": "Participation certificate, Winning Cash prize worth ₹499",
         "date": "6th August",
         "venue": "Mumukshananda Auditorium, RKMRC",
-        "time": "11:30 AM",
+        "time": "11:00 AM (Reporting: 9:30 AM)",
         "prize": "Winning Cash Prize Worth ₹499 & Champion Medals"
     },
     {
@@ -81,12 +81,12 @@ DEFAULT_EVENTS = [
         "max_team_size": 3,
         "has_food": True,
         "max_capacity": 70,
-        "notes": "Team Event (max. 3 members)",
+        "notes": "Team Event (max. 3 members). Reporting Time: 9:30 AM.",
         "image": "/images/events/bidquest.jpg",
         "benefits": "Participation certificate, Winning Cash prize worth ₹1500",
         "date": "6th August",
         "venue": "Mumukshananda Auditorium, RKMRC",
-        "time": "11:00 AM",
+        "time": "11:00 AM (Reporting: 9:30 AM)",
         "prize": "Winning Cash Prize Worth ₹1500 & Franchise Winner Medals"
     },
     {
@@ -99,12 +99,12 @@ DEFAULT_EVENTS = [
         "max_team_size": 1,
         "has_food": True,
         "max_capacity": 200,
-        "notes": "Top 10 shortlisted participants earn free entry, campus pass & FREE food for live photo competition!",
+        "notes": "Top 10 shortlisted participants earn free entry, campus pass & FREE food for live photo competition! Reporting Time: 9:30 AM.",
         "image": "/images/events/lensverse.jpg",
         "benefits": "Top 10 shortlisted photographers get invited to RKMRC campus with FREE food & festival pass to compete in live campus photo competition for winner cash prizes!",
         "date": "6th August",
         "venue": "RKMRC Campus (For Top 10 Finalists)",
-        "time": "10:00 AM",
+        "time": "11:00 AM (Reporting: 9:30 AM)",
         "prize": "Winning Cash Prize Worth ₹499, Winner Medals & Certificates"
     },
     {
@@ -117,12 +117,12 @@ DEFAULT_EVENTS = [
         "max_team_size": 1,
         "has_food": True,
         "max_capacity": 50,
-        "notes": "Individual Event",
+        "notes": "Individual Event. Reporting Time: 9:30 AM.",
         "image": "/images/events/chess.jpg",
         "benefits": "Participation certificate, Winning Cash prize worth ₹499",
         "date": "6th August",
         "venue": "Mumukshananda Auditorium, RKMRC",
-        "time": "1 PM",
+        "time": "12:00 PM (Reporting: 9:30 AM)",
         "prize": "Winning Cash Prize Worth ₹499 & Grand Master Medals"
     }
 ]
