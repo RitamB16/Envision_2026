@@ -240,7 +240,9 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
     try {
       await api.post('/payments/submit-utr', {
         registration_id: registrationId,
-        utr_number: cleanUtr
+        utr_number: cleanUtr,
+        event_name: eventName,
+        user_email: userDetails.email
       });
 
       const submittedTxnId = `UTR-${cleanUtr}`;

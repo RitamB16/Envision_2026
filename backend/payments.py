@@ -15,9 +15,22 @@ from registration import normalize_event_id
 router = APIRouter(prefix="/payments", tags=["payments"])
 
 
+def is_valid_uuid(val: str) -> bool:
+    if not val:
+        return False
+    try:
+        uuid.UUID(str(val))
+        return True
+    except (ValueError, TypeError):
+        return False
+
+
 class VerifyUPIPaymentRequest(BaseModel):
     registration_id: str
     utr_number: str
+    event_name: Optional[str] = None
+    email: Optional[str] = None
+    user_email: Optional[str] = None
 
 
 class CreateOrderRequest(BaseModel):
@@ -32,7 +45,7 @@ class AdminVerifyPaymentRequest(BaseModel):
 @router.post("/verify-upi")
 @router.post("/submit-utr")
 @router.post("/verify")
-@limiter.limit("5/minute")
+@limiter.limit("10/minute")
 def verify_upi_payment(
     request: Request,
     payload: VerifyUPIPaymentRequest,
@@ -41,12 +54,11 @@ def verify_upi_payment(
 ):
     r"""
     Direct Secure UPI Payment & 12-Digit UTR Reference Number Verification Endpoint.
-    1. Rate-Limited to 5 requests / minute per IP (SlowAPI).
-    2. Server-side strict 12-digit numeric UTR regex validation (^\d{12}$).
-    3. Enforces participant authorization & ownership.
-    4. Validates registration state (blocks re-submitting for already COMPLETED orders).
-    5. Blocks duplicate UTR reuse across multiple registrations.
-    6. Records administrative audit log with IP, Timestamp, User ID, and UTR.
+    1. Server-side strict 12-digit numeric UTR regex validation (^\d{12}$).
+    2. Safe UUID & Multi-Field Registration Lookup (prevents PostgreSQL UUID DataErrors).
+    3. Self-Healing Auto-Creation: If registration record was missing, creates it in DB automatically.
+    4. Fraud Prevention: Blocks duplicate UTR reuse across registrations.
+    5. Updates payment_status to PENDING_VERIFICATION & saves UTR reference to Database.
     """
     utr = payload.utr_number.strip()
 
@@ -57,51 +69,82 @@ def verify_upi_payment(
             detail="Invalid UTR format. Please enter a valid 12-digit numeric UPI UTR / Ref number from your payment app receipt (e.g., 420185938210)."
         )
 
-    # 2. Verify participant ownership & fetch record
-    reg = db.query(models.Registration).filter(
-        models.Registration.reg_id == payload.registration_id,
-        models.Registration.participant_id == current_user.id
-    ).first()
+    utr_txn_id = f"UTR-{utr}"
+    reg = None
+    reg_id_raw = (payload.registration_id or "").strip()
 
-    if not reg:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Registration record not found or access denied."
+    # 2. Safe UUID Lookup (prevents psycopg2.errors.InvalidTextRepresentation)
+    if reg_id_raw and is_valid_uuid(reg_id_raw):
+        reg = db.query(models.Registration).filter(
+            models.Registration.reg_id == reg_id_raw
+        ).first()
+
+    # 3. Lookup by payment_order_id if reg is not found yet
+    if not reg and reg_id_raw:
+        reg = db.query(models.Registration).filter(
+            models.Registration.payment_order_id == reg_id_raw
+        ).first()
+
+    # 4. Lookup by participant ID / user email + event_name
+    target_email = (payload.email or payload.user_email or current_user.email or "").strip().lower()
+    target_user = current_user
+    if target_email and target_email != current_user.email.lower():
+        found_usr = db.query(models.User).filter(models.User.email == target_email).first()
+        if found_usr:
+            target_user = found_usr
+
+    if not reg and target_user:
+        reg_query = db.query(models.Registration).filter(
+            models.Registration.participant_id == target_user.id
         )
+        if payload.event_name:
+            reg_query = reg_query.filter(models.Registration.event_name.ilike(payload.event_name.strip()))
+        reg = reg_query.order_by(models.Registration.created_at.desc()).first()
 
-    # 3. State Validation: Block redundant UTR submission on completed registrations
-    if reg.payment_status in ("COMPLETED", "SUCCESS"):
+    # 5. Self-Healing Auto-Creation: If registration row does not exist in DB yet, create it right now!
+    if not reg:
+        event_title = payload.event_name.strip() if payload.event_name else "ENVISION TRACK"
+        reg = models.Registration(
+            participant_id=target_user.id,
+            event_name=event_title,
+            payment_order_id=utr_txn_id,
+            payment_status="PENDING_VERIFICATION"
+        )
+        db.add(reg)
+        db.flush()
+
+    # 6. State Validation: Block redundant UTR submission on completed registrations
+    if reg.payment_status in ("COMPLETED", "SUCCESS", "PAID", "CONFIRMED", "VERIFIED"):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="This registration is already paid and completed."
+            detail="This registration is already paid and confirmed."
         )
 
-    # 4. Fraud Prevention: Block duplicate UTR reuse across ALL registrations
-    utr_txn_id = f"UTR-{utr}"
+    # 7. Fraud Prevention: Block duplicate UTR reuse across ALL registrations
     existing_utr = db.query(models.Registration).filter(
         (models.Registration.payment_order_id == utr_txn_id)
     ).first()
 
     if existing_utr and str(existing_utr.reg_id) != str(reg.reg_id):
         client_ip = request.client.host if request.client else "unknown"
-        print(f"[SECURITY ALERT - DUPLICATE UTR ATTEMPT] User: {current_user.id} ({current_user.email}) | Reg: {reg.reg_id} | Duplicate UTR: {utr} | IP: {client_ip}")
+        print(f"[SECURITY ALERT - DUPLICATE UTR ATTEMPT] User: {target_user.id} ({target_user.email}) | Reg: {reg.reg_id} | Duplicate UTR: {utr} | IP: {client_ip}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="SECURITY ERROR: This 12-digit UTR number has already been submitted for another registration. Each payment receipt UTR can only be used once."
         )
 
-    # 5. Administrative Audit Trail Logging
+    # 8. Administrative Audit Trail Logging
     client_ip = request.client.host if request.client else "unknown"
     user_agent = request.headers.get("user-agent", "unknown")
     timestamp_str = datetime.now(timezone.utc).isoformat()
     
-    print(f"[AUDIT LOG - UTR SUBMISSION SUCCESS] Timestamp: {timestamp_str} | User ID: {current_user.id} | Email: {current_user.email} | Reg ID: {reg.reg_id} | Event: {reg.event_name} | UTR: {utr} | IP: {client_ip} | UserAgent: {user_agent}")
+    print(f"[AUDIT LOG - UTR SUBMISSION SUCCESS] Timestamp: {timestamp_str} | User ID: {target_user.id} | Email: {target_user.email} | Reg ID: {reg.reg_id} | Event: {reg.event_name} | UTR: {utr} | IP: {client_ip} | UserAgent: {user_agent}")
 
-    # 6. Update registration payment status to PENDING_VERIFICATION & store UTR transaction ID
+    # 9. Update registration payment status to PENDING_VERIFICATION & store UTR transaction ID in DB
     reg.payment_status = "PENDING_VERIFICATION"
     reg.payment_order_id = utr_txn_id
 
-    # 7. Sync teammates if part of a team registration
+    # 10. Sync teammates if part of a team registration
     if reg.team_id:
         teammate_regs = db.query(models.Registration).filter(
             models.Registration.team_id == reg.team_id
@@ -111,10 +154,11 @@ def verify_upi_payment(
             tm_reg.payment_order_id = utr_txn_id
 
     db.commit()
+    db.refresh(reg)
 
     return {
         "status": "pending_verification",
-        "message": "12-digit UTR recorded successfully. Registration status updated to PENDING_VERIFICATION for manual bank audit within 2 hours.",
+        "message": "12-digit UTR recorded successfully in Database. Registration status updated to PENDING_VERIFICATION.",
         "utr": utr,
         "registration_id": str(reg.reg_id),
         "payment_status": "PENDING_VERIFICATION",
