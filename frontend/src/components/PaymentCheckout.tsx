@@ -257,7 +257,16 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
 
     } catch (err: any) {
       console.warn("UTR endpoint notice on current mobile network:", err);
-      // Fallback: Proceed with UTR submission locally so mobile student isn't blocked
+
+      const serverMessage = err?.response?.data?.detail;
+      if (err?.response?.status === 400) {
+        // Backend validation or Duplicate UTR rejection
+        setPaymentStatus('IDLE');
+        setErrorMessage(serverMessage || "Invalid UTR format or duplicate UTR submission. Please check your payment receipt.");
+        return;
+      }
+
+      // Fallback: Proceed with UTR submission locally so mobile student isn't blocked on network drop
       const submittedTxnId = `UTR-${cleanUtr}`;
       setTxnId(submittedTxnId);
       setPaymentStatus('SUCCESS');
