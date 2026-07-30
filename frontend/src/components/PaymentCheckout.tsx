@@ -168,7 +168,7 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
     name: fetchedUserName || props.userDetails?.name || stateData.userName || stateData.name || localStorage.getItem('user_name') || 'Fest Participant',
     email: props.userDetails?.email || stateData.userEmail || stateData.email || localStorage.getItem('user_email') || 'techfestenvision@gmail.com',
     phone: realPhone ? (realPhone.startsWith('+') ? realPhone : `+91 ${realPhone}`) : 'Contact Verified',
-    festId: fetchedFestId || props.userDetails?.festId || stateData.festId || localStorage.getItem('fest_id') || 'ENV-2026-001',
+    festId: fetchedFestId || props.userDetails?.festId || stateData.festId || localStorage.getItem('fest_id') || 'ENV26-001',
   };
 
   useEffect(() => {

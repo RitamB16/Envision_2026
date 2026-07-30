@@ -46,7 +46,7 @@ async def process_approved_registrations():
                         continue
 
                     participant_name = (participant_user.full_name or participant_user.name) or "Participant"
-                    fest_id = participant_user.fest_id or "ENV-2026-001"
+                    fest_id = participant_user.fest_id or "ENV26-001"
                     canonical_event_id = normalize_event_id(reg.event_name)
                     utr_val = getattr(reg, "utr_number", None) or getattr(reg, "payment_order_id", None) or "VERIFIED"
                     clean_ev = reg.event_name.lower().replace(" ", "-").strip()

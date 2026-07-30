@@ -25,7 +25,7 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
         id: '',
         email: email || '',
         name: name || 'Envision Explorer',
-        fest_id: fest_id || 'ENV-2026-001',
+        fest_id: fest_id || 'ENV26-001',
         role: role,
         is_approved: true,
         department: '',
@@ -213,7 +213,7 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
               </h2>
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="px-2 py-0.5 rounded-full bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 text-[10px] font-mono font-bold">
-                  ID: {user?.fest_id || 'ENV-2026-001'}
+                  ID: {user?.fest_id || 'ENV26-001'}
                 </span>
                 <span className="text-[10px] text-emerald-400 font-mono font-bold">
                   ✓ VERIFIED
@@ -280,7 +280,7 @@ export default function StudentDashboard({ onClose }: StudentDashboardProps) {
                 {user?.email || 'registered@user'}
               </p>
               <div style={{ padding: '4px 12px', borderRadius: '9999px', backgroundColor: 'rgba(0, 243, 255, 0.15)', border: '1px solid rgba(0, 243, 255, 0.4)', color: '#00f3ff', fontSize: '11px', fontWeight: 700, fontFamily: 'monospace' }}>
-                ID: {user?.fest_id || 'ENV-2026-001'}
+                ID: {user?.fest_id || 'ENV26-001'}
               </div>
             </div>
 

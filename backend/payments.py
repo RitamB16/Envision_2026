@@ -320,7 +320,7 @@ def admin_approve_utr(
             tm_user = db.query(models.User).filter(models.User.id == member_reg.participant_id).first()
             if tm_user and tm_user.email:
                 tm_name = (tm_user.full_name or tm_user.name) or "Participant"
-                tm_fest_id = tm_user.fest_id or "ENV-2026-001"
+                tm_fest_id = tm_user.fest_id or "ENV26-001"
 
                 if clean_ev in ("techtalk", "tech-talk"):
                     sent_ok = dispatch_techtalk_confirmation_email_sync(

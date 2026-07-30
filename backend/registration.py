@@ -277,7 +277,7 @@ def register_solo(
         if clean_ev_name in ("techtalk", "tech-talk"):
             from email_utils import dispatch_techtalk_confirmation_email_sync
             p_name = participant.full_name or participant.name
-            p_fest_id = participant.fest_id or "ENV-2026-001"
+            p_fest_id = participant.fest_id or "ENV26-001"
             dispatch_techtalk_confirmation_email_sync(participant.email, p_name, p_fest_id)
             registration.email_sent = True
             db.commit()
