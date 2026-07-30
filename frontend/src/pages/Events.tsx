@@ -2337,20 +2337,33 @@ export default function Events({ onBack: _onBack }: Props) {
 
                       {/* 12-Digit UTR Input Field */}
                       <div className="mt-2.5">
-                        <label className="text-[10px] font-mono text-cyan-300 font-bold uppercase mb-1 block">
-                          💳 ENTER 12-DIGIT UPI UTR / REF NUMBER FROM RECEIPT *
-                        </label>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="text-[10px] font-mono text-cyan-300 font-bold uppercase block">
+                            💳 ENTER 12-DIGIT UPI UTR / REF NUMBER *
+                          </label>
+                          <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border ${
+                            utrInput.trim().length === 12
+                              ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40 shadow-[0_0_10px_rgba(16,185,129,0.3)]'
+                              : 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30'
+                          }`}>
+                            {utrInput.trim().length === 12 ? '✓ 12 DIGITS COMPLETE' : `${utrInput.trim().length}/12 DIGITS`}
+                          </span>
+                        </div>
                         <input
                           type="text"
                           maxLength={12}
                           required={(selectedEvent.price_amount ?? 0) > 0}
-                          className="reg-input text-xs font-mono border-cyan-400/50 tracking-wider text-cyan-300 focus:border-cyan-400 focus:shadow-[0_0_15px_rgba(0,243,255,0.3)]"
+                          className={`reg-input text-xs font-mono tracking-wider transition-all ${
+                            utrInput.trim().length === 12
+                              ? 'border-emerald-400 text-emerald-300 bg-emerald-950/20 shadow-[0_0_15px_rgba(16,185,129,0.25)]'
+                              : 'border-cyan-400/50 text-cyan-300 focus:border-cyan-400 focus:shadow-[0_0_15px_rgba(0,243,255,0.3)]'
+                          }`}
                           placeholder="e.g. 420185938210 (12 numeric digits)"
                           value={utrInput}
                           onChange={e => setUtrInput(e.target.value.replace(/[^0-9]/g, ''))}
                         />
-                        <div className="text-[10px] text-gray-400 font-mono mt-1">
-                          Found on GPay/PhonePe/Paytm receipt as "UPI Transaction ID" or "Ref No."
+                        <div className="text-[10px] text-gray-400 font-mono mt-1 flex items-center justify-between">
+                          <span>Found on GPay/PhonePe/Paytm receipt as "UPI Transaction ID" or "Ref No."</span>
                         </div>
                       </div>
                     </div>
@@ -2373,14 +2386,20 @@ export default function Events({ onBack: _onBack }: Props) {
 
                   <button
                     type="submit"
-                    className="reg-submit-btn"
+                    className={`reg-submit-btn transition-all duration-300 ${
+                      agreeTerms && ((selectedEvent.price_amount ?? 0) === 0 || utrInput.trim().length === 12) && !isSubmitting
+                        ? 'shadow-[0_0_25px_rgba(0,243,255,0.4)] hover:scale-[1.02] cursor-pointer'
+                        : 'opacity-60 cursor-not-allowed'
+                    }`}
                     disabled={isSubmitting || isNavigating || !agreeTerms || ((selectedEvent.price_amount ?? 0) > 0 && utrInput.trim().length !== 12)}
                   >
                     {isSubmitting
                       ? 'PROCESSING REGISTRATION...'
-                      : (selectedEvent.price_amount ?? 0) > 0
-                        ? `SUBMIT REGISTRATION & VERIFY PAYMENT (${selectedEvent.price})`
-                        : `CONFIRM FREE REGISTRATION (₹0)`
+                      : (selectedEvent.price_amount ?? 0) > 0 && utrInput.trim().length !== 12
+                        ? `ENTER 12-DIGIT UTR TO UNLOCK SUBMIT (${utrInput.trim().length}/12)`
+                        : (selectedEvent.price_amount ?? 0) > 0
+                          ? `SUBMIT REGISTRATION & VERIFY PAYMENT (${selectedEvent.price})`
+                          : `CONFIRM FREE REGISTRATION (₹0)`
                     }
                   </button>
                 </>
