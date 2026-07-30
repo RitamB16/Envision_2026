@@ -1992,10 +1992,13 @@ export default function Events({ onBack: _onBack }: Props) {
             {/* Right Column: Form fields */}
             <form className="reg-form" onSubmit={handleFormSubmit}>
               <div className="reg-input-group">
+                <label className="text-[10px] font-mono text-cyan-400 font-bold uppercase mb-1 block">
+                  👤 Full Name *
+                </label>
                 <input
                   type="text"
                   className="reg-input"
-                  placeholder="Full Name"
+                  placeholder="Enter your full name"
                   value={fullName}
                   onChange={e => setFullName(e.target.value)}
                   required
@@ -2003,10 +2006,13 @@ export default function Events({ onBack: _onBack }: Props) {
               </div>
 
               <div className="reg-input-group">
+                <label className="text-[10px] font-mono text-cyan-400 font-bold uppercase mb-1 block">
+                  🏫 College / University Name *
+                </label>
                 <input
                   type="text"
                   className="reg-input"
-                  placeholder="College / University Name"
+                  placeholder="Enter your college / university name"
                   value={college}
                   onChange={e => setCollege(e.target.value)}
                   required
@@ -2014,10 +2020,13 @@ export default function Events({ onBack: _onBack }: Props) {
               </div>
 
               <div className="reg-input-group">
+                <label className="text-[10px] font-mono text-cyan-400 font-bold uppercase mb-1 block">
+                  📱 Phone / WhatsApp Number *
+                </label>
                 <input
                   type="tel"
                   className="reg-input"
-                  placeholder="Phone Number"
+                  placeholder="Enter 10-digit mobile number"
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
                   required
@@ -2027,7 +2036,7 @@ export default function Events({ onBack: _onBack }: Props) {
               {/* Email Address Section */}
               <div className="reg-input-group">
                 <label className="text-[10px] font-mono text-cyan-400 font-bold uppercase mb-1 block">
-                  Email Address *
+                  ✉️ Email Address *
                 </label>
                 {isUserSignedIn ? (
                   <div className="relative">
@@ -2070,20 +2079,25 @@ export default function Events({ onBack: _onBack }: Props) {
                 )}
               </div>
 
-              <div className="reg-input-group reg-select-wrapper">
-                <select
-                  className="reg-input reg-select"
-                  value={gender}
-                  onChange={e => setGender(e.target.value)}
-                  required
-                >
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Other">Other</option>
-                </select>
-                <svg className="reg-select-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="6 9 12 15 18 9" />
-                </svg>
+              <div className="reg-input-group">
+                <label className="text-[10px] font-mono text-cyan-400 font-bold uppercase mb-1 block">
+                  🚻 Gender *
+                </label>
+                <div className="reg-select-wrapper">
+                  <select
+                    className="reg-input reg-select"
+                    value={gender}
+                    onChange={e => setGender(e.target.value)}
+                    required
+                  >
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                  <svg className="reg-select-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </div>
               </div>
 
               {/* Conditional Food Preference Dropdown (Only rendered if selectedEvent.has_food is true) */}
