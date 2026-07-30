@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useGoogleLogin } from '@react-oauth/google';
 import PageLayout from './PageLayout';
 import { api, BackendEvent, setAuthSession } from '../utils/api';
-import { useRegistrationContext } from '../context/RegistrationContext';
+import { enqueueOfflineItem } from '../utils/offlineQueue';
 
 interface EventData {
   id: string;
@@ -201,7 +201,6 @@ interface Props {
 export default function Events({ onBack: _onBack }: Props) {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { updateRegistrationData, setStep } = useRegistrationContext();
 
   const view = (searchParams.get('view') as 'grid' | 'detail' | 'register') || 'grid';
   const eventId = searchParams.get('id') || '';
@@ -301,6 +300,10 @@ export default function Events({ onBack: _onBack }: Props) {
   const [magicInviteUrl, setMagicInviteUrl] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
   const [isLoadingGoogle, setIsLoadingGoogle] = useState<boolean>(false);
+
+  const [utrInput, setUtrInput] = useState<string>('');
+  const [copiedVpa, setCopiedVpa] = useState<boolean>(false);
+  const [registeredPass, setRegisteredPass] = useState<any | null>(null);
 
   const isUserSignedIn = !!(localStorage.getItem('access_token') || localStorage.getItem('user_email'));
 
@@ -424,6 +427,17 @@ export default function Events({ onBack: _onBack }: Props) {
         return;
       }
 
+      const isFreeEvent = selectedEvent.price_amount === 0 || selectedEvent.price === '₹0' || selectedEvent.price === 'FREE';
+      const cleanUtr = utrInput.trim();
+
+      if (!isFreeEvent) {
+        if (!cleanUtr || cleanUtr.length !== 12 || !/^\d{12}$/.test(cleanUtr)) {
+          setRegErrorMsg("💳 Please enter the valid 12-digit numeric UPI UTR / Ref number from your payment app receipt (e.g. 420185938210).");
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
       let res: any;
 
       if (selectedEvent.requires_team) {
@@ -494,135 +508,62 @@ export default function Events({ onBack: _onBack }: Props) {
         localStorage.setItem('user_phone', phone.trim());
       }
 
-      if (res.is_free || res.amount === 0) {
-        updateRegistrationData({
-          step: 'SUCCESS',
-          eventId: selectedEvent.id,
-          eventName: selectedEvent.name,
-          registrationId: res.registration_id || res.team_id,
-          amount: 0,
-          isFree: true,
-        });
-        setStep('SUCCESS');
+      const regId = res.registration_id || res.team_id || (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'f' + Date.now().toString(16) + '-4000-8000-' + Math.random().toString(16).slice(2, 14).padEnd(12, '0'));
 
-        setRegSuccessMsg(`🎉 REGISTRATION CONFIRMED FOR ${selectedEvent.name.toUpperCase()}!`);
-        setTimeout(() => {
-          setStep('EVENTS');
-          navigate('/events');
-        }, 1500);
-      } else {
-        const regId = res.registration_id || res.team_id || 'REG-PENDING';
-        const orderId = res.razorpay_order_id;
-
-        updateRegistrationData({
-          step: 'CHECKOUT',
-          eventId: selectedEvent.id,
-          eventName: selectedEvent.name,
-          registrationId: regId,
-          razorpayOrderId: orderId,
-          amount: res.amount || selectedEvent.price,
-          isFree: false,
-          phone: phone,
-          userName: fullName,
-          userEmail: email,
-          college: college,
-          foodPref: foodPreference,
-          teamName: selectedEvent.requires_team ? teamName : undefined
-        });
-        setStep('CHECKOUT');
-
-        setRegSuccessMsg(`🎉 Registration created! Redirecting to secure checkout...`);
-        setTimeout(() => {
-          navigate(`/checkout/${regId}`, {
-            state: {
-              registrationId: regId,
-              razorpayOrderId: orderId,
-              razorpay_order_id: orderId,
-              eventName: selectedEvent.name,
-              baseFee: res.amount || selectedEvent.price,
-              registrationType: selectedEvent.requires_team ? 'Team' : 'Individual',
-              phone: phone,
-              userName: fullName,
-              userEmail: email
-            }
+      if (!isFreeEvent && cleanUtr) {
+        try {
+          await api.post('/payments/submit-utr', {
+            registration_id: regId,
+            utr_number: cleanUtr,
+            event_name: selectedEvent.name,
+            user_email: email.trim().toLowerCase()
           });
-        }, 1000);
+        } catch (utrErr: any) {
+          console.warn("Direct UTR post notice:", utrErr);
+          if (utrErr?.response?.status === 400) {
+            setRegErrorMsg(utrErr?.response?.data?.detail || "SECURITY ERROR: Invalid UTR format or duplicate UTR number already submitted.");
+            setIsSubmitting(false);
+            return;
+          }
+          enqueueOfflineItem('UTR_SUBMIT', '/payments/submit-utr', {
+            registration_id: regId,
+            utr_number: cleanUtr,
+            event_name: selectedEvent.name,
+            user_email: email.trim().toLowerCase()
+          });
+        }
       }
-    } catch (err: any) {
-      console.warn("Registration endpoint notice on current mobile network:", err);
-
-      // Mobile Network Fallback: If backend connection drops, generate a resilient registration pass locally
-      const isFreeEvent = selectedEvent.price_amount === 0 || selectedEvent.price === '₹0' || selectedEvent.price === 'FREE';
-      const generateUUID = () => {
-        if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
-        return 'f' + Date.now().toString(16) + '-4000-8000-' + Math.random().toString(16).slice(2, 14).padEnd(12, '0');
-      };
-      const fallbackRegId = generateUUID();
 
       // Store in local student passes
       try {
         const existingPasses = JSON.parse(localStorage.getItem('my_event_registrations') || '[]');
         existingPasses.push({
-          id: fallbackRegId,
+          id: regId,
           event_name: selectedEvent.name,
           food_preference: foodPreference,
           status: isFreeEvent ? 'COMPLETED' : 'PENDING_VERIFICATION',
+          utr: isFreeEvent ? undefined : cleanUtr,
           created_at: new Date().toISOString()
         });
         localStorage.setItem('my_event_registrations', JSON.stringify(existingPasses));
       } catch (e) {}
 
-      if (phone && phone.trim()) {
-        localStorage.setItem('user_phone', phone.trim());
-      }
+      setRegisteredPass({
+        regId,
+        eventName: selectedEvent.name,
+        amount: isFreeEvent ? 'FREE (₹0)' : selectedEvent.price,
+        status: isFreeEvent ? 'CONFIRMED' : 'PENDING VERIFICATION',
+        utr: isFreeEvent ? null : cleanUtr
+      });
 
-      if (isFreeEvent) {
-        updateRegistrationData({
-          step: 'SUCCESS',
-          eventId: selectedEvent.id,
-          eventName: selectedEvent.name,
-          registrationId: fallbackRegId,
-          amount: 0,
-          isFree: true,
-        });
-        setStep('SUCCESS');
-        setRegSuccessMsg(`🎉 REGISTRATION CONFIRMED FOR ${selectedEvent.name.toUpperCase()}!`);
-        setTimeout(() => {
-          setStep('EVENTS');
-          navigate('/events');
-        }, 1500);
-      } else {
-        updateRegistrationData({
-          step: 'CHECKOUT',
-          eventId: selectedEvent.id,
-          eventName: selectedEvent.name,
-          registrationId: fallbackRegId,
-          amount: selectedEvent.price_amount || 49,
-          isFree: false,
-          phone: phone,
-          userName: fullName,
-          userEmail: email,
-          college: college,
-          foodPref: foodPreference,
-          teamName: selectedEvent.requires_team ? teamName : undefined
-        });
-        setStep('CHECKOUT');
+      setRegSuccessMsg(isFreeEvent 
+        ? `🎉 REGISTRATION CONFIRMED FOR ${selectedEvent.name.toUpperCase()}!`
+        : `🎉 REGISTRATION & PAYMENT UTR SUBMITTED FOR ${selectedEvent.name.toUpperCase()}!`
+      );
 
-        setRegSuccessMsg(`🎉 Registration created! Proceeding to UPI payment checkout...`);
-        setTimeout(() => {
-          navigate(`/checkout/${fallbackRegId}`, {
-            state: {
-              registrationId: fallbackRegId,
-              eventName: selectedEvent.name,
-              baseFee: selectedEvent.price_amount || 49,
-              registrationType: selectedEvent.requires_team ? 'Team' : 'Individual',
-              phone: phone,
-              userName: fullName,
-              userEmail: email
-            }
-          });
-        }, 1000);
-      }
+    } catch (err: any) {
+      console.warn("Registration endpoint notice on current mobile network:", err);
+      setRegErrorMsg(err?.response?.data?.detail || err?.message || "Registration failed. Please check your details and try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -2312,28 +2253,154 @@ export default function Events({ onBack: _onBack }: Props) {
                 </div>
               )}
 
-              {/* Terms & Conditions Agreement Checkbox */}
-              <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-black/50 border border-purple-500/25 text-left">
-                <input
-                  type="checkbox"
-                  id="agreeTerms"
-                  checked={agreeTerms}
-                  onChange={e => setAgreeTerms(e.target.checked)}
-                  required
-                  className="mt-0.5 accent-cyan-400 cursor-pointer w-4 h-4"
-                />
-                <label htmlFor="agreeTerms" className="text-xs text-gray-300 cursor-pointer leading-tight select-none">
-                  I agree to the <span className="text-cyan-300 font-bold underline">Envision '26 Terms & Conditions</span>, event decorum rules, and non-refundable slot policy.
-                </label>
-              </div>
+              {/* Inline Success Ticket Pass Screen */}
+              {registeredPass ? (
+                <div className="p-6 rounded-2xl bg-[#09031a]/95 border border-cyan-400/50 text-center shadow-[0_0_40px_rgba(0,243,255,0.2)] my-4">
+                  <div className="w-14 h-14 rounded-full bg-cyan-500/20 border border-cyan-400 flex items-center justify-center mx-auto mb-3 text-2xl">
+                    🎉
+                  </div>
+                  <h3 className="text-lg font-black text-cyan-300 font-mono uppercase m-0">
+                    REGISTRATION SUBMITTED!
+                  </h3>
+                  <p className="text-xs text-gray-300 font-mono mt-1 mb-4">
+                    {registeredPass.eventName} Pass Generated
+                  </p>
 
-              <button
-                type="submit"
-                className="reg-submit-btn"
-                disabled={isSubmitting || isNavigating || !agreeTerms}
-              >
-                {isSubmitting ? 'PROCESSING REGISTRATION...' : `SUBMIT REGISTRATION (${selectedEvent.price})`}
-              </button>
+                  <div className="p-4 rounded-xl bg-black/60 border border-cyan-500/30 text-left font-mono text-xs space-y-2 mb-5">
+                    <div>📌 <span className="text-gray-400">EVENT:</span> <strong className="text-white">{registeredPass.eventName}</strong></div>
+                    <div>🎫 <span className="text-gray-400">PASS ID:</span> <span className="text-cyan-300 font-bold">{registeredPass.regId}</span></div>
+                    {registeredPass.utr && (
+                      <div>💳 <span className="text-gray-400">SUBMITTED UTR:</span> <span className="text-purple-300 font-bold">UTR-{registeredPass.utr}</span></div>
+                    )}
+                    <div>⏳ <span className="text-gray-400">STATUS:</span> <span className="text-emerald-400 font-bold">✓ {registeredPass.status}</span></div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRegisteredPass(null);
+                      setSearchParams({});
+                      navigate('/dashboard');
+                    }}
+                    className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-400 to-purple-500 text-black font-black text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(0,243,255,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+                  >
+                    VIEW TICKET IN DASHBOARD
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {/* Embedded UPI Payment & Scanner Section for Paid Events */}
+                  {(selectedEvent.price_amount ?? 0) > 0 && (
+                    <div className="p-4 rounded-2xl bg-[#09031a]/95 border border-cyan-500/40 text-left shadow-[0_0_30px_rgba(0,243,255,0.15)] my-3.5">
+                      <div className="flex items-center justify-between border-b border-cyan-500/20 pb-2.5 mb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-base">📲</span>
+                          <h4 className="text-xs font-extrabold text-cyan-300 uppercase tracking-widest font-mono m-0">
+                            UPI PAYMENT & SCANNER ({selectedEvent.price})
+                          </h4>
+                        </div>
+                        <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
+                          PAYEE: RITAM BERA
+                        </span>
+                      </div>
+
+                      {/* QR Code & Payee Info */}
+                      <div className="flex flex-col sm:flex-row items-center gap-3.5 mb-3.5 bg-black/50 p-3 rounded-xl border border-cyan-500/20">
+                        <img
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(`upi://pay?pa=ritambera6969@oksbi&pn=RITAM%20BERA&am=${selectedEvent.price_amount ?? 49}&cu=INR&tn=Envision2026`)}&color=00f3ff&bgcolor=0a051d`}
+                          alt="Envision UPI QR Code"
+                          className="w-32 h-32 rounded-xl border border-cyan-400/40 p-1.5 bg-[#0a051d] shadow-[0_0_20px_rgba(0,243,255,0.25)] select-none shrink-0"
+                        />
+                        <div className="flex-1 text-center sm:text-left min-w-0">
+                          <div className="text-[10px] font-mono text-gray-400 uppercase">OFFICIAL UPI ID (VPA):</div>
+                          <div className="flex items-center justify-center sm:justify-start gap-2 my-1">
+                            <span className="font-mono text-xs font-black text-cyan-300 bg-black/70 px-2 py-1 rounded-lg border border-cyan-500/30 truncate">
+                              ritambera6969@oksbi
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                navigator.clipboard.writeText('ritambera6969@oksbi');
+                                setCopiedVpa(true);
+                                setTimeout(() => setCopiedVpa(false), 2000);
+                              }}
+                              className="px-2 py-1 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/40 border border-cyan-400/40 text-cyan-300 text-[10px] font-bold transition-all cursor-pointer shrink-0"
+                            >
+                              {copiedVpa ? '✓ COPIED' : '📋 COPY'}
+                            </button>
+                          </div>
+                          <p className="text-[10px] text-gray-300 font-mono m-0 mt-1">
+                            Scan QR with GPay/PhonePe/Paytm to pay <strong className="text-cyan-300">{selectedEvent.price}</strong>.
+                          </p>
+
+                          {/* One-Tap App Links */}
+                          <div className="flex items-center gap-2 mt-2 justify-center sm:justify-start flex-wrap">
+                            <a
+                              href={`upi://pay?pa=ritambera6969@oksbi&pn=RITAM%20BERA&am=${selectedEvent.price_amount ?? 49}&cu=INR`}
+                              className="px-2 py-0.5 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/30 border border-cyan-400/30 text-cyan-300 text-[10px] font-bold transition-all"
+                            >
+                              GPay / PhonePe
+                            </a>
+                            <a
+                              href={`upi://pay?pa=ritambera6969@oksbi&pn=RITAM%20BERA&am=${selectedEvent.price_amount ?? 49}&cu=INR`}
+                              className="px-2 py-0.5 rounded-lg bg-purple-500/15 hover:bg-purple-500/30 border border-purple-400/30 text-purple-300 text-[10px] font-bold transition-all"
+                            >
+                              Paytm / BHIM
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 12-Digit UTR Input Field */}
+                      <div className="mt-2.5">
+                        <label className="text-[10px] font-mono text-cyan-300 font-bold uppercase mb-1 block">
+                          💳 ENTER 12-DIGIT UPI UTR / REF NUMBER FROM RECEIPT *
+                        </label>
+                        <input
+                          type="text"
+                          maxLength={12}
+                          required={(selectedEvent.price_amount ?? 0) > 0}
+                          className="reg-input text-xs font-mono border-cyan-400/50 tracking-wider text-cyan-300 focus:border-cyan-400 focus:shadow-[0_0_15px_rgba(0,243,255,0.3)]"
+                          placeholder="e.g. 420185938210 (12 numeric digits)"
+                          value={utrInput}
+                          onChange={e => setUtrInput(e.target.value.replace(/[^0-9]/g, ''))}
+                        />
+                        <div className="text-[10px] text-gray-400 font-mono mt-1">
+                          Found on GPay/PhonePe/Paytm receipt as "UPI Transaction ID" or "Ref No."
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Terms & Conditions Agreement Checkbox */}
+                  <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-black/50 border border-purple-500/25 text-left">
+                    <input
+                      type="checkbox"
+                      id="agreeTerms"
+                      checked={agreeTerms}
+                      onChange={e => setAgreeTerms(e.target.checked)}
+                      required
+                      className="mt-0.5 accent-cyan-400 cursor-pointer w-4 h-4"
+                    />
+                    <label htmlFor="agreeTerms" className="text-xs text-gray-300 cursor-pointer leading-tight select-none">
+                      I agree to the <span className="text-cyan-300 font-bold underline">Envision '26 Terms & Conditions</span>, event decorum rules, and non-refundable slot policy.
+                    </label>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="reg-submit-btn"
+                    disabled={isSubmitting || isNavigating || !agreeTerms || ((selectedEvent.price_amount ?? 0) > 0 && utrInput.trim().length !== 12)}
+                  >
+                    {isSubmitting
+                      ? 'PROCESSING REGISTRATION...'
+                      : (selectedEvent.price_amount ?? 0) > 0
+                        ? `SUBMIT REGISTRATION & VERIFY PAYMENT (${selectedEvent.price})`
+                        : `CONFIRM FREE REGISTRATION (₹0)`
+                    }
+                  </button>
+                </>
+              )}
             </form>
           </div>
         </div>
