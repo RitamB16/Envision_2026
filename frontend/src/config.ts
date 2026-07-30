@@ -214,5 +214,6 @@ export const destinations: RouteConfig[] = [
     fontFamily: "'Outfit', sans-serif"
   }
 ];
-export const FEST_UPI_ID = (import.meta.env as any).VITE_FEST_UPI_ID || "8336048128@oksbi";
+export const FEST_UPI_ID = (import.meta.env as any).VITE_FEST_UPI_ID || "ritambera6969@oksbi";
+export const FEST_UPI_NAME = (import.meta.env as any).VITE_FEST_UPI_NAME || "RITAM BERA";
 export const RAZORPAY_UPI_ID = FEST_UPI_ID;

@@ -2,7 +2,8 @@ export const API_BASE_URL = (
   import.meta.env.VITE_API_BASE_URL ||
   (import.meta.env.PROD ? 'https://envision2026-production.up.railway.app' : 'http://127.0.0.1:8000')
 ).replace(/\/$/, '');
-export const FEST_UPI_ID = (import.meta.env as any).VITE_FEST_UPI_ID || "8336048128@oksbi";
+export const FEST_UPI_ID = (import.meta.env as any).VITE_FEST_UPI_ID || "ritambera6969@oksbi";
+export const FEST_UPI_NAME = (import.meta.env as any).VITE_FEST_UPI_NAME || "RITAM BERA";
 export const RAZORPAY_UPI_ID = FEST_UPI_ID;
 
 export interface UserProfile {

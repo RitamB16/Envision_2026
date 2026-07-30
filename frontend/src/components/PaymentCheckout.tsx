@@ -1,6 +1,6 @@
 import { useState, useEffect, ClipboardEvent, KeyboardEvent } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { api, RAZORPAY_UPI_ID } from '../utils/api';
+import { api, RAZORPAY_UPI_ID, FEST_UPI_ID, FEST_UPI_NAME } from '../utils/api';
 import { useRegistrationContext } from '../context/RegistrationContext';
 import { formatISTTimestamp } from '../utils/timeUtils';
 
@@ -140,8 +140,8 @@ export default function PaymentCheckout(props: PaymentCheckoutProps) {
   const [copied, setCopied] = useState<boolean>(false);
   const [countdown, setCountdown] = useState<number>(3);
 
-  const cleanTargetVpa = (RAZORPAY_UPI_ID || '8336048128@oksbi').trim();
-  const cleanPayeeName = "Envision TechFest";
+  const cleanTargetVpa = (FEST_UPI_ID || (import.meta.env as any).VITE_FEST_UPI_ID || RAZORPAY_UPI_ID || 'ritambera6969@oksbi').trim();
+  const cleanPayeeName = (FEST_UPI_NAME || (import.meta.env as any).VITE_FEST_UPI_NAME || 'RITAM BERA').trim();
   const cleanAmount = String(totalAmount).trim();
   const shortId = String(registrationId).replace(/[^a-zA-Z0-9]/g, '').slice(0, 6);
   const cleanNote = `Reg${shortId || '26'}`;
