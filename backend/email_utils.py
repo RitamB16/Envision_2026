@@ -37,7 +37,7 @@ EVENT_RULES_LINKS = {
     "syntaxx": "https://ibb.co/Z69WbqC2",
     "mindspark": "https://ibb.co/v9M8dpD",
     "bidquest": "https://ibb.co/spH899Sy",
-    "carlsen-chess": "https://ibb.co/DgrbN57k",
+    "carlsen-chess": "https://ibb.co/G35tjNnF",
     "lensverse": "https://ibb.co/PzQxbTX5",
     "techtalk": "https://envision-2026-seven.vercel.app/events"
 }
