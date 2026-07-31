@@ -244,14 +244,16 @@ export default function Events({ onBack: _onBack }: Props) {
     queryKey: ['event', eventId],
     queryFn: async () => {
       if (!eventId) return null;
-      return api.get<BackendEvent>(`/events/${eventId}`).catch(() => null);
+      return api.get<BackendEvent>(`/events/${eventId.trim()}`).catch(() => null);
     },
     enabled: !!eventId,
-    staleTime: 300000,
+    staleTime: 0,
   });
 
-  const matchedEvent = eventsList.find(e => e.id === eventId) || null;
-  const selectedEvent = singleEventDetail
+  const cleanEventId = (eventId || '').trim().toLowerCase();
+  const matchedEvent = eventsList.find(e => e.id.toLowerCase() === cleanEventId || e.name.toLowerCase() === cleanEventId) || null;
+
+  const selectedEvent = (singleEventDetail && singleEventDetail.id?.toLowerCase() === cleanEventId)
     ? {
       id: singleEventDetail.id,
       name: singleEventDetail.name,
@@ -395,6 +397,8 @@ export default function Events({ onBack: _onBack }: Props) {
     setRegErrorMsg(null);
     setRegSuccessMsg(null);
     setMagicInviteUrl(null);
+    setRegisteredPass(null);
+    setUtrInput('');
     setTeammatesCount(1);
     setSearchParams({ view: 'register', id: event.id, from });
   };

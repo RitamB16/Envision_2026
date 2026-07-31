@@ -220,11 +220,14 @@ def get_user_registrations(
 
 
 @router.get("/{event_id}", response_model=schemas.EventResponse)
-@cache(expire=3600)
 def get_event_by_id(event_id: str, db: Session = Depends(get_db)):
-    """Fetch event details by ID (Cached for 1 hour)."""
+    """Fetch event details by ID safely (case-insensitive, un-cached)."""
     seed_events_if_empty(db)
-    event = db.query(models.Event).filter(models.Event.id == event_id).first()
+    clean_id = (event_id or "").strip().lower()
+    event = db.query(models.Event).filter(
+        func.lower(models.Event.id) == clean_id
+    ).first()
+
     if not event:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
