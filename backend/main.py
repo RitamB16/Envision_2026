@@ -122,9 +122,31 @@ async def startup_event():
     asyncio.create_task(cleanup_expired_registrations())
     asyncio.create_task(keep_alive_ping())
 
+from starlette.middleware.base import BaseHTTPMiddleware
+
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        # 1. HSTS: Enforce HTTPS for 2 years across all domains and subdomains
+        response.headers["Strict-Transport-Security"] = "max-age=63072000; includeSubDomains; preload"
+        # 2. X-Frame-Options: Prevent clickjacking by restricting framing
+        response.headers["X-Frame-Options"] = "SAMEORIGIN"
+        # 3. X-Content-Type-Options: Prevent browser MIME-sniffing
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        # 4. Referrer-Policy: Send origin on cross-origin requests
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        # 5. Permissions-Policy: Restrict unused camera/microphone/geolocation features
+        response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=(), payment=()"
+        # 6. Private Network Preflight: Support mobile carrier/internal network preflights
+        response.headers["Access-Control-Allow-Private-Network"] = "true"
+        return response
+
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)
+
+# Add Security Headers Middleware
+app.add_middleware(SecurityHeadersMiddleware)
 
 # Configure Universal CORS Middleware (Allows all origins, credentials, methods & headers)
 app.add_middleware(
