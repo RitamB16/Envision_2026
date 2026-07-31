@@ -19,7 +19,7 @@ router = APIRouter(prefix="/events", tags=["events"])
 DEFAULT_EVENTS = [
     {
         "id": "techtalk",
-        "name": "TECH TALK",
+        "name": "techtalk",
         "category": "SEMINAR",
         "price": "FREE",
         "price_amount": 0,
@@ -37,7 +37,7 @@ DEFAULT_EVENTS = [
     },
     {
         "id": "syntaxx",
-        "name": "SYNTAXX",
+        "name": "syntaxx",
         "category": "CODING",
         "price": "₹39",
         "price_amount": 39,
@@ -55,7 +55,7 @@ DEFAULT_EVENTS = [
     },
     {
         "id": "mindspark",
-        "name": "MINDSPARK",
+        "name": "mindspark",
         "category": "QUIZ",
         "price": "₹49",
         "price_amount": 49,
@@ -73,7 +73,7 @@ DEFAULT_EVENTS = [
     },
     {
         "id": "bidquest",
-        "name": "BIDQUEST",
+        "name": "bidquest",
         "category": "AUCTION",
         "price": "₹149",
         "price_amount": 149,
@@ -91,7 +91,7 @@ DEFAULT_EVENTS = [
     },
     {
         "id": "lensverse",
-        "name": "LENSVERSE",
+        "name": "lensverse",
         "category": "PHOTOGRAPHY",
         "price": "₹49",
         "price_amount": 49,
@@ -109,7 +109,7 @@ DEFAULT_EVENTS = [
     },
     {
         "id": "carlsen-chess",
-        "name": "CARLSEN CLASSIC",
+        "name": "carlsen-chess",
         "category": "CHESS",
         "price": "₹49",
         "price_amount": 49,

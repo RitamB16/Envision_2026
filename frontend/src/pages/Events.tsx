@@ -84,7 +84,7 @@ function getShortPrizeLabel(event: any): string {
 const EVENTS_DATA: EventData[] = [
   {
     id: 'techtalk',
-    name: 'TECH TALK',
+    name: 'techtalk',
     category: 'SEMINAR',
     price: 'FREE',
     requires_team: false,
@@ -101,7 +101,7 @@ const EVENTS_DATA: EventData[] = [
   },
   {
     id: 'syntaxx',
-    name: 'SYNTAXX',
+    name: 'syntaxx',
     category: 'CODING',
     price: '₹39',
     requires_team: false,
@@ -118,7 +118,7 @@ const EVENTS_DATA: EventData[] = [
   },
   {
     id: 'mindspark',
-    name: 'MINDSPARK',
+    name: 'mindspark',
     category: 'QUIZ',
     price: '₹49',
     requires_team: true,
@@ -135,7 +135,7 @@ const EVENTS_DATA: EventData[] = [
   },
   {
     id: 'bidquest',
-    name: 'BIDQUEST',
+    name: 'bidquest',
     category: 'AUCTION',
     price: '₹149',
     requires_team: true,
@@ -152,7 +152,7 @@ const EVENTS_DATA: EventData[] = [
   },
   {
     id: 'lensverse',
-    name: 'LENSVERSE',
+    name: 'lensverse',
     category: 'PHOTOGRAPHY',
     price: '₹49',
     requires_team: false,
@@ -169,7 +169,7 @@ const EVENTS_DATA: EventData[] = [
   },
   {
     id: 'carlsen-chess',
-    name: 'CARLSEN CLASSIC',
+    name: 'carlsen-chess',
     category: 'CHESS',
     price: '₹49',
     requires_team: false,
