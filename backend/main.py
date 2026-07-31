@@ -2,7 +2,7 @@
 import os
 import asyncio
 import urllib.request
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from config import settings
 from database import engine, Base
