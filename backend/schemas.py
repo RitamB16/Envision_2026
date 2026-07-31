@@ -30,6 +30,8 @@ class UserProfileUpdate(BaseModel):
     college: Optional[str] = None
     department: Optional[str] = None
     phone: Optional[str] = None
+    food_pref: Optional[str] = None
+    food_preference: Optional[str] = None
 
 class GoogleToken(BaseModel):
     token: Optional[str] = None

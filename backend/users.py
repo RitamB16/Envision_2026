@@ -35,6 +35,10 @@ def update_profile(
         current_user.department = profile_data.department
     if profile_data.phone is not None:
         current_user.phone = profile_data.phone
+    if profile_data.food_pref is not None:
+        current_user.food_pref = profile_data.food_pref
+    elif profile_data.food_preference is not None:
+        current_user.food_pref = profile_data.food_preference
 
     db.commit()
     db.refresh(current_user)
