@@ -50,7 +50,7 @@ DEFAULT_EVENTS = [
         "benefits": "Participation certificate, Exciting Swags for Winner",
         "date": "6th August",
         "venue": "Computer Science Lab",
-        "time": "11:00 AM (Reporting: 9:30 AM)",
+        "time": "12:00 PM (Reporting: 9:30 AM)",
         "prize": "Winning Cash Prize Worth ₹399, Tech Medals & Winner Certificates"
     },
     {
@@ -68,7 +68,7 @@ DEFAULT_EVENTS = [
         "benefits": "Participation certificate, Winning Cash prize worth ₹499",
         "date": "6th August",
         "venue": "Mumukshananda Auditorium, RKMRC",
-        "time": "11:00 AM (Reporting: 9:30 AM)",
+        "time": "12:00 PM (Reporting: 9:30 AM)",
         "prize": "Winning Cash Prize Worth ₹499 & Champion Medals"
     },
     {
@@ -122,7 +122,7 @@ DEFAULT_EVENTS = [
         "benefits": "Participation certificate, Winning Cash prize worth ₹499",
         "date": "6th August",
         "venue": "Mumukshananda Auditorium, RKMRC",
-        "time": "12:30 PM (Reporting: 9:30 AM)",
+        "time": "11:00 AM (Reporting: 9:30 AM)",
         "prize": "Winning Cash Prize Worth ₹499 & Grand Master Medals"
     }
 ]
