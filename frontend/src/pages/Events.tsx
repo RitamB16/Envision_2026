@@ -250,7 +250,10 @@ export default function Events({ onBack: _onBack }: Props) {
     staleTime: 0,
   });
 
-  const cleanEventId = (eventId || '').trim().toLowerCase();
+  let cleanEventId = (eventId || '').trim().toLowerCase();
+  if (cleanEventId.includes('chess') || cleanEventId.includes('carlsen')) {
+    cleanEventId = 'carlsen-chess';
+  }
   const matchedEvent = eventsList.find(e => e.id.toLowerCase() === cleanEventId || e.name.toLowerCase() === cleanEventId) || null;
 
   const selectedEvent = (singleEventDetail && singleEventDetail.id?.toLowerCase() === cleanEventId)
