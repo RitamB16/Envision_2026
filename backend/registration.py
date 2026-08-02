@@ -45,7 +45,7 @@ CANONICAL_CAPACITIES: dict = {
     "techtalk": 1000,
     "syntaxx": 50,
     "mindspark": 50,
-    "bidquest": 70,
+    "bidquest": 200,
     "lensverse": 200,
     "carlsen-chess": 50
 }

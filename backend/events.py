@@ -80,7 +80,7 @@ DEFAULT_EVENTS = [
         "requires_team": True,
         "max_team_size": 3,
         "has_food": True,
-        "max_capacity": 70,
+        "max_capacity": 200,
         "notes": "Team Event (max. 3 members). Reporting Time: 9:30 AM.",
         "image": "/images/events/bidquest.jpg",
         "benefits": "Participation certificate, Winning Cash prize worth ₹1500",
