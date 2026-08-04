@@ -2449,7 +2449,7 @@ export default function Events({ onBack: _onBack }: Props) {
                     }}
                     disabled={isSubmitting || REGISTRATION_CLOSED}
                   >
-                    {isSubmitting ? 'PROCESSING...' : '🚫 REGISTRATION CLOSED'}
+                    CLOSED
                   </button>
                 </>
               )}
