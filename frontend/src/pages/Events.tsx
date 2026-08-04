@@ -399,7 +399,11 @@ export default function Events({ onBack: _onBack }: Props) {
   };
 
   const handleRegister = (event: EventData, from: 'grid' | 'detail') => {
-    setRegErrorMsg("🚫 REGISTRATION FOR ENVISION '26 IS OFFICIALLY CLOSED. All event slots are 100% filled!");
+    if (REGISTRATION_CLOSED) {
+      alert("🚫 REGISTRATION FOR ENVISION '26 IS OFFICIALLY CLOSED!\n\nAll event slots are 100% filled. Thank you for your overwhelming support!");
+      return;
+    }
+    setRegErrorMsg(null);
     setRegSuccessMsg(null);
     setMagicInviteUrl(null);
     setRegisteredPass(null);
@@ -1924,6 +1928,26 @@ export default function Events({ onBack: _onBack }: Props) {
       {/* State Router View: Register */}
       {view === 'register' && selectedEvent && (
         <div className="reg-container">
+          {REGISTRATION_CLOSED ? (
+            <div className="text-center py-12 px-6 flex flex-col items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-red-500/20 border-2 border-red-500 flex items-center justify-center mx-auto mb-4 text-3xl shadow-[0_0_30px_rgba(239,68,68,0.5)] animate-pulse">
+                🚫
+              </div>
+              <h2 className="text-xl sm:text-2xl font-black text-white tracking-wider font-mono uppercase mb-2">
+                REGISTRATION OFFICIALLY CLOSED
+              </h2>
+              <p className="text-xs sm:text-sm text-red-300 font-mono max-w-md mx-auto mb-6 leading-relaxed">
+                Online registration for Envision '26 has reached 100% capacity and is now closed for all events. Thank you for your overwhelming response!
+              </p>
+              <button
+                onClick={() => setSearchParams({ view: 'grid' })}
+                className="px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 via-purple-600 to-pink-500 hover:from-cyan-400 hover:via-purple-500 text-white font-mono text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-[0_0_25px_rgba(0,243,255,0.4)] hover:scale-105 active:scale-95"
+              >
+                ← BACK TO EVENTS CATALOG
+              </button>
+            </div>
+          ) : (
+            <>
           <div className="reg-header">
             <h2 className="reg-title">{selectedEvent.name} REGISTRATION</h2>
             <div className="reg-subtitle">
@@ -2455,6 +2479,8 @@ export default function Events({ onBack: _onBack }: Props) {
               )}
             </form>
           </div>
+        </>
+      )}
         </div>
       )}
     </PageLayout>
