@@ -60,6 +60,13 @@ def verify_upi_payment(
     4. Fraud Prevention: Blocks duplicate UTR reuse across registrations.
     5. Updates payment_status to PENDING_VERIFICATION & saves UTR reference to Database.
     """
+    REGISTRATION_CLOSED = True
+    if REGISTRATION_CLOSED:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="🚫 Registration for Envision '26 is officially CLOSED. Thank you for your overwhelming response!"
+        )
+
     utr = payload.utr_number.strip()
 
     # 1. Server-side strict 12-digit numeric UTR regex validation

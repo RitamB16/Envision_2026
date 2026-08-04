@@ -80,11 +80,19 @@ def generate_env_id(db: Session) -> str:
     return f"ENV26-{next_num:03d}"
 
 
+REGISTRATION_CLOSED = True
+
+
 def check_event_capacity(db: Session, event_name: str):
     """
-    Checks event capacity BEFORE generating a Razorpay order.
-    Counts active registrations safely across SUCCESS, COMPLETED, and PENDING statuses.
+    Checks event capacity BEFORE generating an order.
+    Enforces REGISTRATION_CLOSED status when active.
     """
+    if REGISTRATION_CLOSED:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="🚫 Registration for Envision '26 is officially CLOSED. Thank you for your overwhelming response!"
+        )
     canonical_id = normalize_event_id(event_name)
     event = db.query(models.Event).filter(models.Event.id == canonical_id).first()
     

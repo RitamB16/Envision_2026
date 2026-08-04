@@ -81,6 +81,8 @@ function getShortPrizeLabel(event: any): string {
   return dbPrize ? dbPrize.toUpperCase() : 'CASH PRIZES';
 }
 
+export const REGISTRATION_CLOSED = true;
+
 const EVENTS_DATA: EventData[] = [
   {
     id: 'techtalk',
@@ -397,7 +399,7 @@ export default function Events({ onBack: _onBack }: Props) {
   };
 
   const handleRegister = (event: EventData, from: 'grid' | 'detail') => {
-    setRegErrorMsg(null);
+    setRegErrorMsg("🚫 REGISTRATION FOR ENVISION '26 IS OFFICIALLY CLOSED. All event slots are 100% filled!");
     setRegSuccessMsg(null);
     setMagicInviteUrl(null);
     setRegisteredPass(null);
@@ -418,6 +420,12 @@ export default function Events({ onBack: _onBack }: Props) {
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedEvent) return;
+
+    if (REGISTRATION_CLOSED) {
+      setIsSubmitting(false);
+      setRegErrorMsg("🚫 REGISTRATION FOR ENVISION '26 IS OFFICIALLY CLOSED. Thank you for your overwhelming response!");
+      return;
+    }
 
     setIsSubmitting(true);
     setRegErrorMsg(null);
@@ -1542,8 +1550,13 @@ export default function Events({ onBack: _onBack }: Props) {
                     <button
                       className="btn-cyber-primary"
                       onClick={() => handleRegister(event, 'grid')}
+                      style={{
+                        background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.25) 0%, rgba(153, 27, 27, 0.45) 100%)',
+                        border: '1px solid #ef4444',
+                        color: '#fca5a5'
+                      }}
                     >
-                      REGISTER NOW
+                      🚫 REGISTRATION CLOSED
                     </button>
                     <button
                       className="btn-cyber-secondary"
@@ -1895,8 +1908,14 @@ export default function Events({ onBack: _onBack }: Props) {
             <button
               className="mobile-cta-btn"
               onClick={() => handleRegister(selectedEvent, 'detail')}
+              style={{
+                background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.3) 0%, rgba(153, 27, 27, 0.6) 100%)',
+                border: '1px solid #ef4444',
+                color: '#fca5a5',
+                boxShadow: '0 0 20px rgba(239, 68, 68, 0.35)'
+              }}
             >
-              REGISTER FOR THIS TRACK →
+              🚫 REGISTRATION CLOSED
             </button>
           </div>
         </div>
@@ -1911,6 +1930,18 @@ export default function Events({ onBack: _onBack }: Props) {
               {selectedEvent.requires_team ? `Team Event (Leader + up to ${selectedEvent.max_team_size - 1} Teammates)` : 'Individual Track Registration'}
             </div>
           </div>
+
+          {REGISTRATION_CLOSED && (
+            <div className="mb-6 p-4 rounded-2xl bg-red-950/90 border-2 border-red-500/80 text-red-200 text-xs font-mono font-bold shadow-[0_0_30px_rgba(239,68,68,0.5)] text-center flex flex-col items-center justify-center gap-1.5 backdrop-blur-xl">
+              <div className="flex items-center justify-center gap-2 text-sm text-red-400 font-extrabold tracking-wider uppercase font-mono">
+                <span className="w-3 h-3 rounded-full bg-red-500 animate-ping shrink-0"></span>
+                <span>🚫 REGISTRATION OFFICIALLY CLOSED</span>
+              </div>
+              <p className="text-[11.5px] text-gray-200 font-sans m-0 leading-relaxed text-center">
+                Online registration for Envision '26 has reached maximum capacity and is now closed. Thank you for your overwhelming support!
+              </p>
+            </div>
+          )}
 
           {/* Feedback Banners */}
           {regErrorMsg && (
@@ -2407,21 +2438,18 @@ export default function Events({ onBack: _onBack }: Props) {
 
                   <button
                     type="submit"
-                    className={`reg-submit-btn transition-all duration-300 ${
-                      agreeTerms && ((selectedEvent.price_amount ?? 0) === 0 || utrInput.trim().length === 12) && !isSubmitting
-                        ? 'shadow-[0_0_25px_rgba(0,243,255,0.4)] hover:scale-[1.02] cursor-pointer'
-                        : 'opacity-60 cursor-not-allowed'
-                    }`}
-                    disabled={isSubmitting || isNavigating || !agreeTerms || ((selectedEvent.price_amount ?? 0) > 0 && utrInput.trim().length !== 12)}
+                    className="reg-submit-btn"
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.3) 0%, rgba(153, 27, 27, 0.6) 100%)',
+                      border: '1px solid #ef4444',
+                      color: '#fca5a5',
+                      cursor: 'not-allowed',
+                      opacity: 0.9,
+                      boxShadow: '0 0 20px rgba(239, 68, 68, 0.3)'
+                    }}
+                    disabled={isSubmitting || REGISTRATION_CLOSED}
                   >
-                    {isSubmitting
-                      ? 'PROCESSING REGISTRATION...'
-                      : (selectedEvent.price_amount ?? 0) > 0 && utrInput.trim().length !== 12
-                        ? `ENTER 12-DIGIT UTR TO UNLOCK SUBMIT (${utrInput.trim().length}/12)`
-                        : (selectedEvent.price_amount ?? 0) > 0
-                          ? `SUBMIT REGISTRATION & VERIFY PAYMENT (${selectedEvent.price})`
-                          : `CONFIRM FREE REGISTRATION (₹0)`
-                    }
+                    {isSubmitting ? 'PROCESSING...' : '🚫 REGISTRATION CLOSED'}
                   </button>
                 </>
               )}
